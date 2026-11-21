@@ -47,6 +47,7 @@ REQUIRED = [
     "docs/reproduce.md",
     "docs/forward-forward-ternary.md",
     "docs/evidence/ff_controlled_evidence.json",
+    "docs/evidence/ff_evidence.json",
     "scripts/sync_from_lab.py",
     "scripts/check_public.py",
 ]
@@ -83,6 +84,36 @@ def iter_files(root: Path):
 
 def strip_urls(text: str) -> str:
     return URL_RE.sub("<url>", text)
+
+
+def evidence_bundle_issues(payload: dict) -> list[str]:
+    """The published bundle must carry the numbers the docs quote, and the two
+    implementations of the blockwise first layer must agree item by item."""
+    issues: list[str] = []
+    summary = (payload.get("precision_matrix") or {}).get("summary") or {}
+    for mode in ("fp32", "ternary", "first_fp32", "second_fp32"):
+        if mode not in summary:
+            issues.append(f"ff_evidence: missing precision_matrix.summary.{mode}")
+    mechanism = payload.get("mechanism") or {}
+    for key in (
+        "blockwise_in_training",
+        "two_bit_layer0",
+        "two_bit_both",
+        "label_at_second_layer",
+    ):
+        if key not in mechanism:
+            issues.append(f"ff_evidence: missing mechanism.{key}")
+    rows = ((mechanism.get("reproduction") or {}).get("rows")) or []
+    if len(rows) != 3:
+        issues.append("ff_evidence: reproduction should list three seeds")
+    for row in rows:
+        if row.get("same_prediction") != row.get("count"):
+            issues.append(f"ff_evidence: reproduction seed {row.get('seed')} is not identical")
+    headline = payload.get("headline_pp") or {}
+    for key in ("fp32_to_ternary", "blockwise_recovery", "blockwise_share_of_gap"):
+        if key not in headline:
+            issues.append(f"ff_evidence: missing headline_pp.{key}")
+    return issues
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -135,6 +166,15 @@ def main(argv: list[str] | None = None) -> int:
             for mode in ("fp32", "ternary", "first_fp32", "second_fp32"):
                 if mode not in summary:
                     issues.append(f"evidence: missing summary.{mode}")
+
+    bundle = root / "docs" / "evidence" / "ff_evidence.json"
+    if bundle.is_file():
+        try:
+            payload = json.loads(bundle.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            issues.append(f"docs/evidence/ff_evidence.json: {exc}")
+        else:
+            issues.extend(evidence_bundle_issues(payload))
 
     if issues:
         for line in issues:

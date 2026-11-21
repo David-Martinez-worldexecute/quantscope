@@ -25,6 +25,9 @@ LAB_ROOT = ROOT.parents[1]  # the private project root
 # destination (inside this repo) -> source (inside the lab)
 COPIES = {
     "docs/evidence/ff_controlled_evidence.json": "portfolio/ff_controlled_evidence.json",
+    "docs/evidence/ff_evidence.json": (
+        "acceptance_runs/20261121T1810Z-public-ff-evidence/ff_evidence.json"
+    ),
 }
 
 

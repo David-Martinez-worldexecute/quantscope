@@ -51,6 +51,19 @@ problem: the four configurations share their initial weights per seed, and the
 evidence file records the initial-state hashes so a mismatch can be attributed
 to the environment rather than argued about.
 
+### 2b. The mechanism runs (why layer 1 is the expensive one)
+
+`docs/evidence/ff_evidence.json` covers the follow-ups described in
+`forward-forward-ternary.md`: the per-layer quantisation diagnostics, the same
+scale split moved into the training loop, two bit-width variants, the
+label-at-second-layer run, the depth sweep, and the question-by-question
+reproduction check against the earlier post-hoc patch. It is generated on the
+lab side from the run manifests — every number and every paired count is
+recomputed from those files, not transcribed — and it deliberately contains no
+local paths, only labels, byte sizes and SHA-256 hashes of its sources. A depth
+sweep appears under `depth` when that run has finished; if the key is absent, the
+sweep has not been included yet, and the document says so rather than implying it.
+
 ## 3. The real-model evaluation (Qwen3-0.6B, CPU, one run)
 
 `docs/real-model-qwen3-0.6b.md` is the receipt for the real-model table in the

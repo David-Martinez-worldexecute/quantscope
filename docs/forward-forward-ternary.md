@@ -65,7 +65,58 @@ Totals: `ternary` 259 fixed / 1,645 broken, `first_fp32` 92 / 263,
 mostly losing answers it used to get, and keeping the first layer in float32
 cuts that loss by roughly an order of magnitude.
 
-## What this does not say
+## Where the first-layer cost comes from
+
+Three follow-up runs try to explain the 4.62 points, and one tries to fix them.
+All three use the same architecture, data and training budget as above; the
+seeds are the same paired seeds.
+
+**The scale is shared, and the label columns are loud.** Ternary weights use one
+scale per output row, `mean(|w|)` over all 794 input columns. Ten of those
+columns carry the one-hot label: 1.26% of the layer-1 weights, but their mean
+column norm is 30.53 against 0.95 for a pixel column — about 32×. Averaging over
+the row therefore sets a threshold that suits the label columns and is far too
+coarse for the pixels. In the float32 model, row-wise ternarisation of layer 1
+sets **49.9%** of its weights to zero (layer 2: 36.8%), with a weight relative
+error of 0.94 and an output relative error of 0.57 (layer 2: 0.59 / 0.48).
+
+**Give the label block its own scale and most of the gap closes.** Computing the
+scale separately for the 784 pixel columns and the 10 label columns *inside the
+training loop* (straight-through, so the float32 master weights still learn)
+reaches **92.49 ± 0.15** — 2.97 points above all-ternary, i.e. **64% of the
+4.62-point gap**. It is still 1.09 points below `first_fp32`, so the rest is not
+a scale-placement problem.
+
+**Bit width is not the bottleneck.** Replacing the three levels
+{-1, 0, +1}·scale with four, {-1.5, -0.5, +0.5, +1.5}·scale — no zero level, so
+the zeroed half of layer 1 comes back — reaches 90.14 ± 0.31 for the first layer
+only (**+0.62** points) and 90.56 ± 0.27 for both layers (**+1.03**). Doubling
+the code points buys a sixth of what moving the scale buys.
+
+**Moving the label out of layer 1 is worse, not better.** Feeding the one-hot
+label to layer 2 instead, and calibrating layer 1 without labels (its only
+option once the labels are gone), drops to **79.92 ± 0.44**, 9.60 points below
+all-ternary. This run changes two things at once — label position and the layer-1
+objective — so it is directional evidence, not a clean single-variable result.
+The reading it supports: the label columns are not only the thing that hurts
+quantisation, they are also where the supervision enters.
+
+**More layers do not help.** Repeating the comparison at two, three and four
+trained layers — same data, same five epochs per layer, same two paired seeds —
+the float32 network gains a little from depth (94.04 → 94.45 → 94.81) while the
+all-ternary network stays flat (89.47 → 89.82 → 89.80). The gap therefore does
+not shrink: 4.57 → 4.63 → 5.01 points, with paired per-seed deltas of
+−4.12 / −5.02, −4.11 / −5.15 and −4.44 / −5.57. Extra depth buys nothing here,
+which points at a cost charged per quantised layer rather than at a capacity
+shortage.
+
+Taken together: the first layer is expensive because a shared per-row scale
+mixes a 32× louder label block into the pixel weights, and because that label
+block is the only place the layer gets its signal. Fixing the scale recovers
+about two thirds of the gap without touching the labels; removing the labels
+costs far more than the gap.
+
+
 
 * **One dataset, one architecture, one input encoding.** MNIST with a label
   appended to the input is a forgiving setup; the numbers should not be
@@ -73,14 +124,15 @@ cuts that loss by roughly an order of magnitude.
 * **Three seeds are three paired runs, not thirty thousand independent samples.**
   The ± values are sample standard deviations across seeds; the pairing is what
   makes the deltas meaningful.
-* **The mechanism is a hypothesis.** "The first layer sees raw pixels and the
-  one-hot label, so quantisation there destroys information the second layer
-  cannot rebuild" fits the data, but this experiment does not isolate it. A
-  width sweep or an activation-level probe would.
+* **The mechanism is only partly isolated.** The next section tests it with
+  four follow-up runs and a depth sweep; together they explain about two thirds
+  of the first-layer cost, show that neither bit width nor more layers closes
+  the gap, and leave the residual ~1.1 points open.
 * **Accuracy only.** No throughput, no memory, no energy. Ternary weights here
   are float32 tensors holding three distinct values; nothing about this measures
   the speed benefit of real low-bit kernels.
 
-The per-item evidence behind every number above is in
-`docs/evidence/ff_controlled_evidence.json`; `docs/reproduce.md` says how it was
-produced and re-checked.
+The per-item evidence behind the four-way ablation is in
+`docs/evidence/ff_controlled_evidence.json`; the mechanism runs above, their
+paired counts and the depth sweep are in `docs/evidence/ff_evidence.json`.
+`docs/reproduce.md` says how both were produced and re-checked.

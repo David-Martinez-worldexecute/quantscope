@@ -1,0 +1,925 @@
+{
+  "schema": "ff-evidence-v2",
+  "generated_utc": "2026-11-21T10:36:52Z",
+  "generator": "lab-side build script; the published bundle is a byte copy of its output",
+  "protocol": {
+    "id": "ff-precision-matched-v1",
+    "task": "MNIST 10-class classification, 60,000 train / 10,000 test",
+    "models": "two forward-forward layers, 794 -> 500 -> 500, ReLU goodness, theta = 1.0",
+    "seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "settings": {
+    "train_count": 60000,
+    "test_count": 10000,
+    "in_dim": 794,
+    "hidden": 500,
+    "layers": 2,
+    "epochs_per_layer": 5,
+    "batch_size": 128,
+    "test_batch_size": 512,
+    "lr": 0.001,
+    "theta": 1.0,
+    "pin_memory": true,
+    "num_workers": 0,
+    "normalization": [
+      0.1307,
+      0.3081
+    ]
+  },
+  "versions": {
+    "python": "3.12.10",
+    "torch": "2.6.0+cu124",
+    "torchvision": "0.21.0+cu124"
+  },
+  "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "precision_matrix": {
+    "run_id": "b7a59d462c7a4885bd84857e11ad6413",
+    "protocol": "ff-precision-matched-v1",
+    "settings": {
+      "train_count": 60000,
+      "test_count": 10000,
+      "in_dim": 794,
+      "hidden": 500,
+      "layers": 2,
+      "epochs_per_layer": 5,
+      "batch_size": 128,
+      "test_batch_size": 512,
+      "lr": 0.001,
+      "theta": 1.0,
+      "pin_memory": true,
+      "num_workers": 0,
+      "normalization": [
+        0.1307,
+        0.3081
+      ]
+    },
+    "versions": {
+      "python": "3.12.10",
+      "torch": "2.6.0+cu124",
+      "torchvision": "0.21.0+cu124"
+    },
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "summary": {
+      "fp32": {
+        "mean_accuracy": 0.941433333333,
+        "sample_std": 0.001800925688,
+        "correct": [
+          9406,
+          9402,
+          9435
+        ],
+        "count_per_seed": 10000
+      },
+      "ternary": {
+        "mean_accuracy": 0.895233333333,
+        "sample_std": 0.004789919971,
+        "correct": [
+          8994,
+          8900,
+          8963
+        ],
+        "count_per_seed": 10000
+      },
+      "first_fp32": {
+        "mean_accuracy": 0.935733333333,
+        "sample_std": 0.001887679351,
+        "correct": [
+          9341,
+          9353,
+          9378
+        ],
+        "count_per_seed": 10000
+      },
+      "second_fp32": {
+        "mean_accuracy": 0.9043,
+        "sample_std": 0.002651414717,
+        "correct": [
+          9066,
+          9014,
+          9049
+        ],
+        "count_per_seed": 10000
+      }
+    },
+    "cells": [
+      {
+        "mode": "first_fp32",
+        "seed": 0,
+        "correct": 9341,
+        "count": 10000,
+        "accuracy": 0.9341,
+        "initial_state_sha256": "33f1c7ea1fdf910c39f4662262ae92182a31a66412caaeef905048131c1ce718",
+        "predictions_sha256": "2e9f2e0f3ad59b8862bce3fbd2e795c8276418e96e8ff582e120964bd12a7620"
+      },
+      {
+        "mode": "first_fp32",
+        "seed": 1,
+        "correct": 9353,
+        "count": 10000,
+        "accuracy": 0.9353,
+        "initial_state_sha256": "dfdc733ff6692266200316c5542df8ac9b3b17fb00f687641b7133d083cbaa41",
+        "predictions_sha256": "ddb55a226b8d6d7ba0ecb30815ce1d01cf0e957956d4d1a47bcdb1d353a0413e"
+      },
+      {
+        "mode": "first_fp32",
+        "seed": 2,
+        "correct": 9378,
+        "count": 10000,
+        "accuracy": 0.9378,
+        "initial_state_sha256": "f2b92b6eb3b1300f2c0cfd6d755fdc309b14d8b224b4000b3662f06136bd3993",
+        "predictions_sha256": "cfb90a970ddefc03c72c154315739807810e55a7f588c85da7e65f104b2e62e0"
+      },
+      {
+        "mode": "fp32",
+        "seed": 0,
+        "correct": 9406,
+        "count": 10000,
+        "accuracy": 0.9406,
+        "initial_state_sha256": "33f1c7ea1fdf910c39f4662262ae92182a31a66412caaeef905048131c1ce718",
+        "predictions_sha256": "29dbca92dc8bfd55f23ecab229ca52fc32eb5afcf112c6c8ccc0e2868c6268d8"
+      },
+      {
+        "mode": "fp32",
+        "seed": 1,
+        "correct": 9402,
+        "count": 10000,
+        "accuracy": 0.9402,
+        "initial_state_sha256": "dfdc733ff6692266200316c5542df8ac9b3b17fb00f687641b7133d083cbaa41",
+        "predictions_sha256": "a8ade5d9cead73a082ddc503982ddebeef8dfeaefcd4bfe377c376e4ebc17896"
+      },
+      {
+        "mode": "fp32",
+        "seed": 2,
+        "correct": 9435,
+        "count": 10000,
+        "accuracy": 0.9435,
+        "initial_state_sha256": "f2b92b6eb3b1300f2c0cfd6d755fdc309b14d8b224b4000b3662f06136bd3993",
+        "predictions_sha256": "58a67ba066bbadf09735eed2107a8c690d7a397ab51a3bc0ffce8a35c3e33813"
+      },
+      {
+        "mode": "second_fp32",
+        "seed": 0,
+        "correct": 9066,
+        "count": 10000,
+        "accuracy": 0.9066,
+        "initial_state_sha256": "33f1c7ea1fdf910c39f4662262ae92182a31a66412caaeef905048131c1ce718",
+        "predictions_sha256": "edc57e4fc40a69c0796c8cb31d7e2ae4d0b2e0a26ceab4f987cfa7b4d0ac6ce0"
+      },
+      {
+        "mode": "second_fp32",
+        "seed": 1,
+        "correct": 9014,
+        "count": 10000,
+        "accuracy": 0.9014,
+        "initial_state_sha256": "dfdc733ff6692266200316c5542df8ac9b3b17fb00f687641b7133d083cbaa41",
+        "predictions_sha256": "80231fd4a4134e6d9f4dafe927b38c31111f95c8c32c09c604cc3ad1f6b64aff"
+      },
+      {
+        "mode": "second_fp32",
+        "seed": 2,
+        "correct": 9049,
+        "count": 10000,
+        "accuracy": 0.9049,
+        "initial_state_sha256": "f2b92b6eb3b1300f2c0cfd6d755fdc309b14d8b224b4000b3662f06136bd3993",
+        "predictions_sha256": "ba01029c17a27ece148bb9057cdf14f8246dda3d2a67be0e90516e5178ed58d9"
+      },
+      {
+        "mode": "ternary",
+        "seed": 0,
+        "correct": 8994,
+        "count": 10000,
+        "accuracy": 0.8994,
+        "initial_state_sha256": "33f1c7ea1fdf910c39f4662262ae92182a31a66412caaeef905048131c1ce718",
+        "predictions_sha256": "fbc6882422189010583d7b97f09e82b2c26b8e630e1928631caeaaa7f3533132"
+      },
+      {
+        "mode": "ternary",
+        "seed": 1,
+        "correct": 8900,
+        "count": 10000,
+        "accuracy": 0.89,
+        "initial_state_sha256": "dfdc733ff6692266200316c5542df8ac9b3b17fb00f687641b7133d083cbaa41",
+        "predictions_sha256": "ab55b02c1025120e052b28c3fe12f4f38654fc3c48fa0efb979d14ab55cc3416"
+      },
+      {
+        "mode": "ternary",
+        "seed": 2,
+        "correct": 8963,
+        "count": 10000,
+        "accuracy": 0.8963,
+        "initial_state_sha256": "f2b92b6eb3b1300f2c0cfd6d755fdc309b14d8b224b4000b3662f06136bd3993",
+        "predictions_sha256": "8d6ec74c52f1b0e56778144d565c427c2fa9346ed11a1b02c9b92c1cb43fe055"
+      }
+    ],
+    "paired_against_fp32": [
+      {
+        "mode": "first_fp32",
+        "seed": 0,
+        "n01": 42,
+        "n10": 107,
+        "delta_pp": -0.65
+      },
+      {
+        "mode": "second_fp32",
+        "seed": 0,
+        "n01": 112,
+        "n10": 452,
+        "delta_pp": -3.4
+      },
+      {
+        "mode": "ternary",
+        "seed": 0,
+        "n01": 107,
+        "n10": 519,
+        "delta_pp": -4.12
+      },
+      {
+        "mode": "first_fp32",
+        "seed": 1,
+        "n01": 20,
+        "n10": 69,
+        "delta_pp": -0.49
+      },
+      {
+        "mode": "second_fp32",
+        "seed": 1,
+        "n01": 99,
+        "n10": 487,
+        "delta_pp": -3.88
+      },
+      {
+        "mode": "ternary",
+        "seed": 1,
+        "n01": 86,
+        "n10": 588,
+        "delta_pp": -5.02
+      },
+      {
+        "mode": "first_fp32",
+        "seed": 2,
+        "n01": 30,
+        "n10": 87,
+        "delta_pp": -0.57
+      },
+      {
+        "mode": "second_fp32",
+        "seed": 2,
+        "n01": 85,
+        "n10": 471,
+        "delta_pp": -3.86
+      },
+      {
+        "mode": "ternary",
+        "seed": 2,
+        "n01": 66,
+        "n10": 538,
+        "delta_pp": -4.72
+      }
+    ]
+  },
+  "mechanism": {
+    "diagnose": {
+      "seed": 0,
+      "fp32_accuracy": 0.94059997797,
+      "train_seconds": 97.68,
+      "layers": [
+        {
+          "layer": 0,
+          "shape": [
+            500,
+            794
+          ],
+          "zero_fraction": 0.4991687536239624,
+          "weight_rel_error": 0.9407758993804216,
+          "output_rel_error": 0.5671697905670661,
+          "pixels_only_output_rel_error": 0.3851583553644324,
+          "labels_only_output_rel_error": 0.27761525377931523,
+          "label_block_share_of_weights": 0.012594458438287154,
+          "label_to_joint_scale_ratio": 27.670806884765625
+        },
+        {
+          "layer": 1,
+          "shape": [
+            500,
+            500
+          ],
+          "zero_fraction": 0.3683280050754547,
+          "weight_rel_error": 0.5894373446861627,
+          "output_rel_error": 0.4751743878962767
+        }
+      ]
+    },
+    "blockwise_patch": {
+      "hypothesis": "The first layer's extra cost comes from its 10 label columns sharing one per-row ternary scale with 784 pixel columns.",
+      "intervention": "First layer only: compute the ternary scale per column block (pixels, labels) instead of per output row over all 794 columns.",
+      "accuracy_mean": 0.924866666667,
+      "accuracy_std": 0.00146401275,
+      "correct": [
+        9262,
+        9233,
+        9251
+      ],
+      "replacement_changed_activations": [
+        true,
+        true,
+        true
+      ],
+      "predictions_sha256": [
+        "3c0ae8483ae63318d56aa00df93ac8db4a6ebcee70b6a7ce49cfd3e1171603d4",
+        "1ba73913921f294532edeba36ace044b87bf68e95c45ccb879de47e4a1c336e5",
+        "7a49a02a7ae8bd8d15926c1fac3811a3a92a5cd057c59a9ceb95ac02690cc669"
+      ],
+      "limits": [
+        "One dataset (MNIST), one architecture, two hidden layers.",
+        "Three paired seeds, not three independent samples.",
+        "A recovered score shows the scale source matters, not that it is the only cause."
+      ]
+    },
+    "blockwise_in_training": {
+      "layer_quantizers": [
+        "blockwise",
+        "ternary"
+      ],
+      "accuracy_mean": 0.924866666667,
+      "accuracy_std": 0.00146401275,
+      "correct": [
+        9262,
+        9233,
+        9251
+      ],
+      "changed_activations": [
+        true,
+        true,
+        true
+      ],
+      "pairs_vs_fp32": [
+        {
+          "counts": {
+            "n00": 502,
+            "n01": 92,
+            "n10": 236,
+            "n11": 9170
+          },
+          "paired": 10000,
+          "delta_pp": -1.44
+        },
+        {
+          "counts": {
+            "n00": 513,
+            "n01": 85,
+            "n10": 254,
+            "n11": 9148
+          },
+          "paired": 10000,
+          "delta_pp": -1.69
+        },
+        {
+          "counts": {
+            "n00": 493,
+            "n01": 72,
+            "n10": 256,
+            "n11": 9179
+          },
+          "paired": 10000,
+          "delta_pp": -1.84
+        }
+      ],
+      "pairs_vs_ternary": [
+        {
+          "counts": {
+            "n00": 610,
+            "n01": 396,
+            "n10": 128,
+            "n11": 8866
+          },
+          "paired": 10000,
+          "delta_pp": 2.68
+        },
+        {
+          "counts": {
+            "n00": 627,
+            "n01": 473,
+            "n10": 140,
+            "n11": 8760
+          },
+          "paired": 10000,
+          "delta_pp": 3.33
+        },
+        {
+          "counts": {
+            "n00": 622,
+            "n01": 415,
+            "n10": 127,
+            "n11": 8836
+          },
+          "paired": 10000,
+          "delta_pp": 2.88
+        }
+      ],
+      "pairs_vs_first_fp32": [
+        {
+          "counts": {
+            "n00": 557,
+            "n01": 102,
+            "n10": 181,
+            "n11": 9160
+          },
+          "paired": 10000,
+          "delta_pp": -0.79
+        },
+        {
+          "counts": {
+            "n00": 551,
+            "n01": 96,
+            "n10": 216,
+            "n11": 9137
+          },
+          "paired": 10000,
+          "delta_pp": -1.2
+        },
+        {
+          "counts": {
+            "n00": 539,
+            "n01": 83,
+            "n10": 210,
+            "n11": 9168
+          },
+          "paired": 10000,
+          "delta_pp": -1.27
+        }
+      ],
+      "predictions_sha256": [
+        "3c0ae8483ae63318d56aa00df93ac8db4a6ebcee70b6a7ce49cfd3e1171603d4",
+        "1ba73913921f294532edeba36ace044b87bf68e95c45ccb879de47e4a1c336e5",
+        "7a49a02a7ae8bd8d15926c1fac3811a3a92a5cd057c59a9ceb95ac02690cc669"
+      ]
+    },
+    "two_bit_layer0": {
+      "layer_quantizers": [
+        "two_bit",
+        "ternary"
+      ],
+      "accuracy_mean": 0.901433333333,
+      "accuracy_std": 0.003053413391,
+      "correct": [
+        9016,
+        8983,
+        9044
+      ],
+      "changed_activations": [
+        true,
+        true,
+        true
+      ],
+      "pairs_vs_fp32": [
+        {
+          "counts": {
+            "n00": 498,
+            "n01": 96,
+            "n10": 486,
+            "n11": 8920
+          },
+          "paired": 10000,
+          "delta_pp": -3.9
+        },
+        {
+          "counts": {
+            "n00": 515,
+            "n01": 83,
+            "n10": 502,
+            "n11": 8900
+          },
+          "paired": 10000,
+          "delta_pp": -4.19
+        },
+        {
+          "counts": {
+            "n00": 488,
+            "n01": 77,
+            "n10": 468,
+            "n11": 8967
+          },
+          "paired": 10000,
+          "delta_pp": -3.91
+        }
+      ],
+      "pairs_vs_ternary": [
+        {
+          "counts": {
+            "n00": 819,
+            "n01": 187,
+            "n10": 165,
+            "n11": 8829
+          },
+          "paired": 10000,
+          "delta_pp": 0.22
+        },
+        {
+          "counts": {
+            "n00": 874,
+            "n01": 226,
+            "n10": 143,
+            "n11": 8757
+          },
+          "paired": 10000,
+          "delta_pp": 0.83
+        },
+        {
+          "counts": {
+            "n00": 804,
+            "n01": 233,
+            "n10": 152,
+            "n11": 8811
+          },
+          "paired": 10000,
+          "delta_pp": 0.81
+        }
+      ],
+      "pairs_vs_first_fp32": [
+        {
+          "counts": {
+            "n00": 540,
+            "n01": 119,
+            "n10": 444,
+            "n11": 8897
+          },
+          "paired": 10000,
+          "delta_pp": -3.25
+        },
+        {
+          "counts": {
+            "n00": 562,
+            "n01": 85,
+            "n10": 455,
+            "n11": 8898
+          },
+          "paired": 10000,
+          "delta_pp": -3.7
+        },
+        {
+          "counts": {
+            "n00": 529,
+            "n01": 93,
+            "n10": 427,
+            "n11": 8951
+          },
+          "paired": 10000,
+          "delta_pp": -3.34
+        }
+      ],
+      "predictions_sha256": [
+        "496e95980eb06f0780f2ffd00c54b89c97b8124b8e262d9280dc4929fff3fb38",
+        "b0b0fa982f3db034b35c4d04293e4a2ac8ef8b2c05e0c413570e7d2123ac4fa4",
+        "ab7edc39789f84d5ef7437ad9c0629123989d5ca9eaee3d8f042018ecaa3ea65"
+      ]
+    },
+    "two_bit_both": {
+      "layer_quantizers": [
+        "two_bit",
+        "two_bit"
+      ],
+      "accuracy_mean": 0.905566666667,
+      "accuracy_std": 0.002746512941,
+      "correct": [
+        9078,
+        9025,
+        9064
+      ],
+      "changed_activations": [
+        true,
+        true,
+        true
+      ],
+      "pairs_vs_fp32": [
+        {
+          "counts": {
+            "n00": 491,
+            "n01": 103,
+            "n10": 431,
+            "n11": 8975
+          },
+          "paired": 10000,
+          "delta_pp": -3.28
+        },
+        {
+          "counts": {
+            "n00": 511,
+            "n01": 87,
+            "n10": 464,
+            "n11": 8938
+          },
+          "paired": 10000,
+          "delta_pp": -3.77
+        },
+        {
+          "counts": {
+            "n00": 483,
+            "n01": 82,
+            "n10": 453,
+            "n11": 8982
+          },
+          "paired": 10000,
+          "delta_pp": -3.71
+        }
+      ],
+      "pairs_vs_ternary": [
+        {
+          "counts": {
+            "n00": 775,
+            "n01": 231,
+            "n10": 147,
+            "n11": 8847
+          },
+          "paired": 10000,
+          "delta_pp": 0.84
+        },
+        {
+          "counts": {
+            "n00": 840,
+            "n01": 260,
+            "n10": 135,
+            "n11": 8765
+          },
+          "paired": 10000,
+          "delta_pp": 1.25
+        },
+        {
+          "counts": {
+            "n00": 786,
+            "n01": 251,
+            "n10": 150,
+            "n11": 8813
+          },
+          "paired": 10000,
+          "delta_pp": 1.01
+        }
+      ],
+      "pairs_vs_first_fp32": [
+        {
+          "counts": {
+            "n00": 538,
+            "n01": 121,
+            "n10": 384,
+            "n11": 8957
+          },
+          "paired": 10000,
+          "delta_pp": -2.63
+        },
+        {
+          "counts": {
+            "n00": 558,
+            "n01": 89,
+            "n10": 417,
+            "n11": 8936
+          },
+          "paired": 10000,
+          "delta_pp": -3.28
+        },
+        {
+          "counts": {
+            "n00": 519,
+            "n01": 103,
+            "n10": 417,
+            "n11": 8961
+          },
+          "paired": 10000,
+          "delta_pp": -3.14
+        }
+      ],
+      "predictions_sha256": [
+        "270b39273dbcb718614d46fa19224b046f3abd6bd5bcfced6c023966678adeb7",
+        "26308c8b327e5c0583678e436229cbb5145bbeb8a5086cc94311ff1d612ceb08",
+        "a46fc700928bc116a5f395f786024ace8b476cfeadb4405b1f4c1b2cf765aa8f"
+      ]
+    },
+    "label_at_second_layer": {
+      "structure": {
+        "layer0_input_dim": 784,
+        "layer1_input_dim": 510,
+        "layer0_objective": "one-sided calibration ((goodness - theta)^2).mean()",
+        "layer1_objective": "two-sided FF loss on (layer0 acts + one-hot label)"
+      },
+      "accuracy_mean": 0.799233333333,
+      "accuracy_std": 0.004361574639,
+      "correct": [
+        7947,
+        7996,
+        8034
+      ],
+      "layer0_centroid_probe": [
+        0.6304,
+        0.5873,
+        0.6092
+      ],
+      "layer0_centroid_probe_mean": 0.608966666667,
+      "pairs_vs_controlled_ternary": [
+        {
+          "seed": 0,
+          "vs": "ternary",
+          "n00": 821,
+          "n01": 185,
+          "n10": 1232,
+          "n11": 7762,
+          "delta_pp": -10.470000000000002
+        },
+        {
+          "seed": 1,
+          "vs": "ternary",
+          "n00": 875,
+          "n01": 225,
+          "n10": 1129,
+          "n11": 7771,
+          "delta_pp": -9.040000000000003
+        },
+        {
+          "seed": 2,
+          "vs": "ternary",
+          "n00": 863,
+          "n01": 174,
+          "n10": 1103,
+          "n11": 7860,
+          "delta_pp": -9.29
+        }
+      ]
+    },
+    "reproduction": {
+      "left": "results/mechanism/20261121T060818Z (post-hoc wrapper around the trained layers)",
+      "right": "results/scale-training/20261121T065300Z (blockwise quantiser active during training)",
+      "rows": [
+        {
+          "seed": 0,
+          "same_prediction": 10000,
+          "same_correct": 10000,
+          "count": 10000
+        },
+        {
+          "seed": 1,
+          "same_prediction": 10000,
+          "same_correct": 10000,
+          "count": 10000
+        },
+        {
+          "seed": 2,
+          "same_prediction": 10000,
+          "same_correct": 10000,
+          "count": 10000
+        }
+      ]
+    }
+  },
+  "depth": {
+    "run_id": "e51f224f06d245058ded1e50bacdb703",
+    "depths": [
+      2,
+      3,
+      4
+    ],
+    "settings": {
+      "train_count": 60000,
+      "test_count": 10000,
+      "in_dim": 794,
+      "hidden": 500,
+      "epochs_per_layer": 5,
+      "batch_size": 128,
+      "test_batch_size": 512,
+      "lr": 0.001,
+      "theta": 1.0,
+      "normalization": [
+        0.1307,
+        0.3081
+      ]
+    },
+    "summary": {
+      "2": {
+        "fp32_mean_accuracy": 0.9403999745845795,
+        "ternary_mean_accuracy": 0.8946999907493591,
+        "fp32_std": 0.00028284750035660985,
+        "ternary_std": 0.006646810891259054,
+        "delta_pp": -4.569998
+      },
+      "3": {
+        "fp32_mean_accuracy": 0.9444999992847443,
+        "ternary_mean_accuracy": 0.8982000052928925,
+        "fp32_std": 0.0016970428552911482,
+        "ternary_std": 0.005656823566586664,
+        "delta_pp": -4.629999
+      },
+      "4": {
+        "fp32_mean_accuracy": 0.9480500221252441,
+        "ternary_mean_accuracy": 0.8980000019073486,
+        "fp32_std": 0.0010606675896251592,
+        "ternary_std": 0.006929616244767153,
+        "delta_pp": -5.005002
+      }
+    },
+    "paired_against_fp32": [
+      {
+        "depth": 2,
+        "seed": 0,
+        "n01": 107,
+        "n10": 519,
+        "delta_pp": -4.12
+      },
+      {
+        "depth": 2,
+        "seed": 1,
+        "n01": 86,
+        "n10": 588,
+        "delta_pp": -5.02
+      },
+      {
+        "depth": 3,
+        "seed": 0,
+        "n01": 89,
+        "n10": 500,
+        "delta_pp": -4.11
+      },
+      {
+        "depth": 3,
+        "seed": 1,
+        "n01": 97,
+        "n10": 612,
+        "delta_pp": -5.15
+      },
+      {
+        "depth": 4,
+        "seed": 0,
+        "n01": 93,
+        "n10": 537,
+        "delta_pp": -4.44
+      },
+      {
+        "depth": 4,
+        "seed": 1,
+        "n01": 83,
+        "n10": 640,
+        "delta_pp": -5.57
+      }
+    ],
+    "limits": [
+      "Single dataset (MNIST) and one hidden width (500).",
+      "Two seeds per depth; seeds are matched units, not 20k independent samples.",
+      "Depth is changed by stacking identical width blocks; totals are not parameter-matched.",
+      "Shallower networks are cheaper per epoch, so wall-clock is not comparable across depth.",
+      "Floating-point STE training; this says nothing about LLM-scale behaviour."
+    ]
+  },
+  "headline_pp": {
+    "fp32_to_ternary": -4.62,
+    "blockwise_recovery": 2.963333,
+    "blockwise_share_of_gap": 0.641414,
+    "gap_left_vs_first_fp32": -1.086667,
+    "two_bit_layer0_recovery": 0.62,
+    "two_bit_both_recovery": 1.033333,
+    "label_at_second_vs_ternary": -9.6
+  },
+  "limits": [
+    "One dataset (MNIST) and one two-layer forward-forward architecture.",
+    "Three paired seeds, not three independent samples; intervals from them are wide.",
+    "Quantization is simulated in floating point; no integer kernels were timed.",
+    "The blockwise result shows the scale layout matters; it does not prove no other cause exists.",
+    "The label-at-second-layer experiment changed two things at once (label position and the layer-0 objective), so it is directional evidence only.",
+    "Nothing here extends to larger models, deeper stacks, or real language models."
+  ],
+  "sources": [
+    {
+      "label": "controlled matrix manifest",
+      "bytes": 10743,
+      "sha256": "bafbc3d0277a258ffe399aa9d84d6e48b9692d0baaa5f2d0176ba69a9d881991"
+    },
+    {
+      "label": "layer diagnostics",
+      "bytes": 1816,
+      "sha256": "6cd1759528e71d61fb52c2fbf6a888c5c93d90c8ebe72434159bd8d3f082e6f8"
+    },
+    {
+      "label": "blockwise patch manifest",
+      "bytes": 3746,
+      "sha256": "14b3718a6f931d6b4de72550503dd31d6e517591d96a1c4a9f58d0d7bb85f41c"
+    },
+    {
+      "label": "label at second layer manifest",
+      "bytes": 2706,
+      "sha256": "5f11b3c373b41ca9e36b06e387c1c702abeb5bd0ab047c0b35d9e865486803c8"
+    },
+    {
+      "label": "scale training manifest (blockwise, 2-bit first layer)",
+      "bytes": 11832,
+      "sha256": "f216a77e292d85da239f80cdbb1e751b4641c7da3a67c49776bc7a4d52934bdd"
+    },
+    {
+      "label": "scale training manifest (2-bit both layers)",
+      "bytes": 6620,
+      "sha256": "7b896b51c64f368ffc5d8f6b2ac18a68f6ba429277af72adee916e77898a7d62"
+    },
+    {
+      "label": "depth sweep manifest",
+      "bytes": 8207,
+      "sha256": "cdd1b5f54f034c9151db762cb09ab8cabb0e5c3ed309877c6e65b3bcf122ca5f"
+    }
+  ]
+}

@@ -42,7 +42,8 @@ and its exit code is the verdict.
 
 The tool is the deliverable; the numbers below come from a separate controlled study that ships
 in `docs/forward-forward-ternary.md`, with per-item evidence in
-`docs/evidence/ff_controlled_evidence.json`.
+`docs/evidence/ff_controlled_evidence.json` (four-way ablation) and
+`docs/evidence/ff_evidence.json` (mechanism follow-ups and the depth sweep).
 
 | weight format | MNIST test accuracy (mean ± std over 3 seeds) |
 | --- | --- |
