@@ -1,0 +1,251 @@
+{
+  "schema": 1,
+  "status": "independently-verified",
+  "run_id": "b7a59d462c7a4885bd84857e11ad6413",
+  "manifest_sha256": "bafbc3d0277a258ffe399aa9d84d6e48b9692d0baaa5f2d0176ba69a9d881991",
+  "protocol": "ff-precision-matched-v1",
+  "settings": {
+    "train_count": 60000,
+    "test_count": 10000,
+    "in_dim": 794,
+    "hidden": 500,
+    "layers": 2,
+    "epochs_per_layer": 5,
+    "batch_size": 128,
+    "test_batch_size": 512,
+    "lr": 0.001,
+    "theta": 1.0,
+    "pin_memory": true,
+    "num_workers": 0,
+    "normalization": [
+      0.1307,
+      0.3081
+    ]
+  },
+  "versions": {
+    "python": "3.12.10",
+    "torch": "2.6.0+cu124",
+    "torchvision": "0.21.0+cu124"
+  },
+  "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "cells": [
+    {
+      "seed": 0,
+      "mode": "fp32",
+      "correct": 9406,
+      "count": 10000,
+      "accuracy": 0.9406,
+      "predictions_sha256": "29dbca92dc8bfd55f23ecab229ca52fc32eb5afcf112c6c8ccc0e2868c6268d8",
+      "initial_state_sha256": "33f1c7ea1fdf910c39f4662262ae92182a31a66412caaeef905048131c1ce718",
+      "initial_rng_sha256": "cc93457f01e3655a9853f187a9f51a7fd1f23a5e56cf5cd4de8270419b81058c"
+    },
+    {
+      "seed": 0,
+      "mode": "ternary",
+      "correct": 8994,
+      "count": 10000,
+      "accuracy": 0.8994,
+      "predictions_sha256": "fbc6882422189010583d7b97f09e82b2c26b8e630e1928631caeaaa7f3533132",
+      "initial_state_sha256": "33f1c7ea1fdf910c39f4662262ae92182a31a66412caaeef905048131c1ce718",
+      "initial_rng_sha256": "cc93457f01e3655a9853f187a9f51a7fd1f23a5e56cf5cd4de8270419b81058c"
+    },
+    {
+      "seed": 0,
+      "mode": "first_fp32",
+      "correct": 9341,
+      "count": 10000,
+      "accuracy": 0.9341,
+      "predictions_sha256": "2e9f2e0f3ad59b8862bce3fbd2e795c8276418e96e8ff582e120964bd12a7620",
+      "initial_state_sha256": "33f1c7ea1fdf910c39f4662262ae92182a31a66412caaeef905048131c1ce718",
+      "initial_rng_sha256": "cc93457f01e3655a9853f187a9f51a7fd1f23a5e56cf5cd4de8270419b81058c"
+    },
+    {
+      "seed": 0,
+      "mode": "second_fp32",
+      "correct": 9066,
+      "count": 10000,
+      "accuracy": 0.9066,
+      "predictions_sha256": "edc57e4fc40a69c0796c8cb31d7e2ae4d0b2e0a26ceab4f987cfa7b4d0ac6ce0",
+      "initial_state_sha256": "33f1c7ea1fdf910c39f4662262ae92182a31a66412caaeef905048131c1ce718",
+      "initial_rng_sha256": "cc93457f01e3655a9853f187a9f51a7fd1f23a5e56cf5cd4de8270419b81058c"
+    },
+    {
+      "seed": 1,
+      "mode": "fp32",
+      "correct": 9402,
+      "count": 10000,
+      "accuracy": 0.9402,
+      "predictions_sha256": "a8ade5d9cead73a082ddc503982ddebeef8dfeaefcd4bfe377c376e4ebc17896",
+      "initial_state_sha256": "dfdc733ff6692266200316c5542df8ac9b3b17fb00f687641b7133d083cbaa41",
+      "initial_rng_sha256": "52d8ac9f7cb84794b5136c516436913b6bf7a6e41fe4195e6eca6d2aa4f09891"
+    },
+    {
+      "seed": 1,
+      "mode": "ternary",
+      "correct": 8900,
+      "count": 10000,
+      "accuracy": 0.89,
+      "predictions_sha256": "ab55b02c1025120e052b28c3fe12f4f38654fc3c48fa0efb979d14ab55cc3416",
+      "initial_state_sha256": "dfdc733ff6692266200316c5542df8ac9b3b17fb00f687641b7133d083cbaa41",
+      "initial_rng_sha256": "52d8ac9f7cb84794b5136c516436913b6bf7a6e41fe4195e6eca6d2aa4f09891"
+    },
+    {
+      "seed": 1,
+      "mode": "first_fp32",
+      "correct": 9353,
+      "count": 10000,
+      "accuracy": 0.9353,
+      "predictions_sha256": "ddb55a226b8d6d7ba0ecb30815ce1d01cf0e957956d4d1a47bcdb1d353a0413e",
+      "initial_state_sha256": "dfdc733ff6692266200316c5542df8ac9b3b17fb00f687641b7133d083cbaa41",
+      "initial_rng_sha256": "52d8ac9f7cb84794b5136c516436913b6bf7a6e41fe4195e6eca6d2aa4f09891"
+    },
+    {
+      "seed": 1,
+      "mode": "second_fp32",
+      "correct": 9014,
+      "count": 10000,
+      "accuracy": 0.9014,
+      "predictions_sha256": "80231fd4a4134e6d9f4dafe927b38c31111f95c8c32c09c604cc3ad1f6b64aff",
+      "initial_state_sha256": "dfdc733ff6692266200316c5542df8ac9b3b17fb00f687641b7133d083cbaa41",
+      "initial_rng_sha256": "52d8ac9f7cb84794b5136c516436913b6bf7a6e41fe4195e6eca6d2aa4f09891"
+    },
+    {
+      "seed": 2,
+      "mode": "fp32",
+      "correct": 9435,
+      "count": 10000,
+      "accuracy": 0.9435,
+      "predictions_sha256": "58a67ba066bbadf09735eed2107a8c690d7a397ab51a3bc0ffce8a35c3e33813",
+      "initial_state_sha256": "f2b92b6eb3b1300f2c0cfd6d755fdc309b14d8b224b4000b3662f06136bd3993",
+      "initial_rng_sha256": "395eb2f50ff3fc8bade45d554645a1a6ff51300c004dd3a4907f5c9adbc6b823"
+    },
+    {
+      "seed": 2,
+      "mode": "ternary",
+      "correct": 8963,
+      "count": 10000,
+      "accuracy": 0.8963,
+      "predictions_sha256": "8d6ec74c52f1b0e56778144d565c427c2fa9346ed11a1b02c9b92c1cb43fe055",
+      "initial_state_sha256": "f2b92b6eb3b1300f2c0cfd6d755fdc309b14d8b224b4000b3662f06136bd3993",
+      "initial_rng_sha256": "395eb2f50ff3fc8bade45d554645a1a6ff51300c004dd3a4907f5c9adbc6b823"
+    },
+    {
+      "seed": 2,
+      "mode": "first_fp32",
+      "correct": 9378,
+      "count": 10000,
+      "accuracy": 0.9378,
+      "predictions_sha256": "cfb90a970ddefc03c72c154315739807810e55a7f588c85da7e65f104b2e62e0",
+      "initial_state_sha256": "f2b92b6eb3b1300f2c0cfd6d755fdc309b14d8b224b4000b3662f06136bd3993",
+      "initial_rng_sha256": "395eb2f50ff3fc8bade45d554645a1a6ff51300c004dd3a4907f5c9adbc6b823"
+    },
+    {
+      "seed": 2,
+      "mode": "second_fp32",
+      "correct": 9049,
+      "count": 10000,
+      "accuracy": 0.9049,
+      "predictions_sha256": "ba01029c17a27ece148bb9057cdf14f8246dda3d2a67be0e90516e5178ed58d9",
+      "initial_state_sha256": "f2b92b6eb3b1300f2c0cfd6d755fdc309b14d8b224b4000b3662f06136bd3993",
+      "initial_rng_sha256": "395eb2f50ff3fc8bade45d554645a1a6ff51300c004dd3a4907f5c9adbc6b823"
+    }
+  ],
+  "summary": {
+    "fp32": {
+      "mean_accuracy": 0.9414333333333333,
+      "sample_std": 0.0018009256878986726
+    },
+    "ternary": {
+      "mean_accuracy": 0.8952333333333333,
+      "sample_std": 0.004789919971495677
+    },
+    "first_fp32": {
+      "mean_accuracy": 0.9357333333333333,
+      "sample_std": 0.001887679351302331
+    },
+    "second_fp32": {
+      "mean_accuracy": 0.9043,
+      "sample_std": 0.0026514147167125694
+    }
+  },
+  "paired_against_fp32": [
+    {
+      "seed": 0,
+      "mode": "ternary",
+      "n01": 107,
+      "n10": 519,
+      "delta_pp": -4.12
+    },
+    {
+      "seed": 0,
+      "mode": "first_fp32",
+      "n01": 42,
+      "n10": 107,
+      "delta_pp": -0.65
+    },
+    {
+      "seed": 0,
+      "mode": "second_fp32",
+      "n01": 112,
+      "n10": 452,
+      "delta_pp": -3.4
+    },
+    {
+      "seed": 1,
+      "mode": "ternary",
+      "n01": 86,
+      "n10": 588,
+      "delta_pp": -5.02
+    },
+    {
+      "seed": 1,
+      "mode": "first_fp32",
+      "n01": 20,
+      "n10": 69,
+      "delta_pp": -0.49
+    },
+    {
+      "seed": 1,
+      "mode": "second_fp32",
+      "n01": 99,
+      "n10": 487,
+      "delta_pp": -3.88
+    },
+    {
+      "seed": 2,
+      "mode": "ternary",
+      "n01": 66,
+      "n10": 538,
+      "delta_pp": -4.72
+    },
+    {
+      "seed": 2,
+      "mode": "first_fp32",
+      "n01": 30,
+      "n10": 87,
+      "delta_pp": -0.57
+    },
+    {
+      "seed": 2,
+      "mode": "second_fp32",
+      "n01": 85,
+      "n10": 471,
+      "delta_pp": -3.86
+    }
+  ],
+  "data_sha256": {
+    "train-images-idx3-ubyte": "ba891046e6505d7aadcbbe25680a0738ad16aec93bde7f9b65e87a2fc25776db",
+    "train-labels-idx1-ubyte": "65a50cbbf4e906d70832878ad85ccda5333a97f0f4c3dd2ef09a8a9eef7101c5",
+    "t10k-images-idx3-ubyte": "0fa7898d509279e482958e8ce81c8e77db3f2f8254e26661ceb7762c4d494ce7",
+    "t10k-labels-idx1-ubyte": "ff7bcfd416de33731a308c3f266cc351222c34898ecbeaf847f06e48f7ec33f2"
+  },
+  "code_sha256": {
+    "bench_controlled.py": "c1d1c7e9382674b7831c8cc02ac76315f3becaa4a085c0640b403cfabf50a03c",
+    "bench_second_layer.py": "05f1a65d2cef5741a2acb10548966a65a478733f0847dcd6b4f547b6d76f0d99",
+    "ff_ternary/ff.py": "036f09cff5ca9f25abe9ae33b7a88127da4d4e2ad4912c8164aa43a0319e67dc",
+    "ff_ternary/models.py": "8a2e21d1a604c0d118edbe00a635a5f540a57519de90fcedc14d153f3e7a3a1c",
+    "ff_ternary/ternary.py": "237422d5a5a86dd56735852e64f41b5d49cda863d19eea39f6b4a9ec5dcccffc",
+    "ff_ternary/metrics.py": "9d01399515579cb1b18c90cd10dc4f22cafa27c29a3d669777cbae1bdb1e1a20"
+  },
+  "replicate_unit": "Three matched training seeds, not 120000 independent training runs. No mechanistic causal attribution or LLM generalization."
+}

@@ -1,0 +1,20 @@
+{"id": "q01", "question": "Which number is the smallest?", "options": ["0.5", "0.05", "0.005", "0.15"], "answer": "C"}
+{"id": "q02", "question": "Water freezes at what temperature at standard pressure?", "options": ["0 degrees Celsius", "50 degrees Celsius", "100 degrees Celsius", "-50 degrees Celsius"], "answer": "A"}
+{"id": "q03", "question": "Which unit measures electric current?", "options": ["volt", "ampere", "watt", "ohm"], "answer": "B"}
+{"id": "q04", "question": "How many bits are in one byte?", "options": ["4", "8", "16", "32"], "answer": "B"}
+{"id": "q05", "question": "Which planet is closest to the Sun?", "options": ["Venus", "Earth", "Mercury", "Mars"], "answer": "C"}
+{"id": "q06", "question": "What does the HTTP status code 404 mean?", "options": ["Found", "Not found", "Server error", "Redirect"], "answer": "B"}
+{"id": "q07", "question": "Which data structure is first in, first out?", "options": ["stack", "queue", "tree", "heap"], "answer": "B"}
+{"id": "q08", "question": "What is 2 to the power of 10?", "options": ["100", "512", "1024", "2048"], "answer": "C"}
+{"id": "q09", "question": "Which file extension marks a Python source file?", "options": [".py", ".pt", ".pyd", ".pyc"], "answer": "A"}
+{"id": "q10", "question": "Which of these is a version control system?", "options": ["git", "gcc", "gdb", "grep"], "answer": "A"}
+{"id": "q11", "question": "下列哪个数是质数？", "options": ["9", "15", "17", "21"], "answer": "C"}
+{"id": "q12", "question": "水的化学式是什么？", "options": ["CO2", "H2O", "O2", "NaCl"], "answer": "B"}
+{"id": "q13", "question": "光在真空中的速度最接近哪个值？", "options": ["3 万公里每秒", "30 万公里每秒", "300 公里每秒", "3000 公里每秒"], "answer": "B"}
+{"id": "q14", "question": "下列哪个是标记语言而不是通用编程语言？", "options": ["Python", "Rust", "HTML", "Go"], "answer": "C"}
+{"id": "q15", "question": "二进制 1010 等于十进制多少？", "options": ["8", "10", "12", "20"], "answer": "B"}
+{"id": "q16", "question": "下列哪个单位表示内存容量？", "options": ["GB", "GHz", "Mbps", "V"], "answer": "A"}
+{"id": "q17", "question": "Which of these is not a sorting algorithm?", "options": ["quicksort", "mergesort", "binary search", "heapsort"], "answer": "C"}
+{"id": "q18", "question": "What does CPU stand for?", "options": ["Central Processing Unit", "Computer Power Unit", "Core Program Utility", "Central Program Unit"], "answer": "A"}
+{"id": "q19", "question": "Which one is a prime factorization of 12?", "options": ["2x6", "3x4", "2x2x3", "2x12"], "answer": "C"}
+{"id": "q20", "question": "太阳系中体积最大的行星是？", "options": ["地球", "火星", "木星", "土星"], "answer": "C"}

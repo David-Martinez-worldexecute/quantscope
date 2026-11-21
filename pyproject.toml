@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantscope"
+version = "0.1.0"
+description = "Measure how much accuracy a quantization mode costs, with a manifest you can re-verify."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "QuantScope contributors" }]
+keywords = ["quantization", "evaluation", "reproducibility", "llm"]
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+dev = []
+
+[project.scripts]
+quantscope = "quantscope.cli:main"
+
+[tool.setuptools]
+packages = ["quantscope"]
