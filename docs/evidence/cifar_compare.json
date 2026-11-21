@@ -1,0 +1,252 @@
+{
+  "full": {
+    "manifest_sha256": "1d7ee9be2fb950142d4a1b993c7456484cd86c904d2e05c449fa8475cb31850e",
+    "run_dir_name": "20261121T134151Z",
+    "train_subset": 50000,
+    "variants": {
+      "_gaps_pp": {
+        "aligned_recovery": 15.903,
+        "aligned_share_of_gap": 0.9735,
+        "aligned_vs_unaligned": 11.333,
+        "fp32_to_aligned": -0.433,
+        "fp32_to_ternary": -16.337,
+        "unaligned_recovery": 4.57
+      },
+      "aligned_g11": {
+        "accuracy_mean": 0.4082,
+        "accuracy_std": 0.004359,
+        "correct": [
+          4052,
+          4062,
+          4132
+        ]
+      },
+      "fp32": {
+        "accuracy_mean": 0.412533,
+        "accuracy_std": 0.002815,
+        "correct": [
+          4099,
+          4122,
+          4155
+        ]
+      },
+      "ternary_row": {
+        "accuracy_mean": 0.249167,
+        "accuracy_std": 0.018987,
+        "correct": [
+          2647,
+          2548,
+          2280
+        ]
+      },
+      "unaligned_g11": {
+        "accuracy_mean": 0.294867,
+        "accuracy_std": 0.017651,
+        "correct": [
+          3124,
+          2951,
+          2771
+        ]
+      }
+    }
+  },
+  "limits": [
+    "Both runs use the same 10,000-image test set, so the two accuracies are compared on identical examples.",
+    "The subset run uses the first 20,000 training images of the official order; the full run uses all 50,000. Any other difference between the runs is held fixed.",
+    "Same architecture, same 5 epochs per layer, same 3 seeds; this compares slice sizes, not schedules."
+  ],
+  "paired_across_runs": {
+    "aligned_g11": [
+      {
+        "counts": {
+          "n00": 5118,
+          "n01": 1170,
+          "n10": 830,
+          "n11": 2882
+        },
+        "delta_pp": -17.0,
+        "paired": 2000,
+        "seed": 0
+      },
+      {
+        "counts": {
+          "n00": 5085,
+          "n01": 1295,
+          "n10": 853,
+          "n11": 2767
+        },
+        "delta_pp": -20.58,
+        "paired": 2148,
+        "seed": 1
+      },
+      {
+        "counts": {
+          "n00": 5070,
+          "n01": 1275,
+          "n10": 798,
+          "n11": 2857
+        },
+        "delta_pp": -23.01,
+        "paired": 2073,
+        "seed": 2
+      }
+    ],
+    "fp32": [
+      {
+        "counts": {
+          "n00": 4985,
+          "n01": 1430,
+          "n10": 916,
+          "n11": 2669
+        },
+        "delta_pp": -21.91,
+        "paired": 2346,
+        "seed": 0
+      },
+      {
+        "counts": {
+          "n00": 4902,
+          "n01": 1345,
+          "n10": 976,
+          "n11": 2777
+        },
+        "delta_pp": -15.9,
+        "paired": 2321,
+        "seed": 1
+      },
+      {
+        "counts": {
+          "n00": 4968,
+          "n01": 1352,
+          "n10": 877,
+          "n11": 2803
+        },
+        "delta_pp": -21.31,
+        "paired": 2229,
+        "seed": 2
+      }
+    ],
+    "ternary_row": [
+      {
+        "counts": {
+          "n00": 6032,
+          "n01": 1351,
+          "n10": 1321,
+          "n11": 1296
+        },
+        "delta_pp": -1.12,
+        "paired": 2672,
+        "seed": 0
+      },
+      {
+        "counts": {
+          "n00": 6725,
+          "n01": 990,
+          "n10": 727,
+          "n11": 1558
+        },
+        "delta_pp": -15.32,
+        "paired": 1717,
+        "seed": 1
+      },
+      {
+        "counts": {
+          "n00": 6649,
+          "n01": 825,
+          "n10": 1071,
+          "n11": 1455
+        },
+        "delta_pp": 12.97,
+        "paired": 1896,
+        "seed": 2
+      }
+    ],
+    "unaligned_g11": [
+      {
+        "counts": {
+          "n00": 5830,
+          "n01": 1524,
+          "n10": 1046,
+          "n11": 1600
+        },
+        "delta_pp": -18.6,
+        "paired": 2570,
+        "seed": 0
+      },
+      {
+        "counts": {
+          "n00": 6113,
+          "n01": 1487,
+          "n10": 936,
+          "n11": 1464
+        },
+        "delta_pp": -22.74,
+        "paired": 2423,
+        "seed": 1
+      },
+      {
+        "counts": {
+          "n00": 6330,
+          "n01": 992,
+          "n10": 899,
+          "n11": 1779
+        },
+        "delta_pp": -4.92,
+        "paired": 1891,
+        "seed": 2
+      }
+    ]
+  },
+  "schema": "quantscope-cifar-subset-vs-full-v1",
+  "subset": {
+    "manifest_sha256": "f99672d1dddace036c99e96237cd6507171491b6e357e4d26dcfaa490afd4d1d",
+    "run_dir_name": "20261121T132333Z",
+    "train_subset": 20000,
+    "variants": {
+      "_gaps_pp": {
+        "aligned_recovery": 11.863,
+        "aligned_share_of_gap": 0.9914,
+        "aligned_vs_unaligned": 10.877,
+        "fp32_to_aligned": -0.103,
+        "fp32_to_ternary": -11.967,
+        "unaligned_recovery": 0.987
+      },
+      "aligned_g11": {
+        "accuracy_mean": 0.366233,
+        "accuracy_std": 0.004644,
+        "correct": [
+          3712,
+          3620,
+          3655
+        ]
+      },
+      "fp32": {
+        "accuracy_mean": 0.367267,
+        "accuracy_std": 0.008424,
+        "correct": [
+          3585,
+          3753,
+          3680
+        ]
+      },
+      "ternary_row": {
+        "accuracy_mean": 0.2476,
+        "accuracy_std": 0.017155,
+        "correct": [
+          2617,
+          2285,
+          2526
+        ]
+      },
+      "unaligned_g11": {
+        "accuracy_mean": 0.257467,
+        "accuracy_std": 0.015211,
+        "correct": [
+          2646,
+          2400,
+          2678
+        ]
+      }
+    }
+  }
+}

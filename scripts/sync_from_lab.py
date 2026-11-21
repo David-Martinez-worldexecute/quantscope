@@ -31,6 +31,9 @@ COPIES = {
     "docs/evidence/qwen35_forward.json": (
         "acceptance_runs/20261121T1915Z-qwen35-s4-weights/qwen35_forward.json"
     ),
+    "docs/evidence/cifar_compare.json": (
+        "acceptance_runs/20261121T2030Z-cifar10/compare.json"
+    ),
 }
 
 

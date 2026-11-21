@@ -69,7 +69,10 @@ run on the first 20,000 training images and `cifar_full` repeats it on all
 ordering survives more data. The layer-1 granularity runs sit under
 `group_two_layers` (two runs: one finished, one stopped early and shipped with
 its own status note, because a run that did not finish must not look like a
-finished one).
+finished one). `docs/cifar-10-two-training-sets.md` reads both CIFAR-10 runs in
+one place; its numbers are recomputed from `docs/evidence/cifar_compare.json`,
+which is the cross-run comparison written by the lab-side script, copied
+byte-for-byte.
 
 ### 2c. The 0.8B load and forward measurement (real weights, one CPU run)
 

@@ -1,5 +1,7 @@
 # QuantScope
 
+[![ci](https://github.com/David-Martinez-worldexecute/quantscope/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/David-Martinez-worldexecute/quantscope/actions/workflows/ci.yml)
+
 **Measure what a quantization mode costs in accuracy — then prove it later.**
 
 QuantScope runs the same multiple-choice questions through several weight formats of the same
@@ -44,6 +46,8 @@ The tool is the deliverable; the numbers below come from a separate controlled s
 in `docs/forward-forward-ternary.md`, with per-item evidence in
 `docs/evidence/ff_controlled_evidence.json` (four-way ablation) and
 `docs/evidence/ff_evidence.json` (mechanism follow-ups and the depth sweep).
+`docs/cifar-10-two-training-sets.md` puts the two CIFAR-10 training-set sizes side by side, with
+the recomputed gaps from `docs/evidence/cifar_compare.json`.
 
 | weight format | MNIST test accuracy (mean ± std over 3 seeds) |
 | --- | --- |
