@@ -1,6 +1,6 @@
 {
   "schema": "ff-evidence-v2",
-  "generated_utc": "2026-11-21T10:36:52Z",
+  "generated_utc": "2026-11-21T11:11:07Z",
   "generator": "lab-side build script; the published bundle is a byte copy of its output",
   "protocol": {
     "id": "ff-precision-matched-v1",
@@ -868,6 +868,671 @@
       "Floating-point STE training; this says nothing about LLM-scale behaviour."
     ]
   },
+  "group_scale": {
+    "run_id": "20261121T104525Z",
+    "settings": {
+      "in_dim": 794,
+      "pixels": 784,
+      "hidden": 500,
+      "layers": 2,
+      "epochs_per_layer": 5,
+      "batch_size": 128,
+      "test_batch_size": 512,
+      "lr": 0.001,
+      "theta": 1.0,
+      "normalization": [
+        0.1307,
+        0.3081
+      ],
+      "train_count": 60000,
+      "test_count": 10000,
+      "layer1_quantiser": "ternary, per-row scale",
+      "group_definitions": {
+        "aligned_g11": [
+          [
+            0,
+            784
+          ],
+          [
+            784,
+            785
+          ],
+          [
+            785,
+            786
+          ],
+          [
+            786,
+            787
+          ],
+          [
+            787,
+            788
+          ],
+          [
+            788,
+            789
+          ],
+          [
+            789,
+            790
+          ],
+          [
+            790,
+            791
+          ],
+          [
+            791,
+            792
+          ],
+          [
+            792,
+            793
+          ],
+          [
+            793,
+            794
+          ]
+        ],
+        "unaligned_g11": [
+          [
+            0,
+            72
+          ],
+          [
+            72,
+            144
+          ],
+          [
+            144,
+            217
+          ],
+          [
+            217,
+            289
+          ],
+          [
+            289,
+            361
+          ],
+          [
+            361,
+            433
+          ],
+          [
+            433,
+            505
+          ],
+          [
+            505,
+            577
+          ],
+          [
+            577,
+            650
+          ],
+          [
+            650,
+            722
+          ],
+          [
+            722,
+            794
+          ]
+        ],
+        "aligned_g14": [
+          [
+            0,
+            196
+          ],
+          [
+            196,
+            392
+          ],
+          [
+            392,
+            588
+          ],
+          [
+            588,
+            784
+          ],
+          [
+            784,
+            785
+          ],
+          [
+            785,
+            786
+          ],
+          [
+            786,
+            787
+          ],
+          [
+            787,
+            788
+          ],
+          [
+            788,
+            789
+          ],
+          [
+            789,
+            790
+          ],
+          [
+            790,
+            791
+          ],
+          [
+            791,
+            792
+          ],
+          [
+            792,
+            793
+          ],
+          [
+            793,
+            794
+          ]
+        ]
+      }
+    },
+    "variants": {
+      "aligned_g11": {
+        "groups": 11,
+        "spans": [
+          [
+            0,
+            784
+          ],
+          [
+            784,
+            785
+          ],
+          [
+            785,
+            786
+          ],
+          [
+            786,
+            787
+          ],
+          [
+            787,
+            788
+          ],
+          [
+            788,
+            789
+          ],
+          [
+            789,
+            790
+          ],
+          [
+            790,
+            791
+          ],
+          [
+            791,
+            792
+          ],
+          [
+            792,
+            793
+          ],
+          [
+            793,
+            794
+          ]
+        ],
+        "accuracy_mean": 0.9243,
+        "accuracy_std": 0.001322875656,
+        "correct": [
+          9248,
+          9228,
+          9253
+        ],
+        "pairs_vs_fp32": [
+          {
+            "counts": {
+              "n00": 508,
+              "n01": 86,
+              "n10": 244,
+              "n11": 9162
+            },
+            "paired": 10000,
+            "delta_pp": -1.58
+          },
+          {
+            "counts": {
+              "n00": 533,
+              "n01": 65,
+              "n10": 239,
+              "n11": 9163
+            },
+            "paired": 10000,
+            "delta_pp": -1.74
+          },
+          {
+            "counts": {
+              "n00": 502,
+              "n01": 63,
+              "n10": 245,
+              "n11": 9190
+            },
+            "paired": 10000,
+            "delta_pp": -1.82
+          }
+        ],
+        "pairs_vs_ternary": [
+          {
+            "counts": {
+              "n00": 617,
+              "n01": 389,
+              "n10": 135,
+              "n11": 8859
+            },
+            "paired": 10000,
+            "delta_pp": 2.54
+          },
+          {
+            "counts": {
+              "n00": 632,
+              "n01": 468,
+              "n10": 140,
+              "n11": 8760
+            },
+            "paired": 10000,
+            "delta_pp": 3.28
+          },
+          {
+            "counts": {
+              "n00": 604,
+              "n01": 433,
+              "n10": 143,
+              "n11": 8820
+            },
+            "paired": 10000,
+            "delta_pp": 2.9
+          }
+        ],
+        "pairs_vs_first_fp32": [
+          {
+            "counts": {
+              "n00": 573,
+              "n01": 86,
+              "n10": 179,
+              "n11": 9162
+            },
+            "paired": 10000,
+            "delta_pp": -0.93
+          },
+          {
+            "counts": {
+              "n00": 571,
+              "n01": 76,
+              "n10": 201,
+              "n11": 9152
+            },
+            "paired": 10000,
+            "delta_pp": -1.25
+          },
+          {
+            "counts": {
+              "n00": 548,
+              "n01": 74,
+              "n10": 199,
+              "n11": 9179
+            },
+            "paired": 10000,
+            "delta_pp": -1.25
+          }
+        ],
+        "predictions_sha256": [
+          "61f59e6363a0add38302df35c0dba1627c3e42bb777395238363e089f7444d95",
+          "d2445929a9015c5bf029bf87d33f8243cdd1c025e7a9b1175e31d2b989b4dc89",
+          "fab63cf3248860846a2ab139c0f1605f40019e3545ef95486a35eae4bd7c6785"
+        ]
+      },
+      "unaligned_g11": {
+        "groups": 11,
+        "spans": [
+          [
+            0,
+            72
+          ],
+          [
+            72,
+            144
+          ],
+          [
+            144,
+            217
+          ],
+          [
+            217,
+            289
+          ],
+          [
+            289,
+            361
+          ],
+          [
+            361,
+            433
+          ],
+          [
+            433,
+            505
+          ],
+          [
+            505,
+            577
+          ],
+          [
+            577,
+            650
+          ],
+          [
+            650,
+            722
+          ],
+          [
+            722,
+            794
+          ]
+        ],
+        "accuracy_mean": 0.9103,
+        "accuracy_std": 0.002357965225,
+        "correct": [
+          9077,
+          9109,
+          9123
+        ],
+        "pairs_vs_fp32": [
+          {
+            "counts": {
+              "n00": 492,
+              "n01": 102,
+              "n10": 431,
+              "n11": 8975
+            },
+            "paired": 10000,
+            "delta_pp": -3.29
+          },
+          {
+            "counts": {
+              "n00": 509,
+              "n01": 89,
+              "n10": 382,
+              "n11": 9020
+            },
+            "paired": 10000,
+            "delta_pp": -2.93
+          },
+          {
+            "counts": {
+              "n00": 490,
+              "n01": 75,
+              "n10": 387,
+              "n11": 9048
+            },
+            "paired": 10000,
+            "delta_pp": -3.12
+          }
+        ],
+        "pairs_vs_ternary": [
+          {
+            "counts": {
+              "n00": 722,
+              "n01": 284,
+              "n10": 201,
+              "n11": 8793
+            },
+            "paired": 10000,
+            "delta_pp": 0.83
+          },
+          {
+            "counts": {
+              "n00": 739,
+              "n01": 361,
+              "n10": 152,
+              "n11": 8748
+            },
+            "paired": 10000,
+            "delta_pp": 2.09
+          },
+          {
+            "counts": {
+              "n00": 732,
+              "n01": 305,
+              "n10": 145,
+              "n11": 8818
+            },
+            "paired": 10000,
+            "delta_pp": 1.6
+          }
+        ],
+        "pairs_vs_first_fp32": [
+          {
+            "counts": {
+              "n00": 536,
+              "n01": 123,
+              "n10": 387,
+              "n11": 8954
+            },
+            "paired": 10000,
+            "delta_pp": -2.64
+          },
+          {
+            "counts": {
+              "n00": 550,
+              "n01": 97,
+              "n10": 341,
+              "n11": 9012
+            },
+            "paired": 10000,
+            "delta_pp": -2.44
+          },
+          {
+            "counts": {
+              "n00": 537,
+              "n01": 85,
+              "n10": 340,
+              "n11": 9038
+            },
+            "paired": 10000,
+            "delta_pp": -2.55
+          }
+        ],
+        "predictions_sha256": [
+          "e382c3598dcf2d3d27b81c462f95a518723f0571f9331fda758c5fbfec06c3c2",
+          "87debd7f7f2eb42b97d8c3ffee158347066b0402c5c6153efbc39ddf4446f78e",
+          "42a6cd38fb84d1197f5207b56986da3a1f78355d882622acf0320ddac478ebf3"
+        ]
+      },
+      "aligned_g14": {
+        "groups": 14,
+        "spans": [
+          [
+            0,
+            196
+          ],
+          [
+            196,
+            392
+          ],
+          [
+            392,
+            588
+          ],
+          [
+            588,
+            784
+          ],
+          [
+            784,
+            785
+          ],
+          [
+            785,
+            786
+          ],
+          [
+            786,
+            787
+          ],
+          [
+            787,
+            788
+          ],
+          [
+            788,
+            789
+          ],
+          [
+            789,
+            790
+          ],
+          [
+            790,
+            791
+          ],
+          [
+            791,
+            792
+          ],
+          [
+            792,
+            793
+          ],
+          [
+            793,
+            794
+          ]
+        ],
+        "accuracy_mean": 0.9256,
+        "accuracy_std": 0.000793725393,
+        "correct": [
+          9253,
+          9250,
+          9265
+        ],
+        "pairs_vs_fp32": [
+          {
+            "counts": {
+              "n00": 507,
+              "n01": 87,
+              "n10": 240,
+              "n11": 9166
+            },
+            "paired": 10000,
+            "delta_pp": -1.53
+          },
+          {
+            "counts": {
+              "n00": 532,
+              "n01": 66,
+              "n10": 218,
+              "n11": 9184
+            },
+            "paired": 10000,
+            "delta_pp": -1.52
+          },
+          {
+            "counts": {
+              "n00": 499,
+              "n01": 66,
+              "n10": 236,
+              "n11": 9199
+            },
+            "paired": 10000,
+            "delta_pp": -1.7
+          }
+        ],
+        "pairs_vs_ternary": [
+          {
+            "counts": {
+              "n00": 609,
+              "n01": 397,
+              "n10": 138,
+              "n11": 8856
+            },
+            "paired": 10000,
+            "delta_pp": 2.59
+          },
+          {
+            "counts": {
+              "n00": 633,
+              "n01": 467,
+              "n10": 117,
+              "n11": 8783
+            },
+            "paired": 10000,
+            "delta_pp": 3.5
+          },
+          {
+            "counts": {
+              "n00": 592,
+              "n01": 445,
+              "n10": 143,
+              "n11": 8820
+            },
+            "paired": 10000,
+            "delta_pp": 3.02
+          }
+        ],
+        "pairs_vs_first_fp32": [
+          {
+            "counts": {
+              "n00": 586,
+              "n01": 73,
+              "n10": 161,
+              "n11": 9180
+            },
+            "paired": 10000,
+            "delta_pp": -0.88
+          },
+          {
+            "counts": {
+              "n00": 570,
+              "n01": 77,
+              "n10": 180,
+              "n11": 9173
+            },
+            "paired": 10000,
+            "delta_pp": -1.03
+          },
+          {
+            "counts": {
+              "n00": 553,
+              "n01": 69,
+              "n10": 182,
+              "n11": 9196
+            },
+            "paired": 10000,
+            "delta_pp": -1.13
+          }
+        ],
+        "predictions_sha256": [
+          "965e17f291a77bca3f5aed5606c72fcb7ece1134dda3993ca16fa92739331364",
+          "c22735abef4bef7312031f01caad1749afd856a4138fd2b1ec3d8514d0e7729c",
+          "90bde167db6399bd8e4d9acaf0c232f97b684b4f2d17e923724aa0544c98840f"
+        ]
+      }
+    },
+    "alignment_conclusion": "aligned_g11 and unaligned_g11 have the same number of groups (11); only the aligned variant puts a boundary at the 784-column label boundary.",
+    "limits": [
+      "one dataset (MNIST), one architecture (FF 794-500-500), one seed set (0,1,2)",
+      "the 11-group controls share group count but not group width; widths differ, which is the point of the confound check",
+      "aligned_g14 changes two things vs aligned_g11 (group count and pixel granularity), so it is exploratory, not a single-variable test",
+      "FF train_ff trains layer 0 then layer 1; only layer 0 is regrouped"
+    ]
+  },
   "headline_pp": {
     "fp32_to_ternary": -4.62,
     "blockwise_recovery": 2.963333,
@@ -875,13 +1540,18 @@
     "gap_left_vs_first_fp32": -1.086667,
     "two_bit_layer0_recovery": 0.62,
     "two_bit_both_recovery": 1.033333,
-    "label_at_second_vs_ternary": -9.6
+    "label_at_second_vs_ternary": -9.6,
+    "group_scale_aligned_vs_ternary": 2.906667,
+    "group_scale_aligned_vs_unaligned": 1.4,
+    "group_scale_aligned_g14_vs_g11": 0.13
   },
   "limits": [
     "One dataset (MNIST) and one two-layer forward-forward architecture.",
     "Three paired seeds, not three independent samples; intervals from them are wide.",
     "Quantization is simulated in floating point; no integer kernels were timed.",
     "The blockwise result shows the scale layout matters; it does not prove no other cause exists.",
+    "The aligned/unaligned pair shares a group count but not group widths, and only layer 0 is regrouped, so it isolates alignment as the cause of the gap rather than proving the whole effect.",
+    "aligned_g14 changes group count and pixel granularity at once, so it is exploratory.",
     "The label-at-second-layer experiment changed two things at once (label position and the layer-0 objective), so it is directional evidence only.",
     "Nothing here extends to larger models, deeper stacks, or real language models."
   ],
@@ -920,6 +1590,11 @@
       "label": "depth sweep manifest",
       "bytes": 8207,
       "sha256": "cdd1b5f54f034c9151db762cb09ab8cabb0e5c3ed309877c6e65b3bcf122ca5f"
+    },
+    {
+      "label": "group scale confound manifest",
+      "bytes": 25693,
+      "sha256": "33cff47507438f5cfa9ef26cf22c848beaa8f6ef310023fc62d65576f443a7f2"
     }
   ]
 }

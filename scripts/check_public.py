@@ -109,6 +109,19 @@ def evidence_bundle_issues(payload: dict) -> list[str]:
     for row in rows:
         if row.get("same_prediction") != row.get("count"):
             issues.append(f"ff_evidence: reproduction seed {row.get('seed')} is not identical")
+    group_scale = (payload.get("group_scale") or {}).get("variants") or {}
+    for name in ("aligned_g11", "unaligned_g11", "aligned_g14"):
+        if name not in group_scale:
+            issues.append(f"ff_evidence: missing group_scale.variants.{name}")
+    if "aligned_g11" in group_scale and "unaligned_g11" in group_scale:
+        aligned = group_scale["aligned_g11"]
+        unaligned = group_scale["unaligned_g11"]
+        if aligned.get("groups") != unaligned.get("groups"):
+            issues.append("ff_evidence: aligned/unaligned do not share a group count")
+        if 784 not in {span[0] for span in (aligned.get("spans") or [])[1:]}:
+            issues.append("ff_evidence: aligned_g11 has no span boundary at the label boundary")
+        if 784 in {span[0] for span in (unaligned.get("spans") or [])[1:]}:
+            issues.append("ff_evidence: unaligned_g11 has a span boundary at the label boundary")
     headline = payload.get("headline_pp") or {}
     for key in ("fp32_to_ternary", "blockwise_recovery", "blockwise_share_of_gap"):
         if key not in headline:

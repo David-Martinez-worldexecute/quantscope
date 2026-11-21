@@ -110,6 +110,17 @@ not shrink: 4.57 → 4.63 → 5.01 points, with paired per-seed deltas of
 which points at a cost charged per quantised layer rather than at a capacity
 shortage.
 
+**What the grouping buys is alignment, not count.** Eleven groups recover most of
+the loss only if the boundaries fall on the label block: 784 pixels as one group
+plus each of the ten label columns on its own reaches 92.43 ± 0.13, while eleven
+equal-width groups of the same 794 columns — boundaries at 72, 144, … that cut
+through the pixel block and never separate the labels — reach 91.03 ± 0.24. Same
+group count, **+1.40** points from alignment alone. Splitting the pixel side
+further (four 196-column blocks, 14 groups) adds 0.13 points, so pixel
+granularity is not what matters either. This is the single-variable check the
+earlier blockwise run could not provide, and it puts the recovery on the label
+block being kept out of the pixel scale.
+
 Taken together: the first layer is expensive because a shared per-row scale
 mixes a 32× louder label block into the pixel weights, and because that label
 block is the only place the layer gets its signal. Fixing the scale recovers
