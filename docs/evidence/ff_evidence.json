@@ -1,6 +1,6 @@
 {
   "schema": "ff-evidence-v2",
-  "generated_utc": "2026-11-21T13:37:20Z",
+  "generated_utc": "2026-11-21T14:10:19Z",
   "generator": "lab-side build script; the published bundle is a byte copy of its output",
   "protocol": {
     "id": "ff-precision-matched-v1",
@@ -1926,6 +1926,399 @@
       "The train subset is the first N examples in the official order, not a random split."
     ]
   },
+  "cifar_full": {
+    "run_dir_name": "20261121T134151Z",
+    "settings": {
+      "dataset": "CIFAR-10",
+      "in_dim": 3082,
+      "pixels": 3072,
+      "n_classes": 10,
+      "hidden": 500,
+      "n_layers": 2,
+      "epochs_per_layer": 5,
+      "batch_size": 128,
+      "lr": 0.001,
+      "theta": 1.0,
+      "train_subset": 50000,
+      "test_size": 10000,
+      "normalization": {
+        "mean": [
+          0.4914,
+          0.4822,
+          0.4465
+        ],
+        "std": [
+          0.247,
+          0.2435,
+          0.2616
+        ]
+      },
+      "layer1_quantiser": "ternary, per-row scale",
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    "versions": {
+      "python": "3.12.10",
+      "torch": "2.6.0+cu124",
+      "device": "cuda"
+    },
+    "group_definitions": {
+      "aligned_g11": [
+        [
+          0,
+          3072
+        ],
+        [
+          3072,
+          3073
+        ],
+        [
+          3073,
+          3074
+        ],
+        [
+          3074,
+          3075
+        ],
+        [
+          3075,
+          3076
+        ],
+        [
+          3076,
+          3077
+        ],
+        [
+          3077,
+          3078
+        ],
+        [
+          3078,
+          3079
+        ],
+        [
+          3079,
+          3080
+        ],
+        [
+          3080,
+          3081
+        ],
+        [
+          3081,
+          3082
+        ]
+      ],
+      "unaligned_g11": [
+        [
+          0,
+          280
+        ],
+        [
+          280,
+          560
+        ],
+        [
+          560,
+          841
+        ],
+        [
+          841,
+          1121
+        ],
+        [
+          1121,
+          1401
+        ],
+        [
+          1401,
+          1681
+        ],
+        [
+          1681,
+          1961
+        ],
+        [
+          1961,
+          2241
+        ],
+        [
+          2241,
+          2522
+        ],
+        [
+          2522,
+          2802
+        ],
+        [
+          2802,
+          3082
+        ]
+      ]
+    },
+    "variants": {
+      "fp32": {
+        "accuracy_mean": 0.412533333333,
+        "accuracy_std": 0.002814841618,
+        "correct": [
+          4099,
+          4122,
+          4155
+        ],
+        "accuracy": [
+          0.4099,
+          0.4122,
+          0.4155
+        ],
+        "quantisers": [
+          "none"
+        ],
+        "weight_zero_fraction": [
+          null,
+          null,
+          null
+        ],
+        "pairs_vs_fp32": [],
+        "pairs_vs_ternary": []
+      },
+      "ternary_row": {
+        "accuracy_mean": 0.249166666667,
+        "accuracy_std": 0.018987451997,
+        "correct": [
+          2647,
+          2548,
+          2280
+        ],
+        "accuracy": [
+          0.2647,
+          0.2548,
+          0.228
+        ],
+        "quantisers": [
+          "ternary_linear"
+        ],
+        "weight_zero_fraction": [
+          0.249862,
+          0.250435,
+          0.249722
+        ],
+        "pairs_vs_fp32": [
+          {
+            "counts": {
+              "n00": 5045,
+              "n01": 856,
+              "n10": 2308,
+              "n11": 1791
+            },
+            "paired": 10000,
+            "delta_pp": -14.52
+          },
+          {
+            "counts": {
+              "n00": 5068,
+              "n01": 810,
+              "n10": 2384,
+              "n11": 1738
+            },
+            "paired": 10000,
+            "delta_pp": -15.74
+          },
+          {
+            "counts": {
+              "n00": 4927,
+              "n01": 918,
+              "n10": 2793,
+              "n11": 1362
+            },
+            "paired": 10000,
+            "delta_pp": -18.75
+          }
+        ],
+        "pairs_vs_ternary": []
+      },
+      "aligned_g11": {
+        "accuracy_mean": 0.4082,
+        "accuracy_std": 0.004358898944,
+        "correct": [
+          4052,
+          4062,
+          4132
+        ],
+        "accuracy": [
+          0.4052,
+          0.4062,
+          0.4132
+        ],
+        "quantisers": [
+          "grouped_ste"
+        ],
+        "weight_zero_fraction": [
+          0.249065,
+          0.24963,
+          0.248937
+        ],
+        "pairs_vs_fp32": [
+          {
+            "counts": {
+              "n00": 5416,
+              "n01": 485,
+              "n10": 532,
+              "n11": 3567
+            },
+            "paired": 10000,
+            "delta_pp": -0.47
+          },
+          {
+            "counts": {
+              "n00": 5356,
+              "n01": 522,
+              "n10": 582,
+              "n11": 3540
+            },
+            "paired": 10000,
+            "delta_pp": -0.6
+          },
+          {
+            "counts": {
+              "n00": 5331,
+              "n01": 514,
+              "n10": 537,
+              "n11": 3618
+            },
+            "paired": 10000,
+            "delta_pp": -0.23
+          }
+        ],
+        "pairs_vs_ternary": [
+          {
+            "counts": {
+              "n00": 5160,
+              "n01": 2193,
+              "n10": 788,
+              "n11": 1859
+            },
+            "paired": 10000,
+            "delta_pp": 14.05
+          },
+          {
+            "counts": {
+              "n00": 5152,
+              "n01": 2300,
+              "n10": 786,
+              "n11": 1762
+            },
+            "paired": 10000,
+            "delta_pp": 15.14
+          },
+          {
+            "counts": {
+              "n00": 4978,
+              "n01": 2742,
+              "n10": 890,
+              "n11": 1390
+            },
+            "paired": 10000,
+            "delta_pp": 18.52
+          }
+        ]
+      },
+      "unaligned_g11": {
+        "accuracy_mean": 0.294866666667,
+        "accuracy_std": 0.017651156714,
+        "correct": [
+          3124,
+          2951,
+          2771
+        ],
+        "accuracy": [
+          0.3124,
+          0.2951,
+          0.2771
+        ],
+        "quantisers": [
+          "grouped_ste"
+        ],
+        "weight_zero_fraction": [
+          0.249435,
+          0.249997,
+          0.249186
+        ],
+        "pairs_vs_fp32": [
+          {
+            "counts": {
+              "n00": 5076,
+              "n01": 825,
+              "n10": 1800,
+              "n11": 2299
+            },
+            "paired": 10000,
+            "delta_pp": -9.75
+          },
+          {
+            "counts": {
+              "n00": 5138,
+              "n01": 740,
+              "n10": 1911,
+              "n11": 2211
+            },
+            "paired": 10000,
+            "delta_pp": -11.71
+          },
+          {
+            "counts": {
+              "n00": 4971,
+              "n01": 874,
+              "n10": 2258,
+              "n11": 1897
+            },
+            "paired": 10000,
+            "delta_pp": -13.84
+          }
+        ],
+        "pairs_vs_ternary": [
+          {
+            "counts": {
+              "n00": 6117,
+              "n01": 1236,
+              "n10": 759,
+              "n11": 1888
+            },
+            "paired": 10000,
+            "delta_pp": 4.77
+          },
+          {
+            "counts": {
+              "n00": 6479,
+              "n01": 973,
+              "n10": 570,
+              "n11": 1978
+            },
+            "paired": 10000,
+            "delta_pp": 4.03
+          },
+          {
+            "counts": {
+              "n00": 6862,
+              "n01": 858,
+              "n10": 367,
+              "n11": 1913
+            },
+            "paired": 10000,
+            "delta_pp": 4.91
+          }
+        ]
+      }
+    },
+    "alignment_conclusion": "aligned_g11 and unaligned_g11 both use 11 groups over the same 3082 columns; only the aligned variant puts a boundary at the 3072-column label boundary.",
+    "limits": [
+      "One dataset, one architecture, one training recipe; CIFAR-10 accuracy here is a probe, not a benchmark number.",
+      "Only layer 0 is quantised; layer 1 keeps one per-row scale.",
+      "The train subset is the first N examples in the official order, not a random split."
+    ]
+  },
   "group_two_layers": {
     "runs": {
       "20261121T112844Z": {
@@ -2356,6 +2749,10 @@
     "cifar_aligned_share_of_gap": 0.991365,
     "cifar_unaligned_recovery": 0.986667,
     "cifar_aligned_vs_unaligned": 10.876667,
+    "cifar_full_fp32_to_ternary": -16.336667,
+    "cifar_full_aligned_recovery": 15.903333,
+    "cifar_full_aligned_share_of_gap": 0.973475,
+    "cifar_full_unaligned_recovery": 4.57,
     "layer1_g10_vs_layer0_aligned": 0.073333,
     "layer1_only_vs_ternary": -0.036667
   },
@@ -2367,7 +2764,7 @@
     "The aligned/unaligned pair shares a group count but not group widths, and only layer 0 is regrouped, so it isolates alignment as the cause of the gap rather than proving the whole effect.",
     "aligned_g14 changes group count and pixel granularity at once, so it is exploratory.",
     "The label-at-second-layer experiment changed two things at once (label position and the layer-0 objective), so it is directional evidence only.",
-    "The CIFAR-10 numbers use a 20,000-example prefix of the official training order, one architecture and one recipe; they are a mechanism probe, not a benchmark.",
+    "The CIFAR-10 numbers come from two runs, one on a 20,000-example prefix of the official training order and one on the full 50,000; both use one architecture and one recipe, so they are a mechanism probe, not a benchmark. The two runs are independent trainings rather than one model resumed, so per-question flips between them are answer churn, not a quality comparison.",
     "The layer-1 sweep cannot repeat the alignment question: layer 1 receives 500 activations, so the label columns exist only at the layer-0 input.",
     "One of the two layer-1 runs was stopped early and is published with status running plus a RUN_STATUS.md, so it is not read as a finished result.",
     "Nothing here extends to larger models, deeper stacks, or real language models."
@@ -2417,6 +2814,11 @@
       "label": "cifar-10 group scale manifest",
       "bytes": 13137,
       "sha256": "f99672d1dddace036c99e96237cd6507171491b6e357e4d26dcfaa490afd4d1d"
+    },
+    {
+      "label": "cifar-10 group scale manifest (full training set)",
+      "bytes": 13144,
+      "sha256": "1d7ee9be2fb950142d4a1b993c7456484cd86c904d2e05c449fa8475cb31850e"
     },
     {
       "label": "two-layer granularity manifest (finished run)",

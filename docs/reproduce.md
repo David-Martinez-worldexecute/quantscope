@@ -63,10 +63,12 @@ recomputed from those files, not transcribed — and it deliberately contains no
 local paths, only labels, byte sizes and SHA-256 hashes of its sources. A depth
 sweep appears under `depth` when that run has finished; if the key is absent, the
 sweep has not been included yet, and the document says so rather than implying it.
-The same bundle carries the second-dataset replication under `cifar` (four
-variants, 20,000 training images, three seeds) and the layer-1 granularity runs
-under `group_two_layers` (two runs: one finished, one stopped early and shipped
-with its own status note, because a run that did not finish must not look like a
+The same bundle carries the second-dataset replication twice: `cifar` is the
+run on the first 20,000 training images and `cifar_full` repeats it on all
+50,000, both with four variants and three seeds, so the pair answers whether the
+ordering survives more data. The layer-1 granularity runs sit under
+`group_two_layers` (two runs: one finished, one stopped early and shipped with
+its own status note, because a run that did not finish must not look like a
 finished one).
 
 ### 2c. The 0.8B load and forward measurement (real weights, one CPU run)

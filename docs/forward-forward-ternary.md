@@ -135,6 +135,22 @@ here it recovers 99% of the gap. The absolute numbers are low — a 2-layer
 Forward-Forward network on CIFAR-10 is a weak model — so this is a mechanism
 result, not a claim that the setup works well on CIFAR.
 
+**More training data widens the gap instead of closing it.** The same four
+variants re-run on the full 50,000-image training set (same architecture, same
+five epochs per layer, same three seeds, same 10,000 test images; the only change
+is the training subset) give float32 41.25 ± 0.28,
+plain ternary 24.92 ± 1.90, aligned
+40.82 ± 0.44 and equal-width
+29.49 ± 1.77. The extra data lifts float32
+by 4.53 points and aligned ternary almost as much (+4.20)
+but leaves plain ternary where it was (+0.16), so the ternary
+cost grows from 11.97 to 16.34 points while the
+label-column alignment still recovers 97% of it (+15.90 points,
+ending 0.43 points short of float32). Equal-width groups do improve,
+from 25.75 to 29.49, but recover only +4.57
+points, so the aligned-unaligned separation widens from 10.88 to 11.33
+points. The ordering of the four variants is identical on both training sets.
+
 **Layer 1 does not repeat the story.** Layer 1 never sees the label columns: the
 10 one-hot columns are concatenated at the input of layer 0 only, and layer 1
 receives the 500 activations of layer 0. Grouping layer 1 into 10 or 25 blocks
@@ -166,9 +182,12 @@ costs far more than the gap.
 * **Accuracy only.** No throughput, no memory, no energy. Ternary weights here
   are float32 tensors holding three distinct values; nothing about this measures
   the speed benefit of real low-bit kernels.
-* **The CIFAR-10 run uses the first 20,000 training images, not the full set.**
-  It is a second dataset for the mechanism question, not a CIFAR-10 benchmark;
-  the same three seeds and the same five epochs per layer apply.
+* **The CIFAR-10 numbers are two runs, not one trained longer.** One uses a
+  20,000-image prefix of the official training order and one uses all 50,000;
+  they are independent trainings, so the questions the two models answer
+  differently are answer churn, not a quality comparison. Both are a second
+  dataset for the mechanism question, not a CIFAR-10 benchmark, with the same
+  three seeds and the same five epochs per layer.
 
 The per-item evidence behind the four-way ablation is in
 `docs/evidence/ff_controlled_evidence.json`; the mechanism runs above, their

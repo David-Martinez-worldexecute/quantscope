@@ -44,6 +44,7 @@ REQUIRED = [
     "tests/test_pairs.py",
     "tests/test_manifest.py",
     "tests/test_tiny_model.py",
+    "tests/test_evidence_bundle.py",
     "docs/reproduce.md",
     "docs/forward-forward-ternary.md",
     "docs/evidence/ff_controlled_evidence.json",
@@ -124,23 +125,25 @@ def evidence_bundle_issues(payload: dict) -> list[str]:
             issues.append("ff_evidence: aligned_g11 has no span boundary at the label boundary")
         if 784 in {span[0] for span in (unaligned.get("spans") or [])[1:]}:
             issues.append("ff_evidence: unaligned_g11 has a span boundary at the label boundary")
-    cifar = (payload.get("cifar") or {}).get("variants") or {}
-    for name in ("fp32", "ternary_row", "aligned_g11", "unaligned_g11"):
-        if name not in cifar:
-            issues.append(f"ff_evidence: missing cifar.variants.{name}")
-    if "aligned_g11" in cifar and "unaligned_g11" in cifar:
-        definitions = (payload.get("cifar") or {}).get("group_definitions") or {}
-        aligned = definitions.get("aligned_g11") or []
-        unaligned = definitions.get("unaligned_g11") or []
-        if not aligned or len(aligned) != len(unaligned):
-            issues.append("ff_evidence: cifar aligned/unaligned do not share a group count")
-        elif 3072 not in {span[0] for span in aligned[1:]}:
-            issues.append("ff_evidence: cifar aligned_g11 has no boundary at the label boundary")
-        elif 3072 in {span[0] for span in unaligned[1:]}:
-            issues.append("ff_evidence: cifar unaligned_g11 has a boundary at the label boundary")
-        for name in ("aligned_g11", "unaligned_g11"):
-            if not cifar[name].get("quantisers"):
-                issues.append(f"ff_evidence: cifar.{name} does not name its quantiser")
+    for block_name in ("cifar", "cifar_full"):
+        block = payload.get(block_name) or {}
+        cifar = block.get("variants") or {}
+        for name in ("fp32", "ternary_row", "aligned_g11", "unaligned_g11"):
+            if name not in cifar:
+                issues.append(f"ff_evidence: missing {block_name}.variants.{name}")
+        if "aligned_g11" in cifar and "unaligned_g11" in cifar:
+            definitions = block.get("group_definitions") or {}
+            aligned = definitions.get("aligned_g11") or []
+            unaligned = definitions.get("unaligned_g11") or []
+            if not aligned or len(aligned) != len(unaligned):
+                issues.append(f"ff_evidence: {block_name} aligned/unaligned do not share a group count")
+            elif 3072 not in {span[0] for span in aligned[1:]}:
+                issues.append(f"ff_evidence: {block_name} aligned_g11 has no boundary at the label boundary")
+            elif 3072 in {span[0] for span in unaligned[1:]}:
+                issues.append(f"ff_evidence: {block_name} unaligned_g11 has a boundary at the label boundary")
+            for name in ("aligned_g11", "unaligned_g11"):
+                if not cifar[name].get("quantisers"):
+                    issues.append(f"ff_evidence: {block_name}.{name} does not name its quantiser")
     two_layers = (payload.get("group_two_layers") or {}).get("runs") or {}
     if not two_layers:
         issues.append("ff_evidence: missing group_two_layers.runs")
@@ -155,6 +158,7 @@ def evidence_bundle_issues(payload: dict) -> list[str]:
         "blockwise_recovery",
         "blockwise_share_of_gap",
         "cifar_aligned_share_of_gap",
+        "cifar_full_aligned_share_of_gap",
     ):
         if key not in headline:
             issues.append(f"ff_evidence: missing headline_pp.{key}")
