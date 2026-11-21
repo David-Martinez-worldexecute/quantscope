@@ -77,6 +77,24 @@ These numbers were produced by the laboratory harness that shares this protocol,
 package's `run` command: v0.1.0 loads only the documented toy format. The per-item evidence,
 the manifest hash and the independent re-check script live in `docs/real-model-qwen3-0.6b.md`.
 
+### Real model: Qwen3.5-0.8B, what a load and a forward pass cost
+
+Measured once on CPU, in bfloat16, from the public `Qwen/Qwen3.5-0.8B` snapshot — same weights,
+same revision, both files re-hashed before loading:
+
+| measurement | value |
+| --- | --- |
+| loading the checkpoint (2 files, 1.75 GB) | 95.64 s |
+| peak working set before load / after load / after one forward | 0.38 / 3.42 / 3.49 GiB |
+| prefill latency, 64 tokens (3 runs, median) | 0.61 / 0.31 / 0.38 s → 0.38 s |
+| logits | `[1, 64, 248320]`, all finite |
+
+This is an engineering probe, not a quality measurement: there is no generation loop, the input is
+random token ids, and two optional kernels (`causal_conv1d`, `flash-linear-attention`) are missing,
+so the reference PyTorch path — the slow one — is what ran. Details, the architecture census and the
+five things this number cannot tell you are in `docs/real-model-qwen3.5-0.8b.md`; the path-free
+evidence file is `docs/evidence/qwen35_forward.json`.
+
 
 ## Reproduce
 

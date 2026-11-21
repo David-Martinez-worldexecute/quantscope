@@ -63,6 +63,29 @@ recomputed from those files, not transcribed — and it deliberately contains no
 local paths, only labels, byte sizes and SHA-256 hashes of its sources. A depth
 sweep appears under `depth` when that run has finished; if the key is absent, the
 sweep has not been included yet, and the document says so rather than implying it.
+The same bundle carries the second-dataset replication under `cifar` (four
+variants, 20,000 training images, three seeds) and the layer-1 granularity runs
+under `group_two_layers` (two runs: one finished, one stopped early and shipped
+with its own status note, because a run that did not finish must not look like a
+finished one).
+
+### 2c. The 0.8B load and forward measurement (real weights, one CPU run)
+
+`docs/real-model-qwen3.5-0.8b.md` reports one load and one prefill of the public
+`Qwen/Qwen3.5-0.8B` snapshot: 1.75 GB of weights, both files re-hashed before loading, 95.64 s to
+materialize, a peak working set of 0.38 → 3.42 → 3.49 GiB, and a 64-token prefill of 0.38 s
+(median of three) on CPU in bfloat16.
+
+The repository ships no weights. The numbers come from a lab-side script that reads the downloaded
+shard, verifies the two SHA-256 values, records the process peak working set through
+`psapi.GetProcessMemoryInfo` and writes `qwen35_forward.json`; the published file
+`docs/evidence/qwen35_forward.json` is a byte copy of that output with the local paths and the
+token preview removed. `scripts/check_public.py` re-checks its internal consistency: two weight
+files with 64-hex hashes, file sizes that sum to the recorded total, finite logits whose second
+dimension equals the prompt length, a median that is the middle of the three timings, and peak
+memory that grows monotonically through load and forward.
+
+What it cannot show: GPU memory, generation throughput, cache growth, or answer quality.
 
 ## 3. The real-model evaluation (Qwen3-0.6B, CPU, one run)
 

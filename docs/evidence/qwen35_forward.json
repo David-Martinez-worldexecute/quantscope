@@ -1,0 +1,67 @@
+{
+  "schema": "quantscope-qwen35-forward-v1",
+  "generated_utc": "2026-11-21T11:56:42Z",
+  "generator": "lab-side script; this file is its output, copied byte for byte",
+  "model": {
+    "repo": "Qwen/Qwen3.5-0.8B",
+    "revision": "master",
+    "class": "Qwen3_5ForConditionalGeneration"
+  },
+  "weight_files": [
+    {
+      "name": "model.safetensors-00001-of-00001.safetensors",
+      "bytes": 1746942600,
+      "sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696"
+    },
+    {
+      "name": "model.safetensors.index.json",
+      "bytes": 50900,
+      "sha256": "d8a08838a613b025eb7952ed9db11696213e57e76a375661ef5c12f9dd5dcf4e"
+    }
+  ],
+  "weight_bytes_total": 1746993500,
+  "environment": {
+    "device": "cpu",
+    "dtype": "bfloat16",
+    "torch": "2.6.0+cu124",
+    "transformers": "5.23.0"
+  },
+  "load": {
+    "seconds": 95.64,
+    "missing_keys": 1,
+    "unexpected_keys": 15
+  },
+  "parameters": {
+    "bytes_total": 2214531200,
+    "bytes_text": 1504786048,
+    "bytes_visual": 201185792,
+    "note": "counts every parameter tensor; with tie_word_embeddings=true the embedding matrix is counted once under embed_tokens and once under lm_head, so this number is ~0.51 GB larger than the unique parameter storage"
+  },
+  "forward": {
+    "kind": "prefill only, no generation loop",
+    "prompt_tokens": 64,
+    "seconds": [
+      0.6114,
+      0.3062,
+      0.3827
+    ],
+    "seconds_median": 0.3827,
+    "logits_shape": [
+      1,
+      64,
+      248320
+    ],
+    "logits_finite": true
+  },
+  "peak_working_set_gib": {
+    "before_load": 0.37540435791015625,
+    "after_load": 3.416778564453125,
+    "after_forward": 3.4877357482910156
+  },
+  "limits": [
+    "CPU only: no CUDA build available, so this is not a GPU peak-memory number.",
+    "Prefill only: no generation loop, no KV-cache growth.",
+    "Random token ids, not a natural prompt: the number is a cost probe, not a quality probe.",
+    "Weights are the Qwen3.5-0.8B revision master snapshot downloaded 2026-11-21; a different revision would need its own record."
+  ]
+}

@@ -121,6 +121,30 @@ granularity is not what matters either. This is the single-variable check the
 earlier blockwise run could not provide, and it puts the recovery on the label
 block being kept out of the pixel scale.
 
+**The same comparison on a harder dataset makes the point sharper.** Swapping
+MNIST for CIFAR-10 (3,072 pixels, 20,000 training images, otherwise the same two
+layers, 500 hidden units, five epochs per layer and three seeds) the plain
+per-row ternary first layer costs 11.97 points: float32 reaches 36.73 ± 0.31,
+ternary 24.76 ± 0.86. Keeping each label column out of the pixel scale — one
+3,072-pixel group plus ten single-column groups — puts it back at 36.62 ± 0.23,
+within 0.11 points of float32, with paired per-seed deltas against float32 of
++1.27 / −1.33 / −0.25 and against plain ternary of +10.95 / +13.35 / +11.29.
+Eleven equal-width groups again stay near ternary at 25.75 ± 0.76 (+0.29 / +1.15
+/ +1.52 against ternary). So the alignment effect is not an MNIST artefact, and
+here it recovers 99% of the gap. The absolute numbers are low — a 2-layer
+Forward-Forward network on CIFAR-10 is a weak model — so this is a mechanism
+result, not a claim that the setup works well on CIFAR.
+
+**Layer 1 does not repeat the story.** Layer 1 never sees the label columns: the
+10 one-hot columns are concatenated at the input of layer 0 only, and layer 1
+receives the 500 activations of layer 0. Grouping layer 1 into 10 or 25 blocks
+on top of an aligned layer 0 gives 92.50 and 92.44 against 92.43 for aligned
+layer 0 alone — about +0.07 points, inside seed noise. Grouping layer 1 only,
+leaving layer 0 on a single per-row scale, gives 89.49, indistinguishable from
+plain ternary at 89.52. The recovery therefore belongs to the label block at the
+input of the first layer and does not transfer to a layer that has no label
+columns to isolate.
+
 Taken together: the first layer is expensive because a shared per-row scale
 mixes a 32× louder label block into the pixel weights, and because that label
 block is the only place the layer gets its signal. Fixing the scale recovers
@@ -142,6 +166,9 @@ costs far more than the gap.
 * **Accuracy only.** No throughput, no memory, no energy. Ternary weights here
   are float32 tensors holding three distinct values; nothing about this measures
   the speed benefit of real low-bit kernels.
+* **The CIFAR-10 run uses the first 20,000 training images, not the full set.**
+  It is a second dataset for the mechanism question, not a CIFAR-10 benchmark;
+  the same three seeds and the same five epochs per layer apply.
 
 The per-item evidence behind the four-way ablation is in
 `docs/evidence/ff_controlled_evidence.json`; the mechanism runs above, their

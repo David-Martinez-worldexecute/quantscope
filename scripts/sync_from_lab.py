@@ -28,6 +28,9 @@ COPIES = {
     "docs/evidence/ff_evidence.json": (
         "acceptance_runs/20261121T1810Z-public-ff-evidence/ff_evidence.json"
     ),
+    "docs/evidence/qwen35_forward.json": (
+        "acceptance_runs/20261121T1915Z-qwen35-s4-weights/qwen35_forward.json"
+    ),
 }
 
 
