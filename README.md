@@ -4,6 +4,21 @@
 
 **Measure what a quantization mode costs in accuracy — then prove it later.**
 
+## In fifteen seconds
+
+- **What it measures.** The accuracy cost of a weight format, on the same questions, with every
+  single prediction stored so someone else can re-check it instead of trusting a table.
+- **One result.** On a Forward-Forward network with 1.58-bit weights, ternary costs **4.62 points**;
+  changing only *where the quantization scale is computed* recovers **2.96 of them (64.1%)**. The
+  cost was mostly a scale-alignment problem, not a bit-width problem. Two more figures and the
+  places where the argument breaks are in [what-this-is.md](docs/what-this-is.md).
+- **One command.** `python -m quantscope.cli reproduce` recomputes all **75** published numbers —
+  including the 171-question, four-format real-model run — from the evidence files in this
+  repository, and fails if any of them stops following from the bytes beside it.
+- **Try it.** `pip install quantscope`, then `quantscope demo --out runs/demo` prints a table in a
+  few seconds on CPU; `quantscope run --model <dir>` runs the same pipeline on a model directory in
+  the documented toy format, and `quantscope verify --run <dir>` re-checks what it recorded.
+
 QuantScope runs the same multiple-choice questions through several weight formats of the same
 model, records every prediction together with the four choice logits, and writes a manifest that
 a separate `verify` command can re-check against the recorded bytes. It is a measurement tool,
@@ -123,7 +138,7 @@ evidence file is `docs/evidence/qwen35_forward.json`.
 Two commands, no GPU, no downloads:
 
 ```bash
-python -m quantscope.cli reproduce   # recompute all 61 published numbers from the evidence bundle
+python -m quantscope.cli reproduce   # recompute all 75 published numbers from the evidence bundle
 python -m quantscope.cli demo --out runs/demo && python -m quantscope.cli verify --run runs/demo/run
 ```
 

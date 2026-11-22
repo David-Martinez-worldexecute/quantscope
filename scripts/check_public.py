@@ -57,6 +57,7 @@ REQUIRED = [
     "docs/cifar-10-two-training-sets.md",
     "docs/evidence/ff_controlled_evidence.json",
     "docs/evidence/ff_evidence.json",
+    "docs/evidence/real_model_qwen3_0.6b.json",
     "docs/evidence/qwen35_forward.json",
     "docs/evidence/cifar_compare.json",
     "docs/real-model-qwen3.5-0.8b.md",
@@ -85,7 +86,10 @@ PRIVATE_RE = re.compile(r"\.ollama|nagisa|acceptance_runs/|portfolio/", re.IGNOR
 SECRET_RE = re.compile(r"(api[_-]?key|secret|token)\s*[:=]\s*['\"][A-Za-z0-9_\-]{8,}", re.IGNORECASE)
 
 README_MIN_CHARS = 2000
-README_MUST_CONTAIN = ("pip install", "quantscope run")
+# What the first screen must still say, regardless of wording. These are
+# semantic invariants, not snapshots: a stranger has to be able to install it,
+# and has to see the one command that re-derives every published number.
+README_MUST_CONTAIN = ("pip install", "quantscope run", "python -m quantscope.cli reproduce")
 
 
 def iter_files(root: Path):

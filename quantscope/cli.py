@@ -91,9 +91,13 @@ def _reproduce(args) -> int:
             print(f"MISMATCH {check['id']} stored={check['stored']!r} "
                   f"recomputed={check['recomputed']!r} tolerance={check['tolerance']!r}")
     counts = report["counts"]
+    where = " + ".join(
+        f"{item['name']} ({item['bytes']} bytes, sha256 {item['sha256'][:16]}.., "
+        f"{item['checks']} numbers)"
+        for item in report.get("files", [])
+    ) or f"{report['evidence']} ({report['evidence_bytes']} bytes)"
     print(f"reproduce {report['status']}: {counts['checked']} published numbers recomputed from "
-          f"{report['evidence']} ({report['evidence_bytes']} bytes, "
-          f"sha256 {report['evidence_sha256'][:16]}..), {counts['failed']} mismatched")
+          f"{where}, {counts['failed']} mismatched")
     if args.out:
         out = Path(args.out)
         out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

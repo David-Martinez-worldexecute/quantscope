@@ -87,6 +87,53 @@ class ReproduceTamperTest(unittest.TestCase):
         self.assertEqual(report["status"], "fail")
 
 
+class RealModelBundleTest(unittest.TestCase):
+    """The 171-question bundle: every printed ratio has to come from stored integers."""
+
+    def write_bundle(self, bundle: dict) -> str:
+        directory = support.new_dir("real-model-")
+        self.addCleanup(__import__("shutil").rmtree, directory, True)
+        path = directory / "real_model_test.json"
+        path.write_text(json.dumps(bundle), encoding="utf-8")
+        return path
+
+    def load_bundle(self) -> dict:
+        path = reproduce_mod.EVIDENCE_DIR / "real_model_qwen3_0.6b.json"
+        with open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+
+    def test_bundle_is_present_and_covers_every_mode(self) -> None:
+        report = reproduce_mod.reproduce()
+        covered = {check["id"] for check in report["checks"]}
+        for mode in reproduce_mod.REAL_MODEL_MODES:
+            self.assertIn(f"real_model.{mode}.accuracy", covered)
+            self.assertIn(f"real_model.{mode}.correct", covered)
+
+    def test_tampered_accuracy_fails(self) -> None:
+        bundle = self.load_bundle()
+        bundle["modes"]["int8"]["accuracy"] = 0.5
+        report = reproduce_mod.reproduce(self.write_bundle(bundle))
+        self.assertEqual(report["status"], "fail")
+        failing = [check["id"] for check in report["checks"] if not check["ok"]]
+        self.assertIn("real_model.int8.accuracy", failing)
+
+    def test_moving_a_flip_between_columns_fails_the_baseline_identity(self) -> None:
+        # Keep the four cells summing to 171 (so only the identities can catch it) but
+        # move one lost question into the gained column.
+        bundle = self.load_bundle()
+        pairs = bundle["modes"]["int4"]["pairs_vs_baseline"]
+        pairs["n10"] += 1
+        pairs["n01"] -= 1
+        report = reproduce_mod.reproduce(self.write_bundle(bundle))
+        self.assertEqual(report["status"], "fail")
+        failing = [check["id"] for check in report["checks"] if not check["ok"]]
+        self.assertIn("real_model.int4.accuracy_from_baseline", failing)
+
+    def test_unknown_schema_is_rejected(self) -> None:
+        with self.assertRaises(reproduce_mod.ReproduceError):
+            reproduce_mod.reproduce(self.write_bundle({"schema": "something-else-v1"}))
+
+
 class ReproduceCliTest(unittest.TestCase):
     def test_cli_exit_code_is_zero_on_the_repository_bundle(self) -> None:
         from quantscope import cli

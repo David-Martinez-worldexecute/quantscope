@@ -47,6 +47,15 @@ All of this lives in the lab's evidence store, which is not part of this reposit
 The manifest records, per mode, every item's id, gold answer, prediction, correctness and the four
 logits, plus the SHA-256 of the model files it loaded and of the question file.
 
+Those five files stay in the lab's store. What this repository carries is their digest:
+`docs/evidence/real_model_qwen3_0.6b.json` (`quantscope-real-model-v1`), 6,609 bytes, holding —
+for all four modes — the correct count, the accuracy, the pairing table against FP32 and the nine
+model-file hashes. `python -m quantscope.cli reproduce` recomputes every one of those numbers from
+the integers stored in that same file: `accuracy == correct/count`, the four pairing cells sum to
+171, `delta_pp == 100*(gained-lost)/171`, and each mode's accuracy equals FP32's count minus the
+questions it lost plus the ones it gained. Editing any single number in the bundle turns the
+command red.
+
 ## Independent re-check
 
 The run was re-checked by a separate script that never imports the runner. It re-derives each

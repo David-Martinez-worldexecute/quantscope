@@ -30,7 +30,7 @@ drift apart."
 run.py  ──►  manifest + predictions (sha256 of data, model, protocol)
                      │
                      ├─► verify   : re-derive accuracy, argmax, hashes
-                     ├─► reproduce: recompute all 61 published numbers
+                     ├─► reproduce: recompute all 75 published numbers
                      └─► figures  : three SVGs, rendered from the evidence
 ```
 
@@ -162,7 +162,7 @@ a boring mechanism with a ledger than an exciting number with a paragraph.
 
 ```bash
 pip install quantscope
-python -m quantscope.cli reproduce        # 61 numbers, from the evidence bytes
+python -m quantscope.cli reproduce        # 75 numbers, from the evidence bytes
 python -m quantscope.cli demo --out runs/demo
 python -m quantscope.cli verify --run runs/demo/run
 ```

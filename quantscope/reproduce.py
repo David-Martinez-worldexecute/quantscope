@@ -39,6 +39,14 @@ TOL_ACC = 1e-9
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EVIDENCE = PACKAGE_ROOT / "docs" / "evidence" / "ff_evidence.json"
+EVIDENCE_DIR = PACKAGE_ROOT / "docs" / "evidence"
+
+# Two bundle shapes live in docs/evidence/. The file name says which model family the
+# numbers came from; the schema says how to recompute them. Adding a third bundle means
+# adding one branch here, not teaching the CLI a new flag.
+FF_SCHEMA = "ff-evidence-v2"
+REAL_MODEL_SCHEMA = "quantscope-real-model-v1"
+REAL_MODEL_MODES = ("baseline", "int8", "int4", "ternary")
 
 
 class ReproduceError(ValueError):
@@ -96,19 +104,13 @@ def _block_mean(block, count: int) -> float:
     return _mean(c / count for c in corrects)
 
 
-def reproduce(evidence_path: Path | None = None) -> dict:
-    """Recompute the published headlines; return a report and never mutate the file."""
-    path = Path(evidence_path) if evidence_path else DEFAULT_EVIDENCE
-    if not path.is_file():
-        raise FileNotFoundError(f"evidence bundle not found: {path}")
-
-    payload = json.loads(path.read_text(encoding="utf-8"))
+def _check_ff(payload: dict, checks: list[dict]) -> None:
+    """Every headline in `ff_evidence.json`, recomputed from the blocks stored beside it."""
     for required in ("headline_pp", "precision_matrix", "mechanism", "group_scale",
                      "cifar", "cifar_full", "group_two_layers", "depth"):
         if required not in payload:
             raise ReproduceError(f"evidence bundle is missing '{required}'")
 
-    checks: list[dict] = []
     pm = payload["precision_matrix"]
     summary = pm["summary"]
     test_count = pm["settings"]["test_count"]
@@ -210,12 +212,113 @@ def reproduce(evidence_path: Path | None = None) -> dict:
         _check(checks, f"depth.{depth}.delta_pp", block["delta_pp"],
                (block["ternary_mean_accuracy"] - block["fp32_mean_accuracy"]) * 100.0, 1e-5)
 
+def _check_real_model(payload: dict, checks: list[dict]) -> None:
+    """The 171-question real-model run: four modes, each checked against its own counts.
+
+    Everything here is a ratio of two integers stored in the same file, so the checks
+    are exact. The strongest one is `accuracy_from_baseline`: baseline's correct count,
+    minus the questions this mode got wrong that baseline got right, plus the ones it
+    gained, has to land on the accuracy the page prints.
+    """
+    for required in ("model", "dataset", "run", "modes", "protocol", "limits"):
+        if required not in payload:
+            raise ReproduceError(f"real-model bundle is missing '{required}'")
+    count = payload["dataset"]["count"]
+    if count <= 0:
+        raise ReproduceError(f"dataset count is {count}")
+    modes = payload["modes"]
+    if sorted(modes) != sorted(REAL_MODEL_MODES):
+        raise ReproduceError(f"expected modes {sorted(REAL_MODEL_MODES)}, got {sorted(modes)}")
+    if payload["model"]["file_count"] != len(payload["model"]["file_sha256"]):
+        raise ReproduceError("model.file_count disagrees with the number of stored hashes")
+
+    for mode in REAL_MODEL_MODES:
+        block = modes[mode]
+        if block["count"] != count:
+            raise ReproduceError(f"{mode}: {block['count']} questions, dataset says {count}")
+        if not 0 <= block["correct"] <= count:
+            raise ReproduceError(f"{mode}: correct={block['correct']} outside 0..{count}")
+        _check(checks, f"real_model.{mode}.correct", block["correct"],
+               int(round(block["accuracy"] * count)), 0,
+               note="the stored correct count must be the one the stored accuracy came from")
+        _check(checks, f"real_model.{mode}.accuracy", block["accuracy"],
+               block["correct"] / count, TOL_ACC,
+               note="stored accuracy must equal correct/count")
+
+    baseline = modes["baseline"]
+    for mode in REAL_MODEL_MODES:
+        pairs = modes[mode]["pairs_vs_baseline"]
+        if mode == "baseline":
+            if pairs is not None:
+                raise ReproduceError("baseline must not carry pairs_vs_baseline")
+            continue
+        if not pairs:
+            raise ReproduceError(f"{mode}: missing pairs_vs_baseline")
+        total = pairs["n00"] + pairs["n01"] + pairs["n10"] + pairs["n11"]
+        if total != count:
+            raise ReproduceError(f"{mode}: pairs sum to {total}, expected {count}")
+        _check(checks, f"real_model.{mode}.delta_pp", pairs["delta_pp"],
+               100.0 * (pairs["n01"] - pairs["n10"]) / count, TOL_PP,
+               note="delta in points = 100*(gained - lost)/count")
+        _check(checks, f"real_model.{mode}.accuracy_from_baseline",
+               modes[mode]["accuracy"],
+               (baseline["correct"] - pairs["n10"] + pairs["n01"]) / count, TOL_ACC,
+               note="this mode's correct = baseline's correct - lost + gained")
+
+
+def _bundle_paths(evidence_path=None) -> list[Path]:
+    """Which bundles to check: the one asked for, or the whole evidence directory."""
+    if evidence_path:
+        return [Path(evidence_path)]
+    paths = [DEFAULT_EVIDENCE]
+    paths += sorted(EVIDENCE_DIR.glob("real_model_*.json"))
+    return paths
+
+
+def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
+    schema = payload.get("schema")
+    if schema == FF_SCHEMA:
+        _check_ff(payload, checks)
+    elif schema == REAL_MODEL_SCHEMA:
+        _check_real_model(payload, checks)
+    else:
+        raise ReproduceError(f"{name}: unknown evidence schema {schema!r}")
+
+
+def reproduce(evidence_path: Path | None = None) -> dict:
+    """Recompute every published number from the bundle(s) that store it.
+
+    With no argument this walks `docs/evidence/`: the FF bundle plus every
+    `real_model_*.json`. A new evidence file is covered the moment it is added, because
+    the schema — not a hard-coded file list — decides how to check it.
+    """
+    paths = _bundle_paths(evidence_path)
+    for path in paths:
+        if not path.is_file():
+            raise FileNotFoundError(f"evidence bundle not found: {path}")
+
+    checks: list[dict] = []
+    files: list[dict] = []
+    for path in paths:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        before = len(checks)
+        _check_bundle(payload, checks, path.name)
+        files.append({
+            "name": path.name,
+            "schema": payload.get("schema"),
+            "bytes": path.stat().st_size,
+            "sha256": _sha256(path),
+            "checks": len(checks) - before,
+        })
+
     failed = [check for check in checks if not check["ok"]]
+    first = files[0]
     return {
         "schema": SCHEMA,
-        "evidence": path.name,
-        "evidence_bytes": path.stat().st_size,
-        "evidence_sha256": _sha256(path),
+        "evidence": first["name"],
+        "evidence_bytes": first["bytes"],
+        "evidence_sha256": first["sha256"],
+        "files": files,
         "checks": checks,
         "counts": {"checked": len(checks), "failed": len(failed)},
         "status": "pass" if not failed else "fail",
