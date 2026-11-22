@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="420" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+<title id="title">The same four formats, two training-set sizes (CIFAR-10)</title>
+<desc id="desc">Left bar of each pair: first 20,000 training images. Right bar: all 50,000.</desc>
+<rect width="760" height="420" fill="#0f1115"/>
+<rect x="16" y="16" width="728" height="388" rx="12" fill="#151922" stroke="#252a34"/>
+<text x="40.0" y="56.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="19" fill="#eef1f6" text-anchor="start" font-weight="bold">The same four formats, two training-set sizes (CIFAR-10)</text>
+<text x="40.0" y="80.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" fill="#98a2b3" text-anchor="start" font-weight="normal">2-layer MLP on 3,072 pixels + 10 label columns, 5 epochs per layer, 3 seeds</text>
+<line x1="96.0" y1="320.0" x2="712.0" y2="320.0" stroke="#252a34"/>
+<text x="84.0" y="324.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="end" font-weight="normal">20%</text>
+<line x1="96.0" y1="272.5" x2="712.0" y2="272.5" stroke="#252a34"/>
+<text x="84.0" y="276.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="end" font-weight="normal">26%</text>
+<line x1="96.0" y1="225.0" x2="712.0" y2="225.0" stroke="#252a34"/>
+<text x="84.0" y="229.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="end" font-weight="normal">31%</text>
+<line x1="96.0" y1="177.5" x2="712.0" y2="177.5" stroke="#252a34"/>
+<text x="84.0" y="181.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="end" font-weight="normal">37%</text>
+<line x1="96.0" y1="130.0" x2="712.0" y2="130.0" stroke="#252a34"/>
+<text x="84.0" y="134.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="end" font-weight="normal">42%</text>
+<rect x="133.3" y="178.6" width="37.0" height="141.4" rx="3" fill="#f0b64a"/>
+<text x="151.7" y="170.6" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10" fill="#98a2b3" text-anchor="middle" font-weight="normal">36.73</text>
+<rect x="175.8" y="140.4" width="37.0" height="179.6" rx="3" fill="#5b8def"/>
+<text x="194.3" y="132.4" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10" fill="#98a2b3" text-anchor="middle" font-weight="normal">41.25</text>
+<text x="173.0" y="342.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="middle" font-weight="normal">FP32</text>
+<rect x="287.3" y="179.5" width="37.0" height="140.5" rx="3" fill="#f0b64a"/>
+<text x="305.7" y="171.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10" fill="#98a2b3" text-anchor="middle" font-weight="normal">36.62</text>
+<rect x="329.8" y="144.0" width="37.0" height="176.0" rx="3" fill="#5b8def"/>
+<text x="348.3" y="136.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10" fill="#98a2b3" text-anchor="middle" font-weight="normal">40.82</text>
+<text x="327.0" y="342.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="middle" font-weight="normal">aligned 11</text>
+<rect x="441.3" y="271.4" width="37.0" height="48.6" rx="3" fill="#f0b64a"/>
+<text x="459.7" y="263.4" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10" fill="#98a2b3" text-anchor="middle" font-weight="normal">25.75</text>
+<rect x="483.8" y="239.8" width="37.0" height="80.2" rx="3" fill="#5b8def"/>
+<text x="502.3" y="231.8" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10" fill="#98a2b3" text-anchor="middle" font-weight="normal">29.49</text>
+<text x="481.0" y="342.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="middle" font-weight="normal">equal 11</text>
+<rect x="595.3" y="279.8" width="37.0" height="40.2" rx="3" fill="#f0b64a"/>
+<text x="613.7" y="271.8" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10" fill="#98a2b3" text-anchor="middle" font-weight="normal">24.76</text>
+<rect x="637.8" y="278.4" width="37.0" height="41.6" rx="3" fill="#5b8def"/>
+<text x="656.3" y="270.4" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10" fill="#98a2b3" text-anchor="middle" font-weight="normal">24.92</text>
+<text x="635.0" y="342.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="middle" font-weight="normal">one scale/row</text>
+<rect x="96.0" y="96" width="12" height="12" rx="2" fill="#f0b64a"/>
+<text x="114.0" y="106.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="start" font-weight="normal">20,000 training images</text>
+<rect x="286.0" y="96" width="12" height="12" rx="2" fill="#5b8def"/>
+<text x="304.0" y="106.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="start" font-weight="normal">all 50,000 training images</text>
+<text x="96.0" y="372.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="start" font-weight="normal">More data widens the cost of ternarizing (-11.97 pp → -16.34 pp) — it does not shrink it.</text>
+</svg>

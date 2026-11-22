@@ -83,7 +83,7 @@ error of 0.94 and an output relative error of 0.57 (layer 2: 0.59 / 0.48).
 **Give the label block its own scale and most of the gap closes.** Computing the
 scale separately for the 784 pixel columns and the 10 label columns *inside the
 training loop* (straight-through, so the float32 master weights still learn)
-reaches **92.49 ± 0.15** — 2.97 points above all-ternary, i.e. **64% of the
+reaches **92.49 ± 0.15** — 2.96 points above all-ternary, i.e. **64% of the
 4.62-point gap**. It is still 1.09 points below `first_fp32`, so the rest is not
 a scale-placement problem.
 

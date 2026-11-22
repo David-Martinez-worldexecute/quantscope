@@ -7,10 +7,11 @@ input or protocol violation. A CI job or a reader can rely on them.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
-from . import __version__, model as model_mod, protocol
+from . import __version__, model as model_mod, protocol, reproduce as reproduce_mod
 from .report import write_report
 from .run import load_questions, run as run_pipeline, summary_table
 from .verify import verify
@@ -82,6 +83,25 @@ def _report(args) -> int:
     return 0
 
 
+def _reproduce(args) -> int:
+    evidence = Path(args.evidence) if args.evidence else None
+    report = reproduce_mod.reproduce(evidence)
+    for check in report["checks"]:
+        if not check["ok"]:
+            print(f"MISMATCH {check['id']} stored={check['stored']!r} "
+                  f"recomputed={check['recomputed']!r} tolerance={check['tolerance']!r}")
+    counts = report["counts"]
+    print(f"reproduce {report['status']}: {counts['checked']} published numbers recomputed from "
+          f"{report['evidence']} ({report['evidence_bytes']} bytes, "
+          f"sha256 {report['evidence_sha256'][:16]}..), {counts['failed']} mismatched")
+    if args.out:
+        out = Path(args.out)
+        out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(f"REPORT {out}")
+    reproduce_mod.raise_for_failures(report)
+    return 0
+
+
 def _add_source_arguments(parser) -> None:
     parser.add_argument("--source-repo", help="declared model repository, for example Qwen/Qwen3-0.6B")
     parser.add_argument("--source-revision", help="full 40-character lowercase hex commit id")
@@ -125,6 +145,15 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("--run", required=True)
     report.add_argument("--out")
     report.set_defaults(func=_report)
+
+    repro = sub.add_parser(
+        "reproduce",
+        help="recompute every published headline number from the evidence bundle")
+    repro.add_argument(
+        "--evidence",
+        help="bundle to recompute; defaults to docs/evidence/ff_evidence.json in this checkout")
+    repro.add_argument("--out", help="write the full check-by-check report as JSON")
+    repro.set_defaults(func=_reproduce)
     return parser
 
 

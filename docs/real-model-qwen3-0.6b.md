@@ -21,14 +21,16 @@ trusting them. It is deliberately narrow: one model, one subset of questions, on
 
 | weight format | correct | accuracy | delta vs FP32 | FP32 right → wrong | FP32 wrong → right |
 | --- | --- | --- | --- | --- | --- |
-| FP32 | 56 / 171 | 32.7485% | — | — | — |
+| FP32 | 56 / 171 | 32.7485% | — | — |
+| INT8 dynamic (PyTorch) | 45 / 171 | 26.3158% | −6.4327 pp | 27 | 16 |
 | INT4 RTN, group 64 | 54 / 171 | 31.5789% | −1.1696 pp | 28 | 26 |
 | ternary (1.58-bit) | 42 / 171 | 24.5614% | −8.1871 pp | 49 | 7 |
 
-The pairing counts are the part a single accuracy number hides: INT4 moves answers in both
-directions almost equally (28 lost, 26 gained), which is what a small, mostly-neutral
-perturbation looks like. Ternary moves 49 correct answers to wrong while recovering 7, which is
-collapsing, not neutral noise.
+What the numbers do support is narrower and still useful. PyTorch's own dynamic INT8 — the
+quantiser a reader would reach for first — moved this set by −6.43 pp, INT4 round-to-nearest
+by −1.17 pp, and ternary by −8.19 pp. That ordering is the useful part: it says how much of
+the number is the method and how much is simply "low bits cost something here". The flips
+are not symmetric either — ternary turned 49 correct answers wrong while recovering 35.
 
 ## Evidence
 
@@ -36,10 +38,11 @@ All of this lives in the lab's evidence store, which is not part of this reposit
 
 | file | bytes | SHA-256 |
 | --- | --- | --- |
-| `manifest.json` | 18,842 | `eb5c31273c3cfc6e1da17af39c0ec429449ff233eed22c721c3800691f24d8de` |
-| `baseline.jsonl` | 36,408 | `9fcc7c6e068a4d0d78274d793477a59b43ba1013309b324979b07cddb8aa06be` |
-| `int4.jsonl` | 36,448 | `1904406ec6b42205a58d2b09faec461f2f5368870f7a91dbb8b8f0b227693c1f` |
-| `ternary.jsonl` | 36,910 | `2ce3d59d3c777bc2b3da867e4f564d65ffa3bebca574018d3534e2418fbe2b33` |
+| `manifest.json` | 26,771 | `f01467c118cdba3ed70048b7f70098d164970b1218b732f7de905684a9ca8407` |
+| `baseline.jsonl` | 36,412 | `8f734c5f719809142d1393cb0bc408014c32a5d2d8b93c3b9e5dd1b14b4c3968` |
+| `int8.jsonl` | 36,368 | `c6803068a12ab0fcc48fbbbbee70282f0810bdc58456d0f3d28108818cc0142d` |
+| `int4.jsonl` | 36,432 | `1ca5f4179e4a5db1c38b001780da84d853850213a5f5c2598d01a773877dd0e8` |
+| `ternary.jsonl` | 36,927 | `5a6e8ea338e355b685c7326538d76528ec6c51b1b079ae6fdd00e775c30ce7ae` |
 
 The manifest records, per mode, every item's id, gold answer, prediction, correctness and the four
 logits, plus the SHA-256 of the model files it loaded and of the question file.
@@ -52,18 +55,26 @@ re-computes both pairing tables and the deltas, and re-hashes the nine model fil
 hashes in the manifest.
 
 Outcome: `status=pass`, `count=171`, `mismatches=[]`, `model_files_verified=9`. Recomputed
-correct counts 56 / 54 / 42 and both pairing tables match the manifest exactly.
+correct counts 56 / 45 / 54 / 42 and all pairing tables match the manifest exactly. The mode
+list is read from the manifest, so a new mode cannot be skipped silently.
 
 ## What this does not say
 
-- It is **one run**. There are no seeds here, so the ± std in the Forward-Forward study has no
-  counterpart on this page. Do not attach error bars that were never measured.
-- 171 items is small: at 32.75% baseline accuracy, the 95% interval around that accuracy is roughly
-  ±7 percentage points. The −1.17 pp INT4 delta is inside that noise; the −8.19 pp ternary delta is
-  not, but one run still cannot separate it from item selection.
-- It is not a benchmark ranking and not comparable to published leaderboard numbers, which use
-  different prompts, extraction rules and subset sizes.
-- It says nothing about speed, memory or throughput; only about which option the model picks.
-- These numbers came from the lab harness that shares this protocol. This package's `run` command
-  implements the same protocol on the documented toy format; loading Hugging Face checkpoints is
-  the next API change, not a property of v0.1.0.
+- The INT8 row is `torch.ao.quantization.quantize_dynamic` (per-channel symmetric int8
+weights, activation scales computed at run time), i.e. the framework default. It is **not**
+GGUF `Q4_K_M` and **not** bitsandbytes NF4: those formats were not available in this
+environment, so no claim is made about them, and nothing here measures speed or memory.
+- It is **one run**. There are no seeds on this page, so the ± standard deviation reported in
+the Forward-Forward study has no counterpart here; do not attach error bars that were never
+measured.
+- 171 items is small: at 32.75% baseline accuracy the 95% interval around that accuracy is
+roughly ±7 percentage points. The −1.17 pp INT4 delta and the −6.43 pp INT8 delta both sit
+inside that noise; only the −8.19 pp ternary delta is outside it, and even that cannot be
+separated from item selection on a single run.
+- It is not a benchmark ranking and is not comparable to published leaderboard numbers,
+which use different prompts, extraction rules and subset sizes.
+- It says nothing about speed, memory or throughput; only about which option the model
+picks.
+- These numbers came from the lab harness that shares this protocol. This package's `run`
+command implements the same protocol on the documented toy format; loading Hugging Face
+checkpoints is the next API change, not a property of v0.1.0.

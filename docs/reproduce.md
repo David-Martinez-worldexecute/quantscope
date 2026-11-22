@@ -3,6 +3,22 @@
 Two kinds of numbers live in this repo, and they are reproduced in two different
 ways. Neither one needs a GPU, and neither one downloads a model.
 
+## 0. Every published number, one command, no downloads
+
+```bash
+python -m quantscope.cli reproduce            # or: reproduce --evidence <path> --out report.json
+```
+
+This reads `docs/evidence/ff_evidence.json` and recomputes 61 numbers: the per-seed mean accuracy of
+each precision mode, the per-block `accuracy_mean` of every ablation, and all 21 `headline_pp`
+percentages the README and the study pages quote. Each check compares the stored value with the value
+recomputed from the counts sitting next to it; the last line prints how many numbers were checked and
+how many mismatched, and the exit code is 0 only when nothing mismatched.
+
+What it cannot do: it does not retrain, does not re-run inference, and does not read a model. It proves
+the published numbers are *internally* consistent with their own per-item counts and with each other —
+that is the claim the pages make. Re-running the study end to end is section 2 below.
+
 ## 1. The QuantScope pipeline (this repo, toy model, about a second)
 
 The demo trains a tiny four-way classifier on the 20 sample questions, then runs

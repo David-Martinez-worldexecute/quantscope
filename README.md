@@ -40,6 +40,17 @@ quantscope report --run runs/example
 arithmetic, the file hashes and the `complete` flag. It prints `PASS` or lists the mismatches,
 and its exit code is the verdict.
 
+## What it looks like
+
+Every number below is read from `docs/evidence/ff_evidence.json`; the pictures are regenerated from
+that file by `python scripts/make_figures.py`, and CI fails if a checked-in figure drifts from it.
+
+![Ternary weights on MNIST: where the 4.62 pp goes, split into the cost of ternarizing at all and the part that label-column isolation wins back.](docs/img/fig-mnist-ternary-cost.svg)
+
+![The same four weight formats on CIFAR-10 with 20,000 and with all 50,000 training images.](docs/img/fig-cifar-two-training-sets.svg)
+
+![Share of the FP32-to-ternary accuracy gap that label-column isolation recovers, on MNIST and on CIFAR-10 at both training-set sizes.](docs/img/fig-label-isolation-recovery.svg)
+
 ## Results
 
 The tool is the deliverable; the numbers below come from a separate controlled study that ships
@@ -68,14 +79,17 @@ Measured once, on CPU, in float32, with the same prompt protocol this repository
 | weight format | correct | accuracy | delta vs FP32 | flips (FP32 right→wrong / wrong→right) |
 | --- | --- | --- | --- | --- |
 | FP32 | 56 / 171 | 32.75% | — | — |
+| INT8 dynamic (PyTorch) | 45 / 171 | 26.32% | −6.43 pp | 27 / 16 |
 | INT4 RTN, group 64 | 54 / 171 | 31.58% | −1.17 pp | 28 / 26 |
 | ternary (1.58-bit) | 42 / 171 | 24.56% | −8.19 pp | 49 / 35 |
 
 Read it as one run on one 171-item set, not as a benchmark ranking: there is no seed variance
 here, the interval around a 171-item accuracy is wide, and the base model answers only a third of
 these questions correctly in the first place. What the numbers do support is narrower and still
-useful: INT4 round-to-nearest cost about one point on this set, while ternary cost about eight,
-and the flips are not symmetric — ternary turned 49 correct answers wrong while recovering 7.
+useful: PyTorch's dynamic INT8 cost −6.43 pp, INT4 round-to-nearest −1.17 pp, and ternary
+−8.19 pp — that ordering tells you how much of the loss is the method and how much is just
+fewer bits. The flips are not symmetric either — ternary turned 49 correct answers wrong
+while recovering 35.
 
 These numbers were produced by the laboratory harness that shares this protocol, not by this
 package's `run` command: v0.1.0 loads only the documented toy format. The per-item evidence,
@@ -102,7 +116,17 @@ evidence file is `docs/evidence/qwen35_forward.json`.
 
 ## Reproduce
 
-See `docs/reproduce.md`: two commands, the pinned environment, and the checks each one performs.
+Two commands, no GPU, no downloads:
+
+```bash
+python -m quantscope.cli reproduce   # recompute all 61 published numbers from the evidence bundle
+python -m quantscope.cli demo --out runs/demo && python -m quantscope.cli verify --run runs/demo/run
+```
+
+`reproduce` re-derives every percentage in the README and in the linked study from the numbers stored
+next to it (`docs/evidence/ff_evidence.json`) and fails loudly on a single mismatch; it never reads a
+model, a dataset or the network. See `docs/reproduce.md` for what each check means, the pinned
+environment, and the per-stage commands.
 The repository ships no model weights and no third-party benchmark items; `data/sample_questions.jsonl`
 contains 20 questions written for this repository.
 
