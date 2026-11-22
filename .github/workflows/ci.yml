@@ -45,3 +45,48 @@ jobs:
         run: |
           python -m quantscope.cli demo --out runs/demo
           python -m quantscope.cli verify --run runs/demo/run
+
+  # A separate job on purpose: it needs torch (~200 MB), which the job above does
+  # not, and a torch install failure must not turn the evidence checks red. If this
+  # job fails, the question is "does the experiment still run?", not "are the
+  # published numbers wrong?" — those are checked above, without torch.
+  smoke-torch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-torch-cpu-v1
+
+      - name: Install torch (CPU wheel)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Versions
+        run: python -c "import platform, torch, numpy; print(platform.python_version(), torch.__version__, numpy.__version__)"
+
+      - name: Forward-Forward with ternary weights, two groupings
+        working-directory: experiments/ff_mnist
+        run: |
+          python run.py --group aligned --train 4000 --test 1000 --epochs 5 --download --out runs/aligned.json
+          python run.py --group row     --train 4000 --test 1000 --epochs 5 --out runs/row.json
+          python assert_direction.py --aligned runs/aligned.json --row runs/row.json
+
+      - name: Keep the manifests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ff-mnist-manifests
+          path: experiments/ff_mnist/runs/*.json
+          if-no-files-found: warn

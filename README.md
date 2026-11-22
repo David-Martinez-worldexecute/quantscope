@@ -10,6 +10,10 @@ a separate `verify` command can re-check against the recorded bytes. It is a mea
 not a leaderboard: it reports pairwise flips and a delta in percentage points, and refuses to
 guess when the sample count does not match what was asked for.
 
+**Start here:** [What this project is, and what I think it means](docs/what-this-is.md) — why it
+exists, the three figures, four claims about AI that the measurements support, and the places where
+I think the argument breaks.
+
 ## Install
 
 ```bash
