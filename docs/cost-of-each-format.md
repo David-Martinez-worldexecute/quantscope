@@ -12,17 +12,17 @@ threads), 128-token prompt, 32 greedy tokens.
 Payload falls from 2274 MiB to 725 MiB (68.1% smaller) for the three-value format, but on
 this CPU only INT8 dynamic (PyTorch) is measurably faster at prefill.
 
-Decode is the same story: INT8 dynamic (PyTorch) reaches 8.58 tok/s against 5.19 tok/s for
+Decode is the same story: INT8 dynamic (PyTorch) reaches 8.33 tok/s against 5.05 tok/s for
 FP32.
 
 ## Payload and speed
 
 | format | payload | vs FP32 | load + quantise | prefill (median) | decode | replaced layers |
 | --- | --- | --- | --- | --- | --- | --- |
-| FP32 (unquantised) | 2274 MiB | 1.00× | 5.64 s | 1104 ms | 5.19 tok/s | 0 |
-| INT8 dynamic (PyTorch) | 1016 MiB | 0.45× | 10.33 s | 561 ms | 8.58 tok/s | 196 |
-| INT4 RTN, groups of 64 | 830 MiB | 0.37× | 1.74 s | 1136 ms | 4.93 tok/s | 196 |
-| ternary RTN, groups of 64 | 725 MiB | 0.32× | 1.78 s | 1122 ms | 5.01 tok/s | 196 |
+| FP32 (unquantised) | 2274 MiB | 1.00× | 5.93 s | 1027 ms | 5.05 tok/s | 0 |
+| INT8 dynamic (PyTorch) | 1016 MiB | 0.45× | 15.09 s | 585 ms | 8.33 tok/s | 196 |
+| INT4 RTN, groups of 64 | 830 MiB | 0.37× | 7.22 s | 1018 ms | 5.01 tok/s | 196 |
+| ternary RTN, groups of 64 | 725 MiB | 0.32× | 6.05 s | 1036 ms | 4.89 tok/s | 196 |
 
 Payload is an estimate computed from the layer shapes, not the size of a file on disk: `1`
 byte per weight for INT8, `0.5` for INT4, `0.25` for ternary, each plus a 4-byte scale per
@@ -44,6 +44,16 @@ They overlap heavily: 171 questions cannot separate three formats that sit withi
 points of each other. That is the honest reading, and it is why the page reports intervals
 next to the point estimates.
 
+## One picture, both halves
+
+![Accuracy against payload for the four formats](img/fig-accuracy-vs-payload.svg)
+
+The scatter is the shortest version of this page: moving left is cheaper to store, moving up
+is more accurate. INT4 sits at FP32-level accuracy on about a third of the payload; ternary
+gives up eight points and, in this implementation, buys no speed; and the vertical bars --
+95% bootstrap intervals over the 171 questions -- are wide enough that the middle two
+formats cannot be ranked.
+
 ## Why the small formats are not faster here
 
 INT4 and ternary in this repository are *simulated*: the weights are rounded to 4 or 2 bits
@@ -62,7 +72,7 @@ the payload question analytically, and says which is which.
 
 - Not a GPU result. One CPU, threads fixed in the bundle's `environment` block.
 - Not a throughput benchmark. 32 decoded tokens per pass, three passes, fastest kept.
-- Not a memory measurement of the quantised model. Peak RSS includes the float32 weights that this implementation keeps in place.
+- Not a per-format memory measurement. Peak RSS is read in a fresh child process per format, so the four numbers are comparable with each other; each still includes the interpreter and the float32 weights this implementation keeps.
 
 ## Reproduce it
 

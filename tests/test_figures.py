@@ -16,6 +16,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "make_figures.py"
 EVIDENCE = ROOT / "docs" / "evidence" / "ff_evidence.json"
 BENCH_EVIDENCE = ROOT / "docs" / "evidence" / "bench_qwen3_0.6b.json"
+REAL_EVIDENCE = ROOT / "docs" / "evidence" / "real_model_qwen3_0.6b.json"
 IMG = ROOT / "docs" / "img"
 
 FIGURES = (
@@ -23,6 +24,7 @@ FIGURES = (
     "fig-cifar-two-training-sets.svg",
     "fig-label-isolation-recovery.svg",
     "fig-cpu-cost.svg",
+    "fig-accuracy-vs-payload.svg",
 )
 
 
@@ -43,7 +45,9 @@ class FigureTest(unittest.TestCase):
             cls.bundle = json.load(handle)
         with open(BENCH_EVIDENCE, encoding="utf-8") as handle:
             cls.bench = json.load(handle)
-        cls.figures = cls.generator.build(cls.bundle, cls.bench)
+        with open(REAL_EVIDENCE, encoding="utf-8") as handle:
+            cls.real = json.load(handle)
+        cls.figures = cls.generator.build(cls.bundle, cls.bench, cls.real)
 
     def test_every_figure_is_shipped(self) -> None:
         self.assertEqual(sorted(self.figures), sorted(FIGURES))
@@ -100,6 +104,29 @@ class FigureTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.generator.figure_cost(bench)
 
+
+    def test_accuracy_figure_carries_the_points_and_the_interval_banner(self) -> None:
+        body = self.figures["fig-accuracy-vs-payload.svg"]
+        names = {"baseline": "FP32", "int8": "INT8 dynamic",
+                 "int4": "INT4 g64", "ternary": "ternary g64"}
+        for mode, label in names.items():
+            accuracy = self.real["modes"][mode]["accuracy"]
+            self.assertIn(f"{label} \u00b7 {accuracy * 100:.1f}%", body,
+                          f"{mode} point is missing from the accuracy figure")
+        self.assertIn("95% bootstrap", body)
+
+    def test_accuracy_figure_refuses_a_point_outside_its_interval(self) -> None:
+        real = json.loads(json.dumps(self.real))
+        block = real["modes"]["int8"]
+        block["ci95"]["low"] = block["accuracy"] + 0.01
+        with self.assertRaises(AssertionError):
+            self.generator.figure_accuracy_vs_payload(real, self.bench)
+
+    def test_accuracy_figure_refuses_an_impossible_payload_order(self) -> None:
+        bench = json.loads(json.dumps(self.bench))
+        bench["modes"]["ternary"]["quantized_bytes"] = bench["modes"]["int4"]["quantized_bytes"]
+        with self.assertRaises(AssertionError):
+            self.generator.figure_accuracy_vs_payload(self.real, bench)
 
 if __name__ == "__main__":
     unittest.main()

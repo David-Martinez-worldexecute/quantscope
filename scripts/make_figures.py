@@ -27,6 +27,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "ff_evidence.json"
 BENCH_EVIDENCE = ROOT / "docs" / "evidence" / "bench_qwen3_0.6b.json"
+REAL_EVIDENCE = ROOT / "docs" / "evidence" / "real_model_qwen3_0.6b.json"
 OUT_DIR = ROOT / "docs" / "img"
 
 WIDTH = 760
@@ -315,9 +316,96 @@ def figure_cost(bench: dict) -> str:
     return "\n".join(parts)
 
 
-def build(bundle: dict, bench: dict | None = None) -> dict[str, str]:
+def figure_accuracy_vs_payload(real: dict, bench: dict) -> str:
+    """Accuracy against payload, with the interval over questions as a vertical bar."""
+    order = ["baseline", "int8", "int4", "ternary"]
+    names = {"baseline": "FP32", "int8": "INT8 dynamic",
+             "int4": "INT4 g64", "ternary": "ternary g64"}
+    colors = {"baseline": MUTED, "int8": BLUE, "int4": GOLD, "ternary": GREEN}
+    modes = real["modes"]
+    assert set(modes) == set(order), (
+        "real-model bundle has modes {}; the figure expects {}".format(sorted(modes), order))
+    mib = {mode: bench["modes"][mode]["quantized_bytes"] / (1024 * 1024) for mode in order}
+    acc = {mode: modes[mode]["accuracy"] for mode in order}
+    low = {mode: modes[mode]["ci95"]["low"] for mode in order}
+    high = {mode: modes[mode]["ci95"]["high"] for mode in order}
+    assert mib["ternary"] < mib["int4"] < mib["int8"] < mib["baseline"], (
+        "payload sizes are not ordered by width; the figure would mislead")
+    for mode in order:
+        assert low[mode] <= acc[mode] <= high[mode], (
+            "{}: stored accuracy sits outside its own interval".format(mode))
+    count = modes["baseline"]["count"]
+    left, right, top, bottom = 92.0, WIDTH - 150.0, 118.0, 306.0
+    x_lo, x_hi = 600.0, 2600.0
+    y_lo, y_hi = 0.15, 0.45
+
+    def px(value: float) -> float:
+        return left + (right - left) * (value - x_lo) / (x_hi - x_lo)
+
+    def py(value: float) -> float:
+        return bottom - (bottom - top) * (value - y_lo) / (y_hi - y_lo)
+
+    parts = frame(
+        "Accuracy against payload, on one CPU",
+        "Qwen3-0.6B, {} questions, one run per format; bars are 95% bootstrap intervals "
+        "(seed {}, {} resamples over questions)".format(
+            count, modes["baseline"]["ci95"]["seed"], modes["baseline"]["ci95"]["resamples"]),
+        "Each format's accuracy against the payload it needs, with the interval over questions. "
+        "Where the bars overlap, the ordering between those two formats is not a result.")
+    parts.append(f'<line x1="{left:.1f}" y1="{bottom:.1f}" x2="{right:.1f}" y2="{bottom:.1f}" '
+                 f'stroke="{GRID}"/>')
+    parts.append(f'<line x1="{left:.1f}" y1="{top:.1f}" x2="{left:.1f}" y2="{bottom:.1f}" '
+                 f'stroke="{GRID}"/>')
+    for tick_mib in (800, 1200, 1600, 2000, 2400):
+        x = px(tick_mib)
+        parts.append(f'<line x1="{x:.1f}" y1="{bottom:.1f}" x2="{x:.1f}" y2="{bottom + 6:.1f}" '
+                     f'stroke="{GRID}"/>')
+        parts.append(text(x, bottom + 22, "{} MiB".format(tick_mib), size=10.5,
+                          fill=MUTED, anchor="middle"))
+    for tick_acc in (0.20, 0.25, 0.30, 0.35, 0.40):
+        y = py(tick_acc)
+        parts.append(f'<line x1="{left - 6:.1f}" y1="{y:.1f}" x2="{left:.1f}" y2="{y:.1f}" '
+                     f'stroke="{GRID}"/>')
+        parts.append(text(left - 10, y + 4, "{:.0f}%".format(tick_acc * 100), size=10.5,
+                          fill=MUTED, anchor="end"))
+    parts.append(text((left + right) / 2, bottom + 42, "payload, MiB", size=11,
+                      fill=MUTED, anchor="middle"))
+    parts.append(text(40, top + 2, "accuracy", size=11, fill=MUTED))
+    # The two 2-bit rows sit close together, so one label goes above and one below.
+    label_dy = {"baseline": -16, "int8": -16, "int4": -18, "ternary": 30}
+    for mode in order:
+        x = px(mib[mode])
+        parts.append(f'<line x1="{x:.1f}" y1="{py(low[mode]):.1f}" x2="{x:.1f}" '
+                     f'y2="{py(high[mode]):.1f}" stroke="{colors[mode]}" stroke-width="2"/>')
+        for edge in (low[mode], high[mode]):
+            parts.append(f'<line x1="{x - 5:.1f}" y1="{py(edge):.1f}" x2="{x + 5:.1f}" '
+                         f'y2="{py(edge):.1f}" stroke="{colors[mode]}" stroke-width="2"/>')
+        parts.append(f'<circle cx="{x:.1f}" cy="{py(acc[mode]):.1f}" r="6" '
+                     f'fill="{colors[mode]}" stroke="{BG}" stroke-width="2"/>')
+        if mode == "baseline":
+            parts.append(text(x - 12, py(acc[mode]) + label_dy[mode],
+                              "{} · {:.1f}%".format(names[mode], acc[mode] * 100),
+                              size=11.5, fill=colors[mode], anchor="end", weight="bold"))
+        else:
+            parts.append(text(x + 12, py(acc[mode]) + label_dy[mode],
+                              "{} · {:.1f}%".format(names[mode], acc[mode] * 100),
+                              size=11.5, fill=colors[mode], weight="bold"))
+    parts.append(text(40, HEIGHT - 58,
+                      "Payload is computed from the stored parameter shapes (1, 0.5 and 0.25 bytes "
+                      "per weight, plus a 4-byte scale per 64-value group), not measured RSS.",
+                      size=10.5, fill=MUTED))
+    parts.append(text(40, HEIGHT - 40,
+                      "The 4- and 2-bit rows are simulated in float32: that payload is what a real "
+                      "kernel would need, not what this process holds.", size=10.5, fill=MUTED))
+    parts.append(svg_close())
+    return "\n".join(parts)
+
+
+def build(bundle: dict, bench: dict | None = None, real: dict | None = None) -> dict[str, str]:
     if bench is None:
         bench = load_bundle(BENCH_EVIDENCE)
+    if real is None:
+        real = load_bundle(REAL_EVIDENCE)
     if not OUT_DIR.is_dir():
         OUT_DIR.mkdir(parents=True)
     return {
@@ -325,6 +413,7 @@ def build(bundle: dict, bench: dict | None = None) -> dict[str, str]:
         "fig-cifar-two-training-sets.svg": figure_cifar(bundle),
         "fig-label-isolation-recovery.svg": figure_recovery(bundle),
         "fig-cpu-cost.svg": figure_cost(bench),
+        "fig-accuracy-vs-payload.svg": figure_accuracy_vs_payload(real, bench),
     }
 
 
@@ -334,9 +423,11 @@ def main(argv: list[str] | None = None) -> int:
                         help="do not write; fail when a figure would change")
     parser.add_argument("--evidence", help="bundle to read (defaults to docs/evidence/ff_evidence.json)")
     parser.add_argument("--bench", help="cost bundle to read (defaults to docs/evidence/bench_qwen3_0.6b.json)")
+    parser.add_argument("--real", help="real-model bundle (defaults to docs/evidence/real_model_qwen3_0.6b.json)")
     args = parser.parse_args(argv)
 
-    figures = build(load_bundle(args.evidence), load_bundle(args.bench or BENCH_EVIDENCE))
+    figures = build(load_bundle(args.evidence), load_bundle(args.bench or BENCH_EVIDENCE),
+                    load_bundle(args.real or REAL_EVIDENCE))
     problems = []
     for name, body in figures.items():
         for needle in leak_needles():

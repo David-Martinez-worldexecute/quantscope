@@ -16,8 +16,8 @@
   including the 171-question, four-format real-model run and its bootstrap intervals — from the
   evidence files in this repository, and fails if any of them stops following from the bytes beside
   it.
-- **What it costs.** The same four formats on one CPU: payload falls from 2384 MiB to 760 MiB, but
-  only the real INT8 kernel actually runs faster (561 ms prefill against 1104 ms). The 4- and 2-bit
+- **What it costs.** The same four formats on one CPU: payload falls from 2274 MiB to 725 MiB, but
+  only the real INT8 kernel actually runs faster (585 ms prefill against 1027 ms). The 4- and 2-bit
   rows are simulated in float32, so they pay the accuracy price without collecting the speed prize —
   [the cost page](docs/cost-of-each-format.md) says which number is measured and which is analytic.
 - **Try it.** `pip install quantscope`, then `quantscope demo --out runs/demo` prints a table in a
@@ -31,7 +31,7 @@ not a leaderboard: it reports pairwise flips and a delta in percentage points, a
 guess when the sample count does not match what was asked for.
 
 **Start here:** [What this project is, and what I think it means](docs/what-this-is.md) — why it
-exists, the four figures, four claims about AI that the measurements support, and the places where
+exists, the five figures, four claims about AI that the measurements support, and the places where
 I think the argument breaks.
 
 ## Install
@@ -77,6 +77,13 @@ figure drifts from either file.
 ![Share of the FP32-to-ternary accuracy gap that label-column isolation recovers, on MNIST and on CIFAR-10 at both training-set sizes.](docs/img/fig-label-isolation-recovery.svg)
 
 ![Payload in MiB and prefill latency for the four weight formats on one CPU: the bytes fall with every bit removed, but only the real INT8 kernel also gets faster.](docs/img/fig-cpu-cost.svg)
+
+![Accuracy against payload for the four formats: the points sit inside wide, overlapping 95% intervals, and INT4 keeps FP32-level accuracy at about a third of the payload.](docs/img/fig-accuracy-vs-payload.svg)
+
+The scatter puts the two halves of the story in one frame: INT4 holds FP32-level
+accuracy at about a third of the payload, ternary gives up eight points and — in this
+implementation — buys no speed, and every interval is wide enough that 171 questions
+cannot rank the middle two formats.
 
 The cost picture is the newer half: [docs/cost-of-each-format.md](docs/cost-of-each-format.md)
 has the numbers, the measurement protocol and the sentence that says which rows are simulated in

@@ -31,7 +31,7 @@ run.py  ──►  manifest + predictions (sha256 of data, model, protocol)
                      │
                      ├─► verify   : re-derive accuracy, argmax, hashes
                      ├─► reproduce: recompute all 101 published numbers
-                     └─► figures  : four SVGs, rendered from the evidence
+                     └─► figures  : five SVGs, rendered from the evidence
 ```
 
 Three properties I cared about, in order:
@@ -116,9 +116,9 @@ Two things are true at once, and I want both on the record:
 
 Accuracy was only half of the question. The other half is what a format buys:
 the same 128-token prompt and 32-token greedy decode, four formats, one machine
-(16 cores, float32, `torch` 2.6.0). Payload drops from **2384 MiB** to
-**1065 MiB** with INT8, **870 MiB** with INT4, and **760 MiB** with ternary.
-Only the INT8 row also gets faster — 561 ms prefill instead of 1104 ms — because
+(16 cores, float32, `torch` 2.6.0). Payload drops from **2274 MiB** to
+**1016 MiB** with INT8, **830 MiB** with INT4, and **725 MiB** with ternary.
+Only the INT8 row also gets faster — 585 ms prefill instead of 1027 ms — because
 it is the only row that runs a real quantised kernel. The 4- and 2-bit rows are
 simulated in float32, so they save memory on paper and pay a small penalty in
 time. That distinction is the whole point of the page:
@@ -130,32 +130,43 @@ Four claims, each tied to something above.
 
 **1. Quantization is mostly an interface problem, not a precision problem.**
 The label columns are ten columns out of 794 — about 1.3% of the input width — and
-they wreck a quantiser that assumes the row is homogeneous. The fix was not a
-better rounding rule; it was telling the quantiser what the input *is*. My
-generalization: most "the model broke" stories in AI are interface stories —
-assumptions about the shape of an input leaking into a component that was never
-told about the shape. Precision gets blamed because it is easy to change.
+they wreck a quantiser that assumes the row is homogeneous. Fixing *where the scale
+is computed* recovers 2.96 of the 4.62 pp gap on MNIST (64.1%), with three seeds
+per cell and the per-item predictions audited. The fix was not a better rounding
+rule; it was telling the quantiser what the input *is*. My generalization: most
+"the model broke" stories in AI are interface stories — assumptions about the shape
+of an input leaking into a component that was never told about the shape. Precision
+gets blamed because it is easy to change.
 
 **2. Locality is a property of the wiring, not of a layer.** Forward-Forward is
 sold as "local learning", and I wanted to see how local. Moving label injection
 from layer 0 to layer 1 drops accuracy to 79.92% (−9.60 pp, worse than plain
-ternary), and layer-0 features alone classify at 60.90% by nearest centroid. So
-layer 0 is simultaneously the bottleneck *and* the only place supervision enters.
-Calling that "local" is formally true and practically misleading: the layer is
-local in its gradients and global in its job.
+ternary at 89.52%), and layer-0 features alone classify at 60.90% by nearest
+centroid. Those are point estimates from a 10,000-image test set, not intervals —
+but a 9.6-point move is far outside the 0.48 pp seed spread, so the direction is
+not in doubt. Layer 0 is simultaneously the bottleneck *and* the only place
+supervision enters. Calling that "local" is formally true and practically
+misleading: the layer is local in its gradients and global in its job.
 
 **3. A percentage hides the thing you want to know.** "−1.17 pp" could be 5 answers
 flipped out of 400, or 28 broken and 26 rescued — same number, different worlds.
-Paired counts (`right→wrong`, `wrong→right`) and a sample size are the minimum
-honest unit of reporting. This is not pedantry; the INT8/INT4 comparison above is
-uninterpretable without it.
+The real-model table is now the worked example. INT4 sits 1.17 pp below FP32, but
+the paired interval is [−9.94, +7.02] pp; INT8 is [−14.04, +1.17] and ternary is
+[−18.71, +2.34]. **Every one of the three intervals contains zero.** The honest
+sentence is therefore "no accuracy loss is demonstrated at 171 questions", not
+"INT4 is the safe choice" — and the FP32 row's own interval, [25.73%, 39.77%],
+says why: 171 questions is a wide net. Paired counts (`right→wrong`, `wrong→right`),
+a sample size and an interval are the minimum honest unit of reporting.
 
 **4. Claims about machine intelligence need accounting, not adjectives.** What
 struck me most is not that a 1.58-bit network reaches 89.5% — it is how much of
-the "1.58-bit" story is really a story about *where the scale goes*. When a
-dramatic-sounding property dissolves into a bookkeeping choice, that is usually
-the sign of an honest measurement, not a disappointing one. I would rather publish
-a boring mechanism with a ledger than an exciting number with a paragraph.
+the "1.58-bit" story is really a story about *where the scale goes*. The cost page
+is the same ledger in another currency: 2274 MiB → 725 MiB is arithmetic on the
+layer shapes, 1027 ms → 585 ms is a measured wall clock on one CPU, and the page
+says which number is which. When a dramatic-sounding property dissolves into a
+bookkeeping choice, that is usually the sign of an honest measurement, not a
+disappointing one. I would rather publish a boring mechanism with a ledger than an
+exciting number with a paragraph.
 
 ## What this does not say
 
@@ -166,7 +177,10 @@ a boring mechanism with a ledger than an exciting number with a paragraph.
 - The real-model table is a single run per format, on 171 questions. It is a
   sanity check, not a benchmark entry.
 - INT8 here is `torch.ao.quantization.quantize_dynamic`. It is neither GGUF
-  `Q4_K_M` nor bitsandbytes NF4, and nothing in this repo measures speed or memory.
+  `Q4_K_M` nor bitsandbytes NF4. Speed and payload are measured, but only here:
+  one CPU, `torch` 2.6.0, 128-token prompt, 32 greedy tokens. The payload column is
+  computed from the layer shapes rather than read off disk, and peak RSS in a fresh
+  process still includes the float32 weights that simulated quantisation keeps.
 - `reproduce` proves internal consistency: the published numbers agree with the
   evidence bundle and with the arithmetic in the source. It does not re-run the
   experiment. Re-running is what `experiments/ff_mnist` and the documented commands

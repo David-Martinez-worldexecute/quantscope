@@ -65,6 +65,7 @@ REQUIRED = [
     "docs/img/fig-cifar-two-training-sets.svg",
     "docs/img/fig-label-isolation-recovery.svg",
     "docs/img/fig-cpu-cost.svg",
+    "docs/img/fig-accuracy-vs-payload.svg",
     "docs/evidence/bench_qwen3_0.6b.json",
     "docs/cost-of-each-format.md",
     "scripts/make_figures.py",
