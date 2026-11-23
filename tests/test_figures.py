@@ -15,12 +15,14 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "make_figures.py"
 EVIDENCE = ROOT / "docs" / "evidence" / "ff_evidence.json"
+BENCH_EVIDENCE = ROOT / "docs" / "evidence" / "bench_qwen3_0.6b.json"
 IMG = ROOT / "docs" / "img"
 
 FIGURES = (
     "fig-mnist-ternary-cost.svg",
     "fig-cifar-two-training-sets.svg",
     "fig-label-isolation-recovery.svg",
+    "fig-cpu-cost.svg",
 )
 
 
@@ -39,9 +41,11 @@ class FigureTest(unittest.TestCase):
         cls.generator = load_generator()
         with open(EVIDENCE, encoding="utf-8") as handle:
             cls.bundle = json.load(handle)
-        cls.figures = cls.generator.build(cls.bundle)
+        with open(BENCH_EVIDENCE, encoding="utf-8") as handle:
+            cls.bench = json.load(handle)
+        cls.figures = cls.generator.build(cls.bundle, cls.bench)
 
-    def test_all_three_figures_are_shipped(self) -> None:
+    def test_every_figure_is_shipped(self) -> None:
         self.assertEqual(sorted(self.figures), sorted(FIGURES))
         for name in FIGURES:
             self.assertTrue((IMG / name).is_file(), f"missing {name}")
@@ -81,6 +85,20 @@ class FigureTest(unittest.TestCase):
         bundle["headline_pp"]["cifar_aligned_share_of_gap"] = 1.4
         with self.assertRaises(AssertionError):
             self.generator.figure_recovery(bundle)
+
+    def test_cost_figure_quotes_the_bench_bundle(self) -> None:
+        body = self.figures["fig-cpu-cost.svg"]
+        for mode in ("baseline", "int8", "int4", "ternary"):
+            mib = self.bench["modes"][mode]["quantized_bytes"] / (1024 * 1024)
+            self.assertIn(f"{mib:.0f} MiB", body, f"{mode} bytes missing from the figure")
+            prefill = self.bench["modes"][mode]["prefill_ms_median"]
+            self.assertIn(f"prefill {prefill:.0f} ms", body, f"{mode} prefill missing")
+
+    def test_cost_figure_refuses_an_impossible_size_order(self) -> None:
+        bench = json.loads(json.dumps(self.bench))
+        bench["modes"]["int4"]["quantized_bytes"] = bench["modes"]["ternary"]["quantized_bytes"]
+        with self.assertRaises(AssertionError):
+            self.generator.figure_cost(bench)
 
 
 if __name__ == "__main__":

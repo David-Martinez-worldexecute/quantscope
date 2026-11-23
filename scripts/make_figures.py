@@ -26,6 +26,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "ff_evidence.json"
+BENCH_EVIDENCE = ROOT / "docs" / "evidence" / "bench_qwen3_0.6b.json"
 OUT_DIR = ROOT / "docs" / "img"
 
 WIDTH = 760
@@ -257,13 +258,73 @@ def figure_recovery(bundle: dict) -> str:
     return "\n".join(parts)
 
 
-def build(bundle: dict) -> dict[str, str]:
+def figure_cost(bench: dict) -> str:
+    """What each weight format costs: payload bytes on disk, then prefill and decode time."""
+    order = ["baseline", "int8", "int4", "ternary"]
+    names = {
+        "baseline": "FP32",
+        "int8": "INT8 dynamic",
+        "int4": "INT4 RTN, groups of 64",
+        "ternary": "ternary RTN, groups of 64",
+    }
+    colors = {"baseline": MUTED, "int8": BLUE, "int4": GOLD, "ternary": GREEN}
+    modes = bench["modes"]
+    mib = {mode: modes[mode]["quantized_bytes"] / (1024 * 1024) for mode in order}
+    prefill = {mode: modes[mode]["prefill_ms_median"] for mode in order}
+    decode = {mode: modes[mode]["decode_tokens_per_second"] for mode in order}
+    # The one ordering claim this figure makes, checked against the stored numbers.
+    assert mib["ternary"] < mib["int4"] < mib["int8"] < mib["baseline"], (
+        "payload sizes are not ordered by width; the figure would mislead")
+    assert any("simulat" in line.lower() for line in bench["limits"]), (
+        "the caveat this figure prints no longer matches the bundle's own limits")
+    baseline_mib = mib["baseline"]
+    faster = [mode for mode in order if prefill[mode] < prefill["baseline"] * 0.9]
+    protocol = bench["protocol"]
+    parts = frame(
+        "What each weight format costs on this CPU",
+        "Qwen3-0.6B, {} prompt tokens, {} new tokens, {} threads, {} decode runs".format(
+            protocol["prompt_tokens"], protocol["max_new_tokens"],
+            bench["environment"]["threads"], protocol["decode_repeats"]),
+        "Payload bytes per format, with FP32 at {:.0f} MiB, plus the prefill and decode time "
+        "measured on the same machine.".format(baseline_mib))
+    left_label, left_bar = 40.0, 300.0
+    right, top, row_h = WIDTH - 56.0, 128.0, 58.0
+    scale = (right - left_bar) / baseline_mib
+    for index, mode in enumerate(order):
+        y = top + index * row_h
+        parts.append(text(left_label, y, names[mode], size=13))
+        parts.append(text(left_label, y + 17,
+                          "prefill {:.0f} ms · decode {:.2f} tok/s".format(
+                              prefill[mode], decode[mode]),
+                          size=10.5, fill=MUTED))
+        width = mib[mode] * scale
+        parts.append(f'<rect x="{left_bar:.1f}" y="{y - 13:.1f}" width="{width:.1f}" '
+                     f'height="22" rx="4" fill="{colors[mode]}"/>')
+        parts.append(text(left_bar + width + 10, y - 1,
+                          "{:.0f} MiB · {:.0%}".format(mib[mode], mib[mode] / baseline_mib),
+                          size=12, weight="bold"))
+    parts.append(text(left_label, HEIGHT - 66,
+                      "Rounded weights are storable: INT8 1 byte, INT4 half a byte, ternary a "
+                      "quarter byte, plus a 4-byte scale per 64-value group.", size=11, fill=MUTED))
+    parts.append(text(left_label, HEIGHT - 48,
+                      "Faster than FP32 here: {}. The 4- and 2-bit rows are simulated in float32, "
+                      "so they cannot be faster.".format(
+                          ", ".join(names[mode] for mode in faster) if faster else "none"),
+                      size=11, fill=MUTED))
+    parts.append(svg_close())
+    return "\n".join(parts)
+
+
+def build(bundle: dict, bench: dict | None = None) -> dict[str, str]:
+    if bench is None:
+        bench = load_bundle(BENCH_EVIDENCE)
     if not OUT_DIR.is_dir():
         OUT_DIR.mkdir(parents=True)
     return {
         "fig-mnist-ternary-cost.svg": figure_mnist(bundle),
         "fig-cifar-two-training-sets.svg": figure_cifar(bundle),
         "fig-label-isolation-recovery.svg": figure_recovery(bundle),
+        "fig-cpu-cost.svg": figure_cost(bench),
     }
 
 
@@ -272,9 +333,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true",
                         help="do not write; fail when a figure would change")
     parser.add_argument("--evidence", help="bundle to read (defaults to docs/evidence/ff_evidence.json)")
+    parser.add_argument("--bench", help="cost bundle to read (defaults to docs/evidence/bench_qwen3_0.6b.json)")
     args = parser.parse_args(argv)
 
-    figures = build(load_bundle(args.evidence))
+    figures = build(load_bundle(args.evidence), load_bundle(args.bench or BENCH_EVIDENCE))
     problems = []
     for name, body in figures.items():
         for needle in leak_needles():

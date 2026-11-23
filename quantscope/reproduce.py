@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import random
 from pathlib import Path
 
 SCHEMA = "quantscope-reproduce-v1"
@@ -36,6 +37,36 @@ SCHEMA = "quantscope-reproduce-v1"
 # legitimately differ in the last digit. 5e-6 accepts that and nothing larger.
 TOL_PP = 5e-6
 TOL_ACC = 1e-9
+TOL_RATE = 1e-3
+
+# The interval beside each accuracy is a percentile bootstrap over the per-question
+# outcomes. It is recomputed here with the same seed, the same resample count and the
+# same random stream, because an interval nobody can recompute is decoration.
+BOOTSTRAP_SEED = 12345
+BOOTSTRAP_RESAMPLES = 4000
+
+
+def bootstrap_interval(values, seed=BOOTSTRAP_SEED, resamples=BOOTSTRAP_RESAMPLES):
+    """Percentile 95% interval of the mean of `values`, or (None, None) if empty.
+
+    The stream is `random.Random(seed).random()` consumed in a fixed order, one draw
+    per resampled element, never `random.choice`: the docs publish the exact interval
+    this produces, so the draw order is part of the published number.
+    """
+    count = len(values)
+    if count == 0:
+        return None, None
+    rng = random.Random(seed)
+    means = []
+    for _ in range(resamples):
+        total = 0.0
+        for _ in range(count):
+            total += values[int(rng.random() * count)]
+        means.append(total / count)
+    means.sort()
+    edge = resamples // 40
+    return means[edge], means[-edge - 1]
+
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EVIDENCE = PACKAGE_ROOT / "docs" / "evidence" / "ff_evidence.json"
@@ -47,6 +78,8 @@ EVIDENCE_DIR = PACKAGE_ROOT / "docs" / "evidence"
 FF_SCHEMA = "ff-evidence-v2"
 REAL_MODEL_SCHEMA = "quantscope-real-model-v1"
 REAL_MODEL_MODES = ("baseline", "int8", "int4", "ternary")
+BENCH_SCHEMA = "quantscope-bench-v1"
+BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
 
 class ReproduceError(ValueError):
@@ -244,6 +277,24 @@ def _check_real_model(payload: dict, checks: list[dict]) -> None:
         _check(checks, f"real_model.{mode}.accuracy", block["accuracy"],
                block["correct"] / count, TOL_ACC,
                note="stored accuracy must equal correct/count")
+        outcomes = block.get("outcomes")
+        if outcomes is None:
+            raise ReproduceError(
+                f"{mode}: missing outcomes; the published interval cannot be re-derived "
+                "without the per-question 0/1 sequence"
+            )
+        if len(outcomes) != count:
+            raise ReproduceError(f"{mode}: {len(outcomes)} outcomes for {count} questions")
+        if any(value not in (0, 1) for value in outcomes):
+            raise ReproduceError(f"{mode}: outcomes must be 0 or 1")
+        _check(checks, f"real_model.{mode}.outcomes_sum", sum(outcomes), block["correct"], 0,
+               note="the stored outcomes have to add up to the stored correct count")
+        interval = block.get("ci95") or {}
+        low, high = bootstrap_interval(outcomes)
+        _check(checks, f"real_model.{mode}.ci95_low", interval.get("low"), low, TOL_ACC,
+               note="2.5th percentile of the bootstrap means, same seed and resample count")
+        _check(checks, f"real_model.{mode}.ci95_high", interval.get("high"), high, TOL_ACC,
+               note="97.5th percentile of the bootstrap means, same seed and resample count")
 
     baseline = modes["baseline"]
     for mode in REAL_MODEL_MODES:
@@ -264,6 +315,62 @@ def _check_real_model(payload: dict, checks: list[dict]) -> None:
                modes[mode]["accuracy"],
                (baseline["correct"] - pairs["n10"] + pairs["n01"]) / count, TOL_ACC,
                note="this mode's correct = baseline's correct - lost + gained")
+        # Both outcome lists are stored in ascending question-id order, so index i is the
+        # same question in both. The paired interval is the bootstrap of the per-question
+        # difference, which is tighter than the difference of two separate intervals.
+        base_outcomes = baseline["outcomes"]
+        deltas = [
+            100.0 * (value - base)
+            for value, base in zip(modes[mode]["outcomes"], base_outcomes, strict=True)
+        ]
+        paired = modes[mode].get("paired_delta_pp_ci95") or {}
+        low, high = bootstrap_interval(deltas)
+        _check(checks, f"real_model.{mode}.paired_ci95_low", paired.get("low"), low, TOL_ACC,
+               note="2.5th percentile of the bootstrap of per-question paired differences")
+        _check(checks, f"real_model.{mode}.paired_ci95_high", paired.get("high"), high, TOL_ACC,
+               note="97.5th percentile of the bootstrap of per-question paired differences")
+
+
+def _check_bench(payload: dict, checks: list[dict]) -> None:
+    """The cost run: four formats, one prompt, one process on one CPU.
+
+    Timings cannot be recomputed on a different machine, so the checks are the
+    identities that must hold inside the file (stored seconds against stored
+    rates, a median between its own min and max) plus the one ordering that is
+    true of the formats themselves: fewer bits, fewer bytes.
+    """
+    for required in ("model", "protocol", "modes", "limits"):
+        if required not in payload:
+            raise ReproduceError(f"bench bundle is missing '{required}'")
+    modes = payload["modes"]
+    if sorted(modes) != sorted(BENCH_MODES):
+        raise ReproduceError(f"expected modes {sorted(BENCH_MODES)}, got {sorted(modes)}")
+    protocol = payload["protocol"]
+    if protocol["prompt_tokens"] <= 0 or protocol["max_new_tokens"] <= 0:
+        raise ReproduceError(f"protocol counts are not positive: {protocol}")
+
+    sizes = {}
+    for mode in BENCH_MODES:
+        block = modes[mode]
+        if block["max_new_tokens"] <= 0:
+            raise ReproduceError(f"{mode}: max_new_tokens is {block['max_new_tokens']}")
+        if block["decode_seconds"] <= 0:
+            raise ReproduceError(f"{mode}: decode_seconds is {block['decode_seconds']}")
+        _check(checks, f"bench.{mode}.decode_tokens_per_second",
+               block["decode_tokens_per_second"],
+               block["max_new_tokens"] / block["decode_seconds"], TOL_RATE,
+               note="the stored rate must equal new tokens / stored decode seconds")
+        median = block["prefill_ms_median"]
+        low, high = block["prefill_ms_min"], block["prefill_ms_max"]
+        _check(checks, f"bench.{mode}.prefill_ms_median", median,
+               min(max(median, low), high), 0,
+               note="the median must sit between the stored min and max")
+        sizes[mode] = block["quantized_bytes"]
+
+    if not (sizes["ternary"] < sizes["int4"] < sizes["int8"] < sizes["baseline"]):
+        raise ReproduceError(
+            "payload sizes are not ordered by width: " +
+            ", ".join(f"{mode} {sizes[mode]}" for mode in BENCH_MODES))
 
 
 def _bundle_paths(evidence_path=None) -> list[Path]:
@@ -272,6 +379,7 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
         return [Path(evidence_path)]
     paths = [DEFAULT_EVIDENCE]
     paths += sorted(EVIDENCE_DIR.glob("real_model_*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("bench_*.json"))
     return paths
 
 
@@ -281,6 +389,8 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_ff(payload, checks)
     elif schema == REAL_MODEL_SCHEMA:
         _check_real_model(payload, checks)
+    elif schema == BENCH_SCHEMA:
+        _check_bench(payload, checks)
     else:
         raise ReproduceError(f"{name}: unknown evidence schema {schema!r}")
 

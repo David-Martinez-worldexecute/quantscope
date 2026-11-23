@@ -30,8 +30,8 @@ drift apart."
 run.py  ──►  manifest + predictions (sha256 of data, model, protocol)
                      │
                      ├─► verify   : re-derive accuracy, argmax, hashes
-                     ├─► reproduce: recompute all 75 published numbers
-                     └─► figures  : three SVGs, rendered from the evidence
+                     ├─► reproduce: recompute all 101 published numbers
+                     └─► figures  : four SVGs, rendered from the evidence
 ```
 
 Three properties I cared about, in order:
@@ -110,6 +110,20 @@ Two things are true at once, and I want both on the record:
   table supports is "the dynamic-activation path introduced more error than
   weight-only rounding did on this machine", not "INT8 is worse than INT4".
 
+### What each format costs, on one CPU
+
+![Payload and prefill cost per format](img/fig-cpu-cost.svg)
+
+Accuracy was only half of the question. The other half is what a format buys:
+the same 128-token prompt and 32-token greedy decode, four formats, one machine
+(16 cores, float32, `torch` 2.6.0). Payload drops from **2384 MiB** to
+**1065 MiB** with INT8, **870 MiB** with INT4, and **760 MiB** with ternary.
+Only the INT8 row also gets faster — 561 ms prefill instead of 1104 ms — because
+it is the only row that runs a real quantised kernel. The 4- and 2-bit rows are
+simulated in float32, so they save memory on paper and pay a small penalty in
+time. That distinction is the whole point of the page:
+[the measurement and its limits](cost-of-each-format.md).
+
 ## What I actually think about AI
 
 Four claims, each tied to something above.
@@ -162,7 +176,7 @@ a boring mechanism with a ledger than an exciting number with a paragraph.
 
 ```bash
 pip install quantscope
-python -m quantscope.cli reproduce        # 75 numbers, from the evidence bytes
+python -m quantscope.cli reproduce        # 101 numbers, from the evidence bytes
 python -m quantscope.cli demo --out runs/demo
 python -m quantscope.cli verify --run runs/demo/run
 ```

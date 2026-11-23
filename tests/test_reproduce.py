@@ -129,6 +129,48 @@ class RealModelBundleTest(unittest.TestCase):
         failing = [check["id"] for check in report["checks"] if not check["ok"]]
         self.assertIn("real_model.int4.accuracy_from_baseline", failing)
 
+    def test_outcomes_that_disagree_with_the_count_fail(self) -> None:
+        # Flip one question from right to wrong without touching the printed accuracy:
+        # only the stored 0/1 sequence can catch it.
+        bundle = self.load_bundle()
+        block = bundle["modes"]["int8"]
+        block["outcomes"][0] = 1 - block["outcomes"][0]
+        report = reproduce_mod.reproduce(self.write_bundle(bundle))
+        self.assertEqual(report["status"], "fail")
+        failing = [check["id"] for check in report["checks"] if not check["ok"]]
+        self.assertIn("real_model.int8.outcomes_sum", failing)
+
+    def test_outcomes_length_must_match_the_question_count(self) -> None:
+        bundle = self.load_bundle()
+        bundle["modes"]["int4"]["outcomes"].pop()
+        with self.assertRaises(reproduce_mod.ReproduceError):
+            reproduce_mod.reproduce(self.write_bundle(bundle))
+
+    def test_missing_outcomes_is_rejected(self) -> None:
+        bundle = self.load_bundle()
+        bundle["modes"]["ternary"].pop("outcomes")
+        with self.assertRaises(reproduce_mod.ReproduceError):
+            reproduce_mod.reproduce(self.write_bundle(bundle))
+
+    def test_interval_that_disagrees_with_the_outcomes_fails(self) -> None:
+        bundle = self.load_bundle()
+        bundle["modes"]["int8"]["ci95"]["low"] += 0.05
+        report = reproduce_mod.reproduce(self.write_bundle(bundle))
+        self.assertEqual(report["status"], "fail")
+        failing = [check["id"] for check in report["checks"] if not check["ok"]]
+        self.assertIn("real_model.int8.ci95_low", failing)
+
+    def test_paired_interval_survives_only_with_the_right_sign(self) -> None:
+        # The delta is (mode - baseline) per question. Swapping the stored low and high
+        # is exactly the mistake that comes from subtracting in the other order.
+        bundle = self.load_bundle()
+        paired = bundle["modes"]["ternary"]["paired_delta_pp_ci95"]
+        paired["low"], paired["high"] = paired["high"], paired["low"]
+        report = reproduce_mod.reproduce(self.write_bundle(bundle))
+        self.assertEqual(report["status"], "fail")
+        failing = [check["id"] for check in report["checks"] if not check["ok"]]
+        self.assertIn("real_model.ternary.paired_ci95_low", failing)
+
     def test_unknown_schema_is_rejected(self) -> None:
         with self.assertRaises(reproduce_mod.ReproduceError):
             reproduce_mod.reproduce(self.write_bundle({"schema": "something-else-v1"}))

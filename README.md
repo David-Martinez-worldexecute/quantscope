@@ -12,9 +12,14 @@
   changing only *where the quantization scale is computed* recovers **2.96 of them (64.1%)**. The
   cost was mostly a scale-alignment problem, not a bit-width problem. Two more figures and the
   places where the argument breaks are in [what-this-is.md](docs/what-this-is.md).
-- **One command.** `python -m quantscope.cli reproduce` recomputes all **75** published numbers —
-  including the 171-question, four-format real-model run — from the evidence files in this
-  repository, and fails if any of them stops following from the bytes beside it.
+- **One command.** `python -m quantscope.cli reproduce` recomputes all **101** published numbers —
+  including the 171-question, four-format real-model run and its bootstrap intervals — from the
+  evidence files in this repository, and fails if any of them stops following from the bytes beside
+  it.
+- **What it costs.** The same four formats on one CPU: payload falls from 2384 MiB to 760 MiB, but
+  only the real INT8 kernel actually runs faster (561 ms prefill against 1104 ms). The 4- and 2-bit
+  rows are simulated in float32, so they pay the accuracy price without collecting the speed prize —
+  [the cost page](docs/cost-of-each-format.md) says which number is measured and which is analytic.
 - **Try it.** `pip install quantscope`, then `quantscope demo --out runs/demo` prints a table in a
   few seconds on CPU; `quantscope run --model <dir>` runs the same pipeline on a model directory in
   the documented toy format, and `quantscope verify --run <dir>` re-checks what it recorded.
@@ -26,7 +31,7 @@ not a leaderboard: it reports pairwise flips and a delta in percentage points, a
 guess when the sample count does not match what was asked for.
 
 **Start here:** [What this project is, and what I think it means](docs/what-this-is.md) — why it
-exists, the three figures, four claims about AI that the measurements support, and the places where
+exists, the four figures, four claims about AI that the measurements support, and the places where
 I think the argument breaks.
 
 ## Install
@@ -61,14 +66,21 @@ and its exit code is the verdict.
 
 ## What it looks like
 
-Every number below is read from `docs/evidence/ff_evidence.json`; the pictures are regenerated from
-that file by `python scripts/make_figures.py`, and CI fails if a checked-in figure drifts from it.
+Every number below is read from `docs/evidence/`; the accuracy pictures come from
+`ff_evidence.json`, the cost picture from `bench_qwen3_0.6b.json`, and CI fails if a checked-in
+figure drifts from either file.
 
 ![Ternary weights on MNIST: where the 4.62 pp goes, split into the cost of ternarizing at all and the part that label-column isolation wins back.](docs/img/fig-mnist-ternary-cost.svg)
 
 ![The same four weight formats on CIFAR-10 with 20,000 and with all 50,000 training images.](docs/img/fig-cifar-two-training-sets.svg)
 
 ![Share of the FP32-to-ternary accuracy gap that label-column isolation recovers, on MNIST and on CIFAR-10 at both training-set sizes.](docs/img/fig-label-isolation-recovery.svg)
+
+![Payload in MiB and prefill latency for the four weight formats on one CPU: the bytes fall with every bit removed, but only the real INT8 kernel also gets faster.](docs/img/fig-cpu-cost.svg)
+
+The cost picture is the newer half: [docs/cost-of-each-format.md](docs/cost-of-each-format.md)
+has the numbers, the measurement protocol and the sentence that says which rows are simulated in
+float32 and therefore cannot be faster.
 
 ## Results
 
@@ -138,7 +150,7 @@ evidence file is `docs/evidence/qwen35_forward.json`.
 Two commands, no GPU, no downloads:
 
 ```bash
-python -m quantscope.cli reproduce   # recompute all 75 published numbers from the evidence bundle
+python -m quantscope.cli reproduce   # recompute all 101 published numbers from the evidence bundle
 python -m quantscope.cli demo --out runs/demo && python -m quantscope.cli verify --run runs/demo/run
 ```
 

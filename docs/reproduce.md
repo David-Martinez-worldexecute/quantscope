@@ -9,7 +9,7 @@ ways. Neither one needs a GPU, and neither one downloads a model.
 python -m quantscope.cli reproduce            # or: reproduce --evidence <path> --out report.json
 ```
 
-This reads `docs/evidence/` and recomputes 75 numbers: the per-seed mean accuracy of
+This reads `docs/evidence/` and recomputes 101 numbers: the per-seed mean accuracy of
 each precision mode, the per-block `accuracy_mean` of every ablation, and all 21 `headline_pp`
 percentages the README and the study pages quote. Each check compares the stored value with the value
 recomputed from the counts sitting next to it; the last line prints how many numbers were checked and

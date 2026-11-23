@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="420" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+<title id="title">What each weight format costs on this CPU</title>
+<desc id="desc">Payload bytes per format, with FP32 at 2274 MiB, plus the prefill and decode time measured on the same machine.</desc>
+<rect width="760" height="420" fill="#0f1115"/>
+<rect x="16" y="16" width="728" height="388" rx="12" fill="#151922" stroke="#252a34"/>
+<text x="40.0" y="56.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="19" fill="#eef1f6" text-anchor="start" font-weight="bold">What each weight format costs on this CPU</text>
+<text x="40.0" y="80.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" fill="#98a2b3" text-anchor="start" font-weight="normal">Qwen3-0.6B, 128 prompt tokens, 32 new tokens, 4 threads, 3 decode runs</text>
+<text x="40.0" y="128.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" fill="#eef1f6" text-anchor="start" font-weight="normal">FP32</text>
+<text x="40.0" y="145.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10.5" fill="#98a2b3" text-anchor="start" font-weight="normal">prefill 1104 ms · decode 5.19 tok/s</text>
+<rect x="300.0" y="115.0" width="404.0" height="22" rx="4" fill="#98a2b3"/>
+<text x="714.0" y="127.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" fill="#eef1f6" text-anchor="start" font-weight="bold">2274 MiB · 100%</text>
+<text x="40.0" y="186.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" fill="#eef1f6" text-anchor="start" font-weight="normal">INT8 dynamic</text>
+<text x="40.0" y="203.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10.5" fill="#98a2b3" text-anchor="start" font-weight="normal">prefill 561 ms · decode 8.58 tok/s</text>
+<rect x="300.0" y="173.0" width="180.6" height="22" rx="4" fill="#5b8def"/>
+<text x="490.6" y="185.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" fill="#eef1f6" text-anchor="start" font-weight="bold">1016 MiB · 45%</text>
+<text x="40.0" y="244.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" fill="#eef1f6" text-anchor="start" font-weight="normal">INT4 RTN, groups of 64</text>
+<text x="40.0" y="261.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10.5" fill="#98a2b3" text-anchor="start" font-weight="normal">prefill 1136 ms · decode 4.93 tok/s</text>
+<rect x="300.0" y="231.0" width="147.5" height="22" rx="4" fill="#f0b64a"/>
+<text x="457.5" y="243.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" fill="#eef1f6" text-anchor="start" font-weight="bold">830 MiB · 37%</text>
+<text x="40.0" y="302.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" fill="#eef1f6" text-anchor="start" font-weight="normal">ternary RTN, groups of 64</text>
+<text x="40.0" y="319.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="10.5" fill="#98a2b3" text-anchor="start" font-weight="normal">prefill 1122 ms · decode 5.01 tok/s</text>
+<rect x="300.0" y="289.0" width="128.8" height="22" rx="4" fill="#5cc4a0"/>
+<text x="438.8" y="301.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" fill="#eef1f6" text-anchor="start" font-weight="bold">725 MiB · 32%</text>
+<text x="40.0" y="354.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="start" font-weight="normal">Rounded weights are storable: INT8 1 byte, INT4 half a byte, ternary a quarter byte, plus a 4-byte scale per 64-value group.</text>
+<text x="40.0" y="372.0" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11" fill="#98a2b3" text-anchor="start" font-weight="normal">Faster than FP32 here: INT8 dynamic. The 4- and 2-bit rows are simulated in float32, so they cannot be faster.</text>
+</svg>
