@@ -1,0 +1,128 @@
+{
+  "schema": "quantscope-answer-distribution-v1",
+  "source_run": "245cd63705964b77b75473d1cb6bf98c",
+  "questions": 600,
+  "modes": {
+    "baseline": {
+      "count": 600,
+      "picks": {
+        "A": 454,
+        "B": 93,
+        "C": 13,
+        "D": 40
+      },
+      "share": {
+        "A": 0.756667,
+        "B": 0.155,
+        "C": 0.021667,
+        "D": 0.066667
+      },
+      "distinct_answers": 4,
+      "most_common_pick": "A",
+      "most_common_share": 0.756667,
+      "gold": {
+        "A": 122,
+        "B": 141,
+        "C": 178,
+        "D": 159
+      },
+      "modal_gold": "C",
+      "constant_output_accuracy": 0.296667,
+      "accuracy": 0.305,
+      "file_bytes": 128046,
+      "file_sha256": "9ffcde0590547a51cc3abd39ca47140e4298c144711f89f209b5ef17d1df920e"
+    },
+    "int8": {
+      "count": 600,
+      "picks": {
+        "A": 476,
+        "B": 59,
+        "C": 26,
+        "D": 39
+      },
+      "share": {
+        "A": 0.793333,
+        "B": 0.098333,
+        "C": 0.043333,
+        "D": 0.065
+      },
+      "distinct_answers": 4,
+      "most_common_pick": "A",
+      "most_common_share": 0.793333,
+      "gold": {
+        "A": 122,
+        "B": 141,
+        "C": 178,
+        "D": 159
+      },
+      "modal_gold": "C",
+      "constant_output_accuracy": 0.296667,
+      "accuracy": 0.226667,
+      "file_bytes": 128018,
+      "file_sha256": "d2007645b6989b466f383e4d433b5f5dfec61ddea04a9be3db33577ac664d0c6"
+    },
+    "int4": {
+      "count": 600,
+      "picks": {
+        "A": 96,
+        "B": 426,
+        "C": 5,
+        "D": 73
+      },
+      "share": {
+        "A": 0.16,
+        "B": 0.71,
+        "C": 0.008333,
+        "D": 0.121667
+      },
+      "distinct_answers": 4,
+      "most_common_pick": "B",
+      "most_common_share": 0.71,
+      "gold": {
+        "A": 122,
+        "B": 141,
+        "C": 178,
+        "D": 159
+      },
+      "modal_gold": "C",
+      "constant_output_accuracy": 0.296667,
+      "accuracy": 0.295,
+      "file_bytes": 128259,
+      "file_sha256": "9fd9fecc1bc41be6341d83dd27302e2670a0a52bb53f5dbdf57fdfc56cc27550"
+    },
+    "ternary": {
+      "count": 600,
+      "picks": {
+        "A": 1,
+        "B": 0,
+        "C": 0,
+        "D": 599
+      },
+      "share": {
+        "A": 0.001667,
+        "B": 0.0,
+        "C": 0.0,
+        "D": 0.998333
+      },
+      "distinct_answers": 2,
+      "most_common_pick": "D",
+      "most_common_share": 0.998333,
+      "gold": {
+        "A": 122,
+        "B": 141,
+        "C": 178,
+        "D": 159
+      },
+      "modal_gold": "C",
+      "constant_output_accuracy": 0.296667,
+      "accuracy": 0.266667,
+      "file_bytes": 129814,
+      "file_sha256": "4ad80e5cc02fa5ebe84cf4c95821f28613049fe9285320ae852536513b16958d"
+    }
+  },
+  "limits": [
+    "One model, one dataset slice, one scoring rule: counts describe this run, not quantisation in general.",
+    "A high share of one letter is evidence of collapse on these 600 items; it does not identify which layers cause it.",
+    "Constant-output accuracy is the score you get by always answering the most common gold letter, computed per format from its own gold column."
+  ]
+}

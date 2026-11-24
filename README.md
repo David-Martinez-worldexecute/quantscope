@@ -12,7 +12,7 @@
   changing only *where the quantization scale is computed* recovers **2.96 of them (64.1%)**. The
   cost was mostly a scale-alignment problem, not a bit-width problem. Two more figures and the
   places where the argument breaks are in [what-this-is.md](docs/what-this-is.md).
-- **One command.** `python -m quantscope.cli reproduce` recomputes all **110** published numbers —
+- **One command.** `python -m quantscope.cli reproduce` recomputes all **139** published numbers —
   including the 600-question, four-format real-model run, its bootstrap and paired intervals, and
   the CPU timing and held-weight rows — from the
   evidence files in this repository, and fails if any of them stops following from the bytes beside
@@ -130,6 +130,12 @@ zero, so neither loss is shown on this set. The earlier 171-question version of 
 every interval crossing zero — tripling the sample established one loss and left two open, and
 that reversal is reported rather than smoothed over.
 
+Counting the letters each format chose makes one row sharper. Ternary answered **D** on
+599 of 600 questions, so its 26.67% is the score of one constant, not a reading of the
+questions: always answering C would earn 29.67% on the same set. INT8, at 22.67%, also
+lands below that constant. The counts, and the proof that packing the weights changes no
+answer, are in [the real-model page](docs/real-model-qwen3-0.6b.md#what-each-format-actually-chose).
+
 These numbers were produced by the laboratory harness that shares this protocol, not by this
 package's `run` command: v0.1.0 loads only the documented toy format. The per-item evidence,
 the manifest hash and the independent re-check script live in `docs/real-model-qwen3-0.6b.md`.
@@ -158,7 +164,7 @@ evidence file is `docs/evidence/qwen35_forward.json`.
 Two commands, no GPU, no downloads:
 
 ```bash
-python -m quantscope.cli reproduce   # recompute all 110 published numbers from the evidence bundle
+python -m quantscope.cli reproduce   # recompute all 139 published numbers from the evidence bundle
 python -m quantscope.cli demo --out runs/demo && python -m quantscope.cli verify --run runs/demo/run
 ```
 

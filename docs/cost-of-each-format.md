@@ -46,6 +46,12 @@ They overlap heavily: 600 questions cannot separate four formats that sit within
 points of each other. That is the honest reading, and it is why the page reports intervals
 next to the point estimates.
 
+The accuracy column hides one failure mode, so it is worth naming: ternary RTN, groups of 64
+answered D on 599 of 600 questions, so its 26.67% is the score of one constant rather than a
+reading of the question. Always answering C would earn 29.67% on the same questions, and
+that collapse is invisible in a percentage on its own. [The answer-distribution table](real-
+model-qwen3-0.6b.md) has the counts.
+
 ## One picture, both halves
 
 ![Accuracy against payload for the four formats](img/fig-accuracy-vs-payload.svg)

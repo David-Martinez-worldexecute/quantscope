@@ -30,7 +30,7 @@ drift apart."
 run.py  ──►  manifest + predictions (sha256 of data, model, protocol)
                      │
                      ├─► verify   : re-derive accuracy, argmax, hashes
-                     ├─► reproduce: recompute all 110 published numbers
+                     ├─► reproduce: recompute all 139 published numbers
                      └─► figures  : five SVGs, rendered from the evidence
 ```
 
@@ -109,6 +109,10 @@ Two things are true at once, and I want both on the record:
 - **The other two are not.** INT4 (−1.00 pp) and ternary (−3.83 pp) both have paired
   intervals that contain zero, and their intervals overlap each other heavily. Saying
   "ternary is worse than INT4" is not supported by this set.
+- **Ternary is not slightly worse; it stopped answering.** It picked D on 599 of 600
+  questions, so its 26.67% is the constant-answer score for D (159 questions have D as
+  gold). Always answering C would earn 29.67%, which INT8 (22.67%) also fails to clear.
+  A percentage hides that; the letter counts do not.
 
 This same table used to have 171 rows, and at that size every one of the three intervals
 contained zero — I reported "no accuracy loss is demonstrated" and meant it. Tripling the
@@ -206,7 +210,7 @@ exciting number with a paragraph.
 
 ```bash
 pip install quantscope
-python -m quantscope.cli reproduce        # 110 numbers, from the evidence bytes
+python -m quantscope.cli reproduce        # 139 numbers, from the evidence bytes
 python -m quantscope.cli demo --out runs/demo
 python -m quantscope.cli verify --run runs/demo/run
 ```

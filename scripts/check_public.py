@@ -71,6 +71,8 @@ REQUIRED = [
     "docs/real-model-qwen3-0.6b.md",
     "docs/evidence/packed_qwen3_0.6b.json",
     "docs/evidence/packed_footprint.json",
+    "docs/evidence/answer_distribution.json",
+    "docs/evidence/packing_equivalence.json",
     "scripts/make_figures.py",
     "scripts/sync_from_lab.py",
     "scripts/check_public.py",

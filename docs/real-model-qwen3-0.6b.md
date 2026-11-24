@@ -18,6 +18,23 @@ This page records one real evaluation so a reader can check the numbers in the R
 | INT4 RTN, group 64 | 177 / 600 | 29.50% | [25.83%, 33.33%] | -1.00 pp | [-5.33 to +3.50] pp | 95 | 89 |
 | ternary (1.58-bit) | 160 / 600 | 26.67% | [23.17%, 30.33%] | -3.83 pp | [-9.50 to +2.00] pp | 162 | 139 |
 
+## What each format actually chose
+
+Accuracy alone hides one failure mode: a format that answers the same letter every time still scores whatever that letter happens to earn. This table counts the letters each format picked over the whole run, and the last column is what always answering the most common gold letter would score on the same questions.
+
+| weight format | A | B | C | D | most common pick | accuracy | constant-answer baseline |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| FP32 | 454 | 93 | 13 | 40 | A (75.7%) | 30.50% | 29.67% (always C) |
+| INT8 dynamic (PyTorch) | 476 | 59 | 26 | 39 | A (79.3%) | 22.67% | 29.67% (always C) |
+| INT4 RTN, group 64 | 96 | 426 | 5 | 73 | B (71.0%) | 29.50% | 29.67% (always C) |
+| ternary (1.58-bit) | 1 | 0 | 0 | 599 | D (99.8%) | 26.67% | 29.67% (always C) |
+
+The ternary (1.58-bit) row is not a slightly worse model. It answered **D** on 599 of 600 questions; its next most frequent letter appears 1 times, and the one answer that was not D happened to be right as well. Its 26.67% is therefore the value of one constant: 159 of the 600 questions have D as the gold answer. The paired delta compares a constant with a model and should not be read as a claim about how much quality that format costs.
+
+Every accuracy is also read against the constant-answer baseline of 29.67% (always C). Only FP32 clears it, by 0.83 pp. INT8 dynamic (PyTorch), INT4 RTN, group 64, ternary (1.58-bit) sits at or below that baseline, so on this slice those scores are indistinguishable from answering one letter every time.
+
+The counts, shares and constant-answer figures are recomputed from this bundle by `python -m quantscope.cli reproduce`; the bundle is `docs/evidence/answer_distribution.json`.
+
 ## What the intervals say, and what they do not
 
 The paired interval resamples the per-question outcomes with the same seed the bundle records (12345, 4000 resamples), so it can be recomputed from the stored 0/1 sequence instead of believed.

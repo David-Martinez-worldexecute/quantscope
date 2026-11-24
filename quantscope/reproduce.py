@@ -82,6 +82,14 @@ BENCH_SCHEMA = "quantscope-bench-v1"
 PACKED_SCHEMA = "quantscope-packed-v1"
 PACKED_MODES = ("baseline", "int4", "ternary")
 FOOTPRINT_SCHEMA = "quantscope-packed-footprint-v1"
+EQUIVALENCE_SCHEMA = "quantscope-packing-equivalence-v1"
+EQUIVALENCE_MODES = ("int4", "ternary")
+ANSWER_SCHEMA = "quantscope-answer-distribution-v1"
+ANSWER_MODES = ("baseline", "int8", "int4", "ternary")
+ANSWER_LETTERS = ("A", "B", "C", "D")
+# A format that picks one letter for almost every question is not being measured any
+# more; the share is the threshold the published sentence uses to say so.
+COLLAPSE_SHARE = 0.90
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
 
@@ -467,6 +475,115 @@ def _check_footprint(payload: dict, checks: list[dict]) -> None:
         raise ReproduceError(f"settled RSS does not fall with the held bytes: {settled}")
 
 
+def _check_equivalence(payload: dict, checks: list[dict]) -> None:
+    """Packing must reproduce simulated quantisation bit for bit, not approximately.
+
+    The bundle compares the packed-then-unpacked weights against the repository's own
+    quantiser on the same checkpoint, and then compares the answers both paths give on
+    the same questions. Both halves are recomputable: the tensor difference must be
+    exactly zero, and the answer lists must agree element by element.
+    """
+    for required in ("model", "protocol", "modes", "limits", "discrepancies"):
+        if required not in payload:
+            raise ReproduceError(f"equivalence bundle is missing '{required}'")
+    modes = payload["modes"]
+    if sorted(modes) != sorted(EQUIVALENCE_MODES):
+        raise ReproduceError(
+            f"expected modes {sorted(EQUIVALENCE_MODES)}, got {sorted(modes)}")
+    if payload["matrices_compared"] <= 0:
+        raise ReproduceError("equivalence bundle compared no matrices")
+    if payload["discrepancies"]:
+        raise ReproduceError(
+            f"{len(payload['discrepancies'])} matrices differ between packed and "
+            "simulated weights; the receipt does not support 'same numbers'")
+    _check(checks, "equivalence.worst_abs_diff", payload["worst_abs_diff"], 0.0, 0.0,
+           note="packed weights must equal the simulated weights element for element")
+
+    questions = payload["protocol"]["questions"]
+    for mode in EQUIVALENCE_MODES:
+        block = modes[mode]
+        simulated = block["simulated_answers"]
+        packed = block["packed_answers"]
+        if not (len(simulated) == len(packed) == block["count"] == questions):
+            raise ReproduceError(
+                f"{mode}: {len(simulated)}/{len(packed)} answers, count "
+                f"{block['count']}, protocol says {questions}")
+        agree = sum(1 for want, got in zip(simulated, packed) if want == got)
+        _check(checks, f"equivalence.{mode}.answers_identical_to_simulated",
+               block["answers_identical_to_simulated"], agree, 0)
+        _check(checks, f"equivalence.{mode}.max_abs_logit_diff",
+               block["max_abs_logit_diff"], 0.0, 0.0,
+               note="identical weights read through the same prompt must agree exactly")
+
+
+def _check_answer_distribution(payload: dict, checks: list[dict]) -> None:
+    """What letter each format chose, and whether that is still a model at all.
+
+    A format that answers the same letter for 99.8% of the questions is not degraded by
+    three points; it has stopped depending on the question. Every share here is
+    recomputed from the stored pick counts, and the constant-output accuracy is
+    recomputed from the stored gold counts, so the collapse claim cannot drift.
+    """
+    for required in ("modes", "questions", "limits", "source_run"):
+        if required not in payload:
+            raise ReproduceError(f"answer bundle is missing '{required}'")
+    modes = payload["modes"]
+    if sorted(modes) != sorted(ANSWER_MODES):
+        raise ReproduceError(
+            f"expected modes {sorted(ANSWER_MODES)}, got {sorted(modes)}")
+    total = payload["questions"]
+    gold_seen = None
+
+    for mode in ANSWER_MODES:
+        block = modes[mode]
+        if block["count"] != total:
+            raise ReproduceError(f"{mode}: count {block['count']} but {total} questions")
+        picks = block["picks"]
+        share = block["share"]
+        if sorted(picks) != sorted(ANSWER_LETTERS):
+            raise ReproduceError(f"{mode}: picks cover {sorted(picks)}")
+        if sum(picks.values()) != total:
+            raise ReproduceError(
+                f"{mode}: picks sum to {sum(picks.values())}, not {total}")
+        for letter in ANSWER_LETTERS:
+            _check(checks, f"answers.{mode}.share.{letter}", share[letter],
+                   picks[letter] / total, 1e-5,
+                   note="each share must be its pick count over the total")
+        expected_pick = max(picks, key=lambda letter: picks[letter])
+        if block["most_common_pick"] != expected_pick:
+            raise ReproduceError(
+                f"{mode}: most_common_pick is {block['most_common_pick']!r}, "
+                f"the counts say {expected_pick!r}")
+        _check(checks, f"answers.{mode}.most_common_share",
+               block["most_common_share"], picks[expected_pick] / total, 1e-5)
+
+        gold = block["gold"]
+        if sorted(gold) != sorted(ANSWER_LETTERS):
+            raise ReproduceError(f"{mode}: gold covers {sorted(gold)}")
+        if sum(gold.values()) != total:
+            raise ReproduceError(f"{mode}: gold sums to {sum(gold.values())}, not {total}")
+        if gold_seen is None:
+            gold_seen = gold
+        elif gold != gold_seen:
+            raise ReproduceError(
+                f"{mode}: the gold labels changed between modes; every format "
+                "must be scored on the same questions")
+        modal = max(gold, key=lambda letter: gold[letter])
+        if block["modal_gold"] != modal:
+            raise ReproduceError(
+                f"{mode}: modal_gold is {block['modal_gold']!r}, the counts say {modal!r}")
+        _check(checks, f"answers.{mode}.constant_output_accuracy",
+               block["constant_output_accuracy"], gold[modal] / total, 1e-5,
+               note="answering the most common gold letter every time is the floor")
+
+    collapsed = sorted(mode for mode in ANSWER_MODES
+                       if modes[mode]["most_common_share"] >= COLLAPSE_SHARE)
+    if collapsed != ["ternary"]:
+        raise ReproduceError(
+            f"the collapsed set is {collapsed}, not ['ternary']; the page says one "
+            "format stopped depending on the question and the counts must agree")
+
+
 def _bundle_paths(evidence_path=None) -> list[Path]:
     """Which bundles to check: the one asked for, or the whole evidence directory."""
     if evidence_path:
@@ -475,6 +592,8 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths += sorted(EVIDENCE_DIR.glob("real_model_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("bench_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("packed_*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("answer_*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("packing_equivalence*.json"))
     return paths
 
 
@@ -490,6 +609,10 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_packed(payload, checks)
     elif schema == FOOTPRINT_SCHEMA:
         _check_footprint(payload, checks)
+    elif schema == EQUIVALENCE_SCHEMA:
+        _check_equivalence(payload, checks)
+    elif schema == ANSWER_SCHEMA:
+        _check_answer_distribution(payload, checks)
     else:
         raise ReproduceError(f"{name}: unknown evidence schema {schema!r}")
 

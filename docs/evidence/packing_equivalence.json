@@ -1,0 +1,110 @@
+{
+  "schema": "quantscope-packing-equivalence-v1",
+  "generated_utc": "2026-11-24T03:32:29Z",
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "group_size": 64,
+    "skip_keywords": [
+      "lm_head"
+    ],
+    "questions": 12,
+    "scoring": "last-position single-token A/B/C/D logits",
+    "reference": "the repository's own simulated quantisation, not float32"
+  },
+  "matrices_compared": 392,
+  "worst_abs_diff": 0.0,
+  "discrepancies": [],
+  "float32_answers": [
+    "D",
+    "D",
+    "A",
+    "B",
+    "B",
+    "A",
+    "A",
+    "B",
+    "D",
+    "A",
+    "A",
+    "B"
+  ],
+  "modes": {
+    "int4": {
+      "replaced_layers": 196,
+      "answers_identical_to_simulated": 12,
+      "count": 12,
+      "max_abs_logit_diff": 0.0,
+      "simulated_answers": [
+        "D",
+        "A",
+        "A",
+        "A",
+        "B",
+        "B",
+        "A",
+        "B",
+        "B",
+        "A",
+        "A",
+        "B"
+      ],
+      "packed_answers": [
+        "D",
+        "A",
+        "A",
+        "A",
+        "B",
+        "B",
+        "A",
+        "B",
+        "B",
+        "A",
+        "A",
+        "B"
+      ],
+      "simulated_answers_matching_float32": 8
+    },
+    "ternary": {
+      "replaced_layers": 196,
+      "answers_identical_to_simulated": 12,
+      "count": 12,
+      "max_abs_logit_diff": 0.0,
+      "simulated_answers": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "packed_answers": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "simulated_answers_matching_float32": 3
+    }
+  },
+  "limits": [
+    "This compares my two implementations of the same formula, not the formula against a reference library.",
+    "Twelve questions is an end-to-end path check, not a second accuracy measurement.",
+    "Identical weights and logits do not imply identical wall-clock behaviour: packing changes how the matrix is stored, not the arithmetic."
+  ]
+}
