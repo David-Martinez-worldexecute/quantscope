@@ -12,7 +12,7 @@
   changing only *where the quantization scale is computed* recovers **2.96 of them (64.1%)**. The
   cost was mostly a scale-alignment problem, not a bit-width problem. Two more figures and the
   places where the argument breaks are in [what-this-is.md](docs/what-this-is.md).
-- **One command.** `python -m quantscope.cli reproduce` recomputes all **139** published numbers —
+- **One command.** `python -m quantscope.cli reproduce` recomputes all **177** published numbers —
   including the 600-question, four-format real-model run, its bootstrap and paired intervals, and
   the CPU timing and held-weight rows — from the
   evidence files in this repository, and fails if any of them stops following from the bytes beside
@@ -136,6 +136,16 @@ questions: always answering C would earn 29.67% on the same set. INT8, at 22.67%
 lands below that constant. The counts, and the proof that packing the weights changes no
 answer, are in [the real-model page](docs/real-model-qwen3-0.6b.md#what-each-format-actually-chose).
 
+Two further runs narrow what that collapse is. Sweeping prefixes one layer at a time puts
+the first collapse at **18 quantised layers** and a stable one from 23, while the earlier
+four-layer grid stepped from 16 to 20 and landed on neither rung — the granularity decides
+what you can see. And a real 4-bit container (bitsandbytes NF4, on the GPU) holds **4.5x
+fewer bytes** and keeps answering, spreading its 12 answers over several letters. Formats of
+similar size therefore did very different things here, which is why the collapse is reported
+as a property of that quantiser rather than of low bit-width in general. Both receipts are in
+[the cost page](docs/cost-of-each-format.md#a-real-4-bit-container-on-the-gpu) and
+[the real-model page](docs/real-model-qwen3-0.6b.md#one-layer-at-a-time-not-four-at-a-time).
+
 These numbers were produced by the laboratory harness that shares this protocol, not by this
 package's `run` command: v0.1.0 loads only the documented toy format. The per-item evidence,
 the manifest hash and the independent re-check script live in `docs/real-model-qwen3-0.6b.md`.
@@ -164,7 +174,7 @@ evidence file is `docs/evidence/qwen35_forward.json`.
 Two commands, no GPU, no downloads:
 
 ```bash
-python -m quantscope.cli reproduce   # recompute all 139 published numbers from the evidence bundle
+python -m quantscope.cli reproduce   # recompute all 177 published numbers from the evidence bundle
 python -m quantscope.cli demo --out runs/demo && python -m quantscope.cli verify --run runs/demo/run
 ```
 

@@ -1,0 +1,355 @@
+{
+  "schema": "quantscope-prefix-scan-v1",
+  "generated_utc": "2026-11-24T05:19:00Z",
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "versions": {
+    "python": "3.12.10",
+    "torch": "2.6.0+cu124",
+    "transformers": "5.23.0"
+  },
+  "protocol": {
+    "questions": 60,
+    "group_size": 64,
+    "start": 12,
+    "max_tokens": 96,
+    "scoring": "last-position single-token A/B/C/D logits",
+    "quantisation": "ternary per-group absmean (same formula as the lab quantiser)",
+    "collapse_share": 0.9,
+    "threads": 4,
+    "device": "cuda"
+  },
+  "baseline": {
+    "correct": 13,
+    "count": 60,
+    "histogram": {
+      "A": 39,
+      "B": 9,
+      "C": 3,
+      "D": 9
+    },
+    "most_common": "A",
+    "most_common_share": 0.65,
+    "mean_gap": 6.679783
+  },
+  "conditions": [
+    {
+      "layers_quantised": 12,
+      "float32_layers": 16,
+      "linear_layers": 84,
+      "correct": 17,
+      "count": 60,
+      "histogram": {
+        "A": 7,
+        "B": 6,
+        "C": 3,
+        "D": 44
+      },
+      "most_common": "D",
+      "most_common_share": 0.733333,
+      "mean_gap": 4.526238,
+      "mean_abs_logit_drift": 18.260377
+    },
+    {
+      "layers_quantised": 13,
+      "float32_layers": 15,
+      "linear_layers": 91,
+      "correct": 18,
+      "count": 60,
+      "histogram": {
+        "A": 3,
+        "B": 25,
+        "C": 1,
+        "D": 31
+      },
+      "most_common": "D",
+      "most_common_share": 0.516667,
+      "mean_gap": 5.582031,
+      "mean_abs_logit_drift": 18.020574
+    },
+    {
+      "layers_quantised": 14,
+      "float32_layers": 14,
+      "linear_layers": 98,
+      "correct": 13,
+      "count": 60,
+      "histogram": {
+        "A": 13,
+        "B": 37,
+        "C": 3,
+        "D": 7
+      },
+      "most_common": "B",
+      "most_common_share": 0.616667,
+      "mean_gap": 5.72655,
+      "mean_abs_logit_drift": 14.499
+    },
+    {
+      "layers_quantised": 15,
+      "float32_layers": 13,
+      "linear_layers": 105,
+      "correct": 14,
+      "count": 60,
+      "histogram": {
+        "A": 25,
+        "B": 10,
+        "C": 14,
+        "D": 11
+      },
+      "most_common": "A",
+      "most_common_share": 0.416667,
+      "mean_gap": 3.373354,
+      "mean_abs_logit_drift": 19.722165
+    },
+    {
+      "layers_quantised": 16,
+      "float32_layers": 12,
+      "linear_layers": 112,
+      "correct": 15,
+      "count": 60,
+      "histogram": {
+        "A": 30,
+        "B": 0,
+        "C": 16,
+        "D": 14
+      },
+      "most_common": "A",
+      "most_common_share": 0.5,
+      "mean_gap": 3.623796,
+      "mean_abs_logit_drift": 20.348442
+    },
+    {
+      "layers_quantised": 17,
+      "float32_layers": 11,
+      "linear_layers": 119,
+      "correct": 12,
+      "count": 60,
+      "histogram": {
+        "A": 20,
+        "B": 0,
+        "C": 13,
+        "D": 27
+      },
+      "most_common": "D",
+      "most_common_share": 0.45,
+      "mean_gap": 5.371927,
+      "mean_abs_logit_drift": 18.214985
+    },
+    {
+      "layers_quantised": 18,
+      "float32_layers": 10,
+      "linear_layers": 126,
+      "correct": 10,
+      "count": 60,
+      "histogram": {
+        "A": 60,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "most_common": "A",
+      "most_common_share": 1.0,
+      "mean_gap": 5.358803,
+      "mean_abs_logit_drift": 21.556942
+    },
+    {
+      "layers_quantised": 19,
+      "float32_layers": 9,
+      "linear_layers": 133,
+      "correct": 14,
+      "count": 60,
+      "histogram": {
+        "A": 7,
+        "B": 38,
+        "C": 12,
+        "D": 3
+      },
+      "most_common": "B",
+      "most_common_share": 0.633333,
+      "mean_gap": 3.112818,
+      "mean_abs_logit_drift": 19.856061
+    },
+    {
+      "layers_quantised": 20,
+      "float32_layers": 8,
+      "linear_layers": 140,
+      "correct": 15,
+      "count": 60,
+      "histogram": {
+        "A": 35,
+        "B": 3,
+        "C": 3,
+        "D": 19
+      },
+      "most_common": "A",
+      "most_common_share": 0.583333,
+      "mean_gap": 3.337688,
+      "mean_abs_logit_drift": 19.500225
+    },
+    {
+      "layers_quantised": 21,
+      "float32_layers": 7,
+      "linear_layers": 147,
+      "correct": 12,
+      "count": 60,
+      "histogram": {
+        "A": 18,
+        "B": 31,
+        "C": 11,
+        "D": 0
+      },
+      "most_common": "B",
+      "most_common_share": 0.516667,
+      "mean_gap": 3.065172,
+      "mean_abs_logit_drift": 20.696955
+    },
+    {
+      "layers_quantised": 22,
+      "float32_layers": 6,
+      "linear_layers": 154,
+      "correct": 19,
+      "count": 60,
+      "histogram": {
+        "A": 5,
+        "B": 0,
+        "C": 33,
+        "D": 22
+      },
+      "most_common": "C",
+      "most_common_share": 0.55,
+      "mean_gap": 5.116035,
+      "mean_abs_logit_drift": 19.9093
+    },
+    {
+      "layers_quantised": 23,
+      "float32_layers": 5,
+      "linear_layers": 161,
+      "correct": 15,
+      "count": 60,
+      "histogram": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 60
+      },
+      "most_common": "D",
+      "most_common_share": 1.0,
+      "mean_gap": 4.679504,
+      "mean_abs_logit_drift": 20.176851
+    },
+    {
+      "layers_quantised": 24,
+      "float32_layers": 4,
+      "linear_layers": 168,
+      "correct": 11,
+      "count": 60,
+      "histogram": {
+        "A": 57,
+        "B": 0,
+        "C": 1,
+        "D": 2
+      },
+      "most_common": "A",
+      "most_common_share": 0.95,
+      "mean_gap": 3.045626,
+      "mean_abs_logit_drift": 21.805307
+    },
+    {
+      "layers_quantised": 25,
+      "float32_layers": 3,
+      "linear_layers": 175,
+      "correct": 15,
+      "count": 60,
+      "histogram": {
+        "A": 1,
+        "B": 0,
+        "C": 0,
+        "D": 59
+      },
+      "most_common": "D",
+      "most_common_share": 0.983333,
+      "mean_gap": 5.2227,
+      "mean_abs_logit_drift": 22.336341
+    },
+    {
+      "layers_quantised": 26,
+      "float32_layers": 2,
+      "linear_layers": 182,
+      "correct": 15,
+      "count": 60,
+      "histogram": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 60
+      },
+      "most_common": "D",
+      "most_common_share": 1.0,
+      "mean_gap": 7.189332,
+      "mean_abs_logit_drift": 18.737954
+    },
+    {
+      "layers_quantised": 27,
+      "float32_layers": 1,
+      "linear_layers": 189,
+      "correct": 15,
+      "count": 60,
+      "histogram": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 60
+      },
+      "most_common": "D",
+      "most_common_share": 1.0,
+      "mean_gap": 3.883687,
+      "mean_abs_logit_drift": 20.041505
+    },
+    {
+      "layers_quantised": 28,
+      "float32_layers": 0,
+      "linear_layers": 196,
+      "correct": 15,
+      "count": 60,
+      "histogram": {
+        "A": 1,
+        "B": 0,
+        "C": 0,
+        "D": 59
+      },
+      "most_common": "D",
+      "most_common_share": 0.983333,
+      "mean_gap": 7.760211,
+      "mean_abs_logit_drift": 24.937056
+    }
+  ],
+  "first_collapse": 18,
+  "collapse_lengths": [
+    18,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28
+  ],
+  "collapse_letters": [
+    "A",
+    "D",
+    "A",
+    "D",
+    "D",
+    "D",
+    "D"
+  ],
+  "collapse_contiguous": false,
+  "limits": [
+    "60 questions read from the front of the same 600-item set; the headline accuracy uses all 600, so these two percentages are not the same measurement.",
+    "One prefix per forward pass on one GPU: the sweep says which prefix produced a single-letter answer, not why that prefix does.",
+    "Only the last-position A/B/C/D logits are scored; a prefix could change how the model would explain itself without changing the letter counts, and that would be invisible here.",
+    "The quantiser is the laboratory's per-group absmean ternary rule, so a different group size or a different format would move the collapse point.",
+    "A collapse threshold of 0.90 is a reading aid, not a property of the model: the letter that wins at 18 layers is A by a 1.000 share, and 19 to 22 layers go back to picking three different letters."
+  ],
+  "seconds": 100.9
+}

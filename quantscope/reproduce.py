@@ -90,6 +90,12 @@ ANSWER_LETTERS = ("A", "B", "C", "D")
 # A format that picks one letter for almost every question is not being measured any
 # more; the share is the threshold the published sentence uses to say so.
 COLLAPSE_SHARE = 0.90
+# The layer sweep and the real 4-bit container answer two different questions about the
+# same model: one asks where the ternary collapse starts, the other what a real format
+# costs in bytes and speed. Both are recomputed from the blocks stored beside them.
+PREFIX_SCHEMA = "quantscope-prefix-scan-v1"
+LINEAR_PER_LAYER = 7
+NF4_SCHEMA = "quantscope-nf4-bench-v1"
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
 
@@ -584,6 +590,114 @@ def _check_answer_distribution(payload: dict, checks: list[dict]) -> None:
             "format stopped depending on the question and the counts must agree")
 
 
+def _check_prefix_scan(payload: dict, checks: list[dict]) -> None:
+    """The one-layer-at-a-time sweep: every count, share and tensor total must agree."""
+    for key in ("model", "protocol", "conditions", "limits", "versions"):
+        if key not in payload:
+            raise ReproduceError(f"prefix scan: missing {key!r}")
+    protocol = payload["protocol"]
+    conditions = payload["conditions"]
+    if not conditions:
+        raise ReproduceError("prefix scan: no conditions")
+    collapse_share = protocol.get("collapse_share", COLLAPSE_SHARE)
+    if not 0 < collapse_share <= 1:
+        raise ReproduceError(f"prefix scan: collapse_share {collapse_share!r} is not a share")
+    total = max(block["layers_quantised"] for block in conditions)
+    seen: list[int] = []
+    for block in conditions:
+        layers = block["layers_quantised"]
+        if layers in seen:
+            raise ReproduceError(f"prefix scan: {layers} quantised layers appear twice")
+        seen.append(layers)
+        if block["float32_layers"] != total - layers:
+            raise ReproduceError(
+                f"prefix scan: {layers} quantised layers are listed with "
+                f"{block['float32_layers']} float32 ones, but the sweep has {total} layers")
+        count = block["count"]
+        if count <= 0:
+            raise ReproduceError(f"prefix scan: {layers} layers has count={count}")
+        histogram = block["histogram"]
+        if sorted(histogram) != sorted(ANSWER_LETTERS):
+            raise ReproduceError(f"prefix scan: {layers} layers counts {sorted(histogram)}")
+        if sum(histogram.values()) != count:
+            raise ReproduceError(
+                f"prefix scan: {layers} layers: the counts sum to {sum(histogram.values())}, "
+                f"not {count}")
+        if block["correct"] > count:
+            raise ReproduceError(
+                f"prefix scan: {layers} layers answers {block['correct']} of {count}")
+        modal = max(histogram, key=lambda letter: histogram[letter])
+        if block["most_common"] != modal:
+            raise ReproduceError(
+                f"prefix scan: {layers} layers: most_common is {block['most_common']!r}, "
+                f"the counts say {modal!r}")
+        _check(checks, f"prefix_scan.{layers:02d}.most_common_share",
+               block["most_common_share"], histogram[modal] / count, 1e-5)
+        _check(checks, f"prefix_scan.{layers:02d}.linear_layers",
+               block["linear_layers"], LINEAR_PER_LAYER * layers, 0,
+               note="each quantised layer holds seven Linear weights")
+
+    shares = {block["layers_quantised"]: block["most_common_share"] for block in conditions}
+    collapsed = sorted(layers for layers, share in shares.items() if share >= collapse_share)
+    if not collapsed:
+        raise ReproduceError(
+            "prefix scan: no prefix collapsed, so the page's mechanism claim has no support")
+    _check(checks, "prefix_scan.first_collapse", payload["first_collapse"], collapsed[0], 0)
+    if payload["collapse_lengths"] != collapsed:
+        raise ReproduceError(
+            f"prefix scan: collapse_lengths is {payload['collapse_lengths']}, "
+            f"the shares say {collapsed}")
+    letters = [next(block["most_common"] for block in conditions
+                    if block["layers_quantised"] == layers) for layers in collapsed]
+    if payload["collapse_letters"] != letters:
+        raise ReproduceError(
+            f"prefix scan: collapse_letters is {payload['collapse_letters']}, "
+            f"the counts say {letters}")
+    contiguous = collapsed == list(range(collapsed[0], collapsed[-1] + 1))
+    if bool(payload["collapse_contiguous"]) is not contiguous:
+        raise ReproduceError(
+            f"prefix scan: collapse_contiguous is {payload['collapse_contiguous']}, "
+            f"but the collapsed prefixes are {collapsed}")
+
+
+def _check_nf4(payload: dict, checks: list[dict]) -> None:
+    """A real 4-bit container on the GPU: bytes, answers and the memory they landed in."""
+    for key in ("float32", "nf4", "protocol", "limits"):
+        if key not in payload:
+            raise ReproduceError(f"nf4 bench: missing {key!r}")
+    stage = payload["float32"]
+    packed = payload["nf4"]
+    for name, block in (("float32", stage), ("nf4", packed)):
+        count = block["count"]
+        histogram = block["histogram"]
+        if sorted(histogram) != sorted(ANSWER_LETTERS):
+            raise ReproduceError(f"nf4 bench: {name}: counts {sorted(histogram)}")
+        if sum(histogram.values()) != count:
+            raise ReproduceError(
+                f"nf4 bench: {name}: the counts sum to {sum(histogram.values())}, not {count}")
+        if block["correct"] > count:
+            raise ReproduceError(f"nf4 bench: {name}: answers {block['correct']} of {count}")
+        _check(checks, f"nf4_bench.{name}.stored_bytes",
+               block["stored_bytes"], sum(block["stored_by_dtype"].values()), 0,
+               note="every stored tensor is counted once, by dtype")
+        if block["gpu_memory_after_load"] < block["stored_bytes"]:
+            raise ReproduceError(
+                f"nf4 bench: {name}: loading reported less memory than the weights themselves")
+    want = stage["count"]
+    if len(packed["answers"]) != want or len(packed["float32_answers"]) != want:
+        raise ReproduceError(
+            "nf4 bench: the answer lists do not cover the questions that were answered")
+    agree = sum(1 for before, after in zip(packed["float32_answers"], packed["answers"])
+                if before == after)
+    _check(checks, "nf4_bench.nf4.answers_identical_to_float32",
+           packed["answers_identical_to_float32"], float(agree), 0)
+    if not packed["stored_bytes"] < stage["stored_bytes"]:
+        raise ReproduceError(
+            "nf4 bench: the packed model stores "
+            f"{packed['stored_bytes']} bytes, the float32 one {stage['stored_bytes']}; "
+            "the page says the real 4-bit container is smaller")
+
+
 def _bundle_paths(evidence_path=None) -> list[Path]:
     """Which bundles to check: the one asked for, or the whole evidence directory."""
     if evidence_path:
@@ -594,6 +708,8 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths += sorted(EVIDENCE_DIR.glob("packed_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("answer_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("packing_equivalence*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("prefix_*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("nf4_*.json"))
     return paths
 
 
@@ -613,6 +729,10 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_equivalence(payload, checks)
     elif schema == ANSWER_SCHEMA:
         _check_answer_distribution(payload, checks)
+    elif schema == PREFIX_SCHEMA:
+        _check_prefix_scan(payload, checks)
+    elif schema == NF4_SCHEMA:
+        _check_nf4(payload, checks)
     else:
         raise ReproduceError(f"{name}: unknown evidence schema {schema!r}")
 

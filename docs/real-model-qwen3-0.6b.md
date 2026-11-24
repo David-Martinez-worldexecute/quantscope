@@ -35,6 +35,38 @@ Every accuracy is also read against the constant-answer baseline of 29.67% (alwa
 
 The counts, shares and constant-answer figures are recomputed from this bundle by `python -m quantscope.cli reproduce`; the bundle is `docs/evidence/answer_distribution.json`.
 
+## One layer at a time, not four at a time
+
+The four-format table above quantises every attention and MLP matrix in the model. It does not say how many layers have to lose their float32 weights before the model stops answering, and the first attempt could not say either: it quantised blocks of 4 layers, so its rungs sat at 16 and 20 quantised layers, and the collapse happens between them. Sweeping one layer at a time on the same 60-question slice makes it visible.
+
+| quantised layers | FP32 layers | correct | most common answer | its share | mean abs logit drift |
+| --- | --- | --- | --- | --- | --- |
+| 12 | 16 | 17 / 60 (28.3%) | D (73.3%) | 18.26 |
+| 13 | 15 | 18 / 60 (30.0%) | D (51.7%) | 18.02 |
+| 14 | 14 | 13 / 60 (21.7%) | B (61.7%) | 14.50 |
+| 15 | 13 | 14 / 60 (23.3%) | A (41.7%) | 19.72 |
+| 16 | 12 | 15 / 60 (25.0%) | A (50.0%) | 20.35 |
+| 17 | 11 | 12 / 60 (20.0%) | D (45.0%) | 18.21 |
+| 18 | 10 | 10 / 60 (16.7%) | A (100.0%) | 21.56 |
+| 19 | 9 | 14 / 60 (23.3%) | B (63.3%) | 19.86 |
+| 20 | 8 | 15 / 60 (25.0%) | A (58.3%) | 19.50 |
+| 21 | 7 | 12 / 60 (20.0%) | B (51.7%) | 20.70 |
+| 22 | 6 | 19 / 60 (31.7%) | C (55.0%) | 19.91 |
+| 23 | 5 | 15 / 60 (25.0%) | D (100.0%) | 20.18 |
+| 24 | 4 | 11 / 60 (18.3%) | A (95.0%) | 21.81 |
+| 25 | 3 | 15 / 60 (25.0%) | D (98.3%) | 22.34 |
+| 26 | 2 | 15 / 60 (25.0%) | D (100.0%) | 18.74 |
+| 27 | 1 | 15 / 60 (25.0%) | D (100.0%) | 20.04 |
+| 28 | 0 | 15 / 60 (25.0%) | D (98.3%) | 24.94 |
+
+Three readings matter. First, the float32 model on this slice answers 13 of 60 correctly and picks A 65.0% of the time, so these accuracies sit on a 60-question sample and are not comparable with the 600-question table above.
+
+Second, the first collapse is at **18 quantised layers**: every one of the 60 answers is A. That is not a slightly worse model — at that prefix the accuracy is exactly the constant-answer score for that letter, because the slice contains that many questions with that letter as the gold answer.
+
+Third, it is not monotone. Prefixes from 19 to 22 layers answer with several letters again, and from 23 layers on the model settles on one letter (D) for every remaining prefix up to all 28. A collapse that appears, disappears and returns cannot be attributed to one block; it is a property of how many layers have already lost their float32 weights.
+
+These rows are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/prefix_scan.json`, which carries the protocol, the per-prefix histograms and the collapse ordering.
+
 ## What the intervals say, and what they do not
 
 The paired interval resamples the per-question outcomes with the same seed the bundle records (12345, 4000 resamples), so it can be recomputed from the stored 0/1 sequence instead of believed.

@@ -34,17 +34,23 @@ embeddings). The bundle's own `limits` say this in the machine-readable form, an
 
 ## Accuracy, from the same run
 
-| format | correct | accuracy | 95% interval |
-| --- | --- | --- | --- |
-| FP32 (unquantised) | 183 / 600 | 30.50% | 26.8–34.2% |
-| INT8 dynamic (PyTorch) | 136 / 600 | 22.67% | 19.3–25.8% |
-| INT4 RTN, groups of 64 | 177 / 600 | 29.50% | 25.8–33.3% |
-| ternary RTN, groups of 64 | 160 / 600 | 26.67% | 23.2–30.3% |
+| format | correct | accuracy | 95% interval | most common answer | constant baseline |
+| --- | --- | --- | --- | --- | --- |
+| FP32 (unquantised) | 183 / 600 | 30.50% | 26.8–34.2% | A (75.7%) | 29.67% (always C) |
+| INT8 dynamic (PyTorch) | 136 / 600 | 22.67% | 19.3–25.8% | A (79.3%) | 29.67% (always C) |
+| INT4 RTN, groups of 64 | 177 / 600 | 29.50% | 25.8–33.3% | B (71.0%) | 29.67% (always C) |
+| ternary RTN, groups of 64 | 160 / 600 | 26.67% | 23.2–30.3% | D (99.8%) | 29.67% (always C) |
 
 Intervals are bootstrapped from the per-question 0/1 outcomes, seed 12345, 4000 resamples.
 They overlap heavily: 600 questions cannot separate four formats that sit within a few
 points of each other. That is the honest reading, and it is why the page reports intervals
 next to the point estimates.
+
+The last two columns come from the same per-question predictions. The most common answer is
+the letter the format chose most often, with its share of the questions; the constant
+baseline is what always answering the most frequent gold letter would earn (29.67%, always
+C). A format whose share approaches 100% is not being measured by its accuracy, it is being
+measured by its one answer.
 
 The accuracy column hides one failure mode, so it is worth naming: ternary RTN, groups of 64
 answered D on 599 of 600 questions, so its 26.67% is the score of one constant rather than a
@@ -132,6 +138,21 @@ bits and 0.13 GiB at 2 bits. The caveat is that this is a storage measurement, n
 one: no activations, no KV cache, no dequantisation buffer. It says what a deployment would
 have to keep on disk or in memory to hold these weights, which is the number the low-bit
 formats are actually sold on.
+
+## A real 4-bit container, on the GPU
+
+The rows above are simulations: float32 weights rounded to fewer levels and written back. They estimate what a low-bit format would cost, not what one does cost. bitsandbytes NF4 is a real container — block-wise normal-float codes with scales that are themselves quantised — so it is worth measuring on its own terms, on the same checkpoint, on the GPU.
+
+| format | weight bytes held | vs FP32 | prefill (median) | decode | answers agreeing with FP32 (of 12) |
+| --- | --- | --- | --- | --- | --- |
+| FP32 | 2274 MiB | 1.00× | 92 ms | 17.04 tok/s | — |
+| NF4 (bitsandbytes 0.50.2) | 507 MiB | 0.22× | 159 ms | 16.33 tok/s | 7 |
+
+It costs 4.5 times fewer bytes and it keeps answering. On the 12 questions both formats answered, NF4 agrees with FP32 on 7 and spreads its answers over several letters; the mean absolute drift in the four choice logits is 1.92. The ternary row above holds a comparable number of bytes and answered the same letter 599 times out of 600. Two formats of similar size therefore did very different things to this model, which is the reason the collapse is reported as a property of that quantiser rather than of 'low bits' in general.
+
+Three limits apply. The comparison is 12 questions, so it can show that answers did not collapse, not that accuracy is preserved. NF4 is not the group-64 round-to-nearest quantiser used above, so the two cannot be read as the same operation at different widths. And the memory column is `torch.cuda.memory_allocated`, which counts weight tensors, not the resident set of the process.
+
+The numbers are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/nf4_bench.json`, including the check that the per-dtype byte map adds up to the total it reports.
 
 ## What this is not
 

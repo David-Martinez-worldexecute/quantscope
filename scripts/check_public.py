@@ -73,6 +73,8 @@ REQUIRED = [
     "docs/evidence/packed_footprint.json",
     "docs/evidence/answer_distribution.json",
     "docs/evidence/packing_equivalence.json",
+    "docs/evidence/prefix_scan.json",
+    "docs/evidence/nf4_bench.json",
     "scripts/make_figures.py",
     "scripts/sync_from_lab.py",
     "scripts/check_public.py",

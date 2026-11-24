@@ -1,0 +1,110 @@
+{
+  "schema": "quantscope-nf4-bench-v1",
+  "generated_utc": "2026-11-24T05:19:25Z",
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "questions": 12,
+    "max_tokens": 96,
+    "device": "cuda",
+    "scoring": "last-position single-token A/B/C/D logits",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "torch": "2.6.0+cu124",
+    "cuda": "12.4",
+    "container": "bitsandbytes NF4 (block-wise normal-float codes, scales quantised again)",
+    "reference": "the same checkpoint in float32 on the same GPU"
+  },
+  "float32": {
+    "correct": 4,
+    "count": 12,
+    "histogram": {
+      "A": 7,
+      "B": 2,
+      "C": 0,
+      "D": 3
+    },
+    "most_common": "A",
+    "most_common_share": 0.583333,
+    "stored_bytes": 2384200192,
+    "stored_by_dtype": {
+      "float32": 2384200192
+    },
+    "gpu_memory_after_load": 2384724992,
+    "prefill_ms_median": 91.53,
+    "decode_tokens_per_second": 17.043
+  },
+  "nf4": {
+    "correct": 4,
+    "count": 12,
+    "histogram": {
+      "A": 5,
+      "B": 2,
+      "C": 0,
+      "D": 5
+    },
+    "most_common": "A",
+    "most_common_share": 0.416667,
+    "answers_identical_to_float32": 7,
+    "mean_abs_logit_drift": 1.921328,
+    "answers": [
+      "D",
+      "B",
+      "D",
+      "D",
+      "D",
+      "A",
+      "B",
+      "A",
+      "D",
+      "A",
+      "A",
+      "A"
+    ],
+    "float32_answers": [
+      "D",
+      "D",
+      "A",
+      "A",
+      "A",
+      "A",
+      "B",
+      "A",
+      "D",
+      "A",
+      "A",
+      "B"
+    ],
+    "gold": [
+      "D",
+      "B",
+      "A",
+      "D",
+      "B",
+      "D",
+      "D",
+      "B",
+      "C",
+      "B",
+      "A",
+      "B"
+    ],
+    "stored_bytes": 531497472,
+    "stored_by_dtype": {
+      "bfloat16": 311296000,
+      "uint8": 220200960,
+      "float32": 512
+    },
+    "gpu_memory_after_load": 567657472,
+    "prefill_ms_median": 158.75,
+    "decode_tokens_per_second": 16.33,
+    "bitsandbytes": "0.50.2"
+  },
+  "limits": [
+    "12 questions from the same 600-item set; the rest of the evidence in this repository uses 60 questions for the ablation and 600 for the headline accuracy.",
+    "NF4 is not the group-64 round-to-nearest used elsewhere: it quantises per block with a normal-float codebook and quantises the block scales again, so its accuracy cost is not directly comparable to the RTN rows.",
+    "GPU memory reported here is the allocated tensor memory right after loading (torch.cuda.memory_allocated), not a process resident set and not the peak during use.",
+    "Timing is a laptop RTX 4060 with the model already warm; it is a floor for this machine, not a neutral benchmark of the format."
+  ],
+  "seconds": 21.9
+}
