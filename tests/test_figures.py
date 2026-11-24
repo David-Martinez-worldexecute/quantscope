@@ -17,6 +17,7 @@ SCRIPT = ROOT / "scripts" / "make_figures.py"
 EVIDENCE = ROOT / "docs" / "evidence" / "ff_evidence.json"
 BENCH_EVIDENCE = ROOT / "docs" / "evidence" / "bench_qwen3_0.6b.json"
 REAL_EVIDENCE = ROOT / "docs" / "evidence" / "real_model_qwen3_0.6b.json"
+PREFIX_EVIDENCE = ROOT / "docs" / "evidence" / "prefix_scan.json"
 IMG = ROOT / "docs" / "img"
 
 FIGURES = (
@@ -25,6 +26,7 @@ FIGURES = (
     "fig-label-isolation-recovery.svg",
     "fig-cpu-cost.svg",
     "fig-accuracy-vs-payload.svg",
+    "fig-layer-collapse.svg",
 )
 
 
@@ -47,6 +49,8 @@ class FigureTest(unittest.TestCase):
             cls.bench = json.load(handle)
         with open(REAL_EVIDENCE, encoding="utf-8") as handle:
             cls.real = json.load(handle)
+        with open(PREFIX_EVIDENCE, encoding="utf-8") as handle:
+            cls.prefix = json.load(handle)
         cls.figures = cls.generator.build(cls.bundle, cls.bench, cls.real)
 
     def test_every_figure_is_shipped(self) -> None:
@@ -127,6 +131,18 @@ class FigureTest(unittest.TestCase):
         bench["modes"]["ternary"]["quantized_bytes"] = bench["modes"]["int4"]["quantized_bytes"]
         with self.assertRaises(AssertionError):
             self.generator.figure_accuracy_vs_payload(self.real, bench)
+
+    def test_layer_collapse_figure_has_one_bar_per_prefix(self) -> None:
+        body = self.figures["fig-layer-collapse.svg"]
+        self.assertEqual(body.count('rx="3"'), len(self.prefix["conditions"]))
+        self.assertIn("one letter on at least 90", body)
+
+    def test_layer_collapse_figure_refuses_a_sweep_that_never_collapsed(self) -> None:
+        broken = json.loads(json.dumps(self.prefix))
+        for item in broken["conditions"]:
+            item["most_common_share"] = 0.5
+        with self.assertRaises(AssertionError):
+            self.generator.figure_layer_collapse(broken)
 
 if __name__ == "__main__":
     unittest.main()

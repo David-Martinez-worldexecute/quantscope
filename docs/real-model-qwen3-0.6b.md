@@ -58,6 +58,8 @@ The four-format table above quantises every attention and MLP matrix in the mode
 | 26 | 2 | 15 / 60 (25.0%) | D (100.0%) | 18.74 |
 | 27 | 1 | 15 / 60 (25.0%) | D (100.0%) | 20.04 |
 | 28 | 0 | 15 / 60 (25.0%) | D (98.3%) | 24.94 |
+![Share of the most common answer as the first N layers are ternarized](img/fig-layer-collapse.svg)
+
 
 Three readings matter. First, the float32 model on this slice answers 13 of 60 correctly and picks A 65.0% of the time, so these accuracies sit on a 60-question sample and are not comparable with the 600-question table above.
 
@@ -66,6 +68,31 @@ Second, the first collapse is at **18 quantised layers**: every one of the 60 an
 Third, it is not monotone. Prefixes from 19 to 22 layers answer with several letters again, and from 23 layers on the model settles on one letter (D) for every remaining prefix up to all 28. A collapse that appears, disappears and returns cannot be attributed to one block; it is a property of how many layers have already lost their float32 weights.
 
 These rows are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/prefix_scan.json`, which carries the protocol, the per-prefix histograms and the collapse ordering.
+
+## Which weights carry it
+
+The sweep says *how much* of the model has to lose its float32 weights before it stops answering, not *what* it loses. So fix the depth at 18 quantised layers (every answer the same letter) and put one class of weight back: the same 60 questions, the same quantiser everywhere else.
+
+| put back in float32 | quantised matrices | correct | most common answer | its share |
+| --- | --- | --- | --- | --- |
+| none: every matrix quantised | 126 of 126 | 10 / 60 | A (100.0%) | 100.0% |
+| attention (q, k, v, o) | 54 of 126 | 11 / 60 | D (78.3%) | 78.3% |
+| MLP (gate, up, down) | 72 of 126 | 11 / 60 | A (60.0%) | 60.0% |
+| the last quantised layer (17) | 119 of 126 | 12 / 60 | D (45.0%) | 45.0% |
+| the first layer (0) | 119 of 126 | 10 / 60 | A (100.0%) | 100.0% |
+| q projection | 108 of 126 | 10 / 60 | A (95.0%) | 95.0% |
+| k projection | 108 of 126 | 13 / 60 | A (36.7%) | 36.7% |
+| v projection | 108 of 126 | 14 / 60 | B (48.3%) | 48.3% |
+| o projection | 108 of 126 | 9 / 60 | A (90.0%) | 90.0% |
+| gate projection | 108 of 126 | 20 / 60 | A (31.7%) | 31.7% |
+| up projection | 108 of 126 | 10 / 60 | A (100.0%) | 100.0% |
+| down projection | 108 of 126 | 6 / 60 | A (51.7%) | 51.7% |
+
+Restoring any of these breaks the collapse: attention (q, k, v, o), MLP (gate, up, down), the last quantised layer (17), k projection, v projection, gate projection, down projection. Restoring the others does not (the first layer (0), q projection, o projection, up projection). The four singles that do break it are not interchangeable — restoring the last quantised layer alone redistributes the answers, while restoring the first layer changes nothing, so the damage is not spread evenly over the depth.
+
+The tensor numbers say the split is not about *how much* was rounded. Across the 126 matrices of the 18 layers, every projection kind loses about the same fraction of its weights to zero (31.1% to 31.7%) and lands at about the same relative error (0.514 to 0.527), so no class is being rounded harder than another. What differs is where that error points once it is summed through the rest of the network.
+
+Read this table with the sample in mind: 60 questions, so a share that moves by a tenth is a handful of answers, and a single condition is not enough to rank two classes. What it does support is the coarse split — some classes are load-bearing for the collapse and others are not.
 
 ## What the intervals say, and what they do not
 

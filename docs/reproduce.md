@@ -9,7 +9,7 @@ ways. Neither one needs a GPU, and neither one downloads a model.
 python -m quantscope.cli reproduce            # or: reproduce --evidence <path> --out report.json
 ```
 
-This reads `docs/evidence/` and recomputes 177 numbers: the per-seed mean accuracy of
+This reads `docs/evidence/` and recomputes 203 numbers: the per-seed mean accuracy of
 each precision mode, the per-block `accuracy_mean` of every ablation, all 21 `headline_pp`
 percentages the README and the study pages quote, the 600-question real-model table with its
 bootstrap and paired intervals, the timing, payload and held-weight rows of the three CPU bundles, the per-prefix

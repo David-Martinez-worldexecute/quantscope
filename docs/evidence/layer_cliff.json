@@ -1,0 +1,375 @@
+{
+  "schema": "quantscope-layer-cliff-v1",
+  "generated_utc": "2026-11-24T05:48:22Z",
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "questions": 60,
+    "quantised_layers": 18,
+    "group_size": 64,
+    "max_tokens": 96,
+    "scoring": "last-position single-token A/B/C/D logits",
+    "quantisation": "ternary per-group absmean (same formula as the lab quantiser)",
+    "collapse_share": 0.9,
+    "device": "cuda",
+    "torch": "2.6.0+cu124",
+    "cuda": "12.4",
+    "threads": 4
+  },
+  "baseline": {
+    "correct": 13,
+    "count": 60,
+    "histogram": {
+      "A": 39,
+      "B": 9,
+      "C": 3,
+      "D": 9
+    },
+    "most_common": "A",
+    "most_common_share": 0.65,
+    "mean_gap": 6.679783
+  },
+  "conditions": [
+    {
+      "condition": "all_quantised",
+      "quantised_matrices": 126,
+      "float32_matrices": 0,
+      "correct": 10,
+      "count": 60,
+      "histogram": {
+        "A": 60,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "most_common": "A",
+      "most_common_share": 1.0,
+      "mean_gap": 5.358803
+    },
+    {
+      "condition": "keep_q_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 10,
+      "count": 60,
+      "histogram": {
+        "A": 57,
+        "B": 3,
+        "C": 0,
+        "D": 0
+      },
+      "most_common": "A",
+      "most_common_share": 0.95,
+      "mean_gap": 6.11275
+    },
+    {
+      "condition": "keep_k_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 13,
+      "count": 60,
+      "histogram": {
+        "A": 22,
+        "B": 13,
+        "C": 6,
+        "D": 19
+      },
+      "most_common": "A",
+      "most_common_share": 0.366667,
+      "mean_gap": 3.298401
+    },
+    {
+      "condition": "keep_v_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 14,
+      "count": 60,
+      "histogram": {
+        "A": 25,
+        "B": 29,
+        "C": 3,
+        "D": 3
+      },
+      "most_common": "B",
+      "most_common_share": 0.483333,
+      "mean_gap": 4.979854
+    },
+    {
+      "condition": "keep_o_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 9,
+      "count": 60,
+      "histogram": {
+        "A": 54,
+        "B": 0,
+        "C": 0,
+        "D": 6
+      },
+      "most_common": "A",
+      "most_common_share": 0.9,
+      "mean_gap": 5.014205
+    },
+    {
+      "condition": "keep_gate_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 20,
+      "count": 60,
+      "histogram": {
+        "A": 19,
+        "B": 16,
+        "C": 17,
+        "D": 8
+      },
+      "most_common": "A",
+      "most_common_share": 0.316667,
+      "mean_gap": 3.616326
+    },
+    {
+      "condition": "keep_up_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 10,
+      "count": 60,
+      "histogram": {
+        "A": 60,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "most_common": "A",
+      "most_common_share": 1.0,
+      "mean_gap": 7.547697
+    },
+    {
+      "condition": "keep_down_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 6,
+      "count": 60,
+      "histogram": {
+        "A": 31,
+        "B": 1,
+        "C": 0,
+        "D": 28
+      },
+      "most_common": "A",
+      "most_common_share": 0.516667,
+      "mean_gap": 2.28048
+    },
+    {
+      "condition": "keep_attention",
+      "quantised_matrices": 54,
+      "float32_matrices": 72,
+      "correct": 11,
+      "count": 60,
+      "histogram": {
+        "A": 10,
+        "B": 0,
+        "C": 3,
+        "D": 47
+      },
+      "most_common": "D",
+      "most_common_share": 0.783333,
+      "mean_gap": 7.165531
+    },
+    {
+      "condition": "keep_mlp",
+      "quantised_matrices": 72,
+      "float32_matrices": 54,
+      "correct": 11,
+      "count": 60,
+      "histogram": {
+        "A": 36,
+        "B": 0,
+        "C": 5,
+        "D": 19
+      },
+      "most_common": "A",
+      "most_common_share": 0.6,
+      "mean_gap": 3.585856
+    },
+    {
+      "condition": "keep_first_layer",
+      "quantised_matrices": 119,
+      "float32_matrices": 7,
+      "correct": 10,
+      "count": 60,
+      "histogram": {
+        "A": 60,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "most_common": "A",
+      "most_common_share": 1.0,
+      "mean_gap": 6.613915
+    },
+    {
+      "condition": "keep_last_quantised_layer",
+      "quantised_matrices": 119,
+      "float32_matrices": 7,
+      "correct": 12,
+      "count": 60,
+      "histogram": {
+        "A": 20,
+        "B": 0,
+        "C": 13,
+        "D": 27
+      },
+      "most_common": "D",
+      "most_common_share": 0.45,
+      "mean_gap": 5.371927
+    }
+  ],
+  "anchor": {
+    "layers_quantised": 18,
+    "correct": 10,
+    "count": 60,
+    "histogram": {
+      "A": 60,
+      "B": 0,
+      "C": 0,
+      "D": 0
+    },
+    "most_common": "A",
+    "most_common_share": 1.0
+  },
+  "matrix_stats": {
+    "by_kind": {
+      "down_proj": {
+        "matrices": 18,
+        "weights": 56623104,
+        "zero_fraction_sum": 5.7005,
+        "relative_error_sum": 9.48965,
+        "mean_zero_fraction": 0.316694,
+        "mean_relative_error": 0.527203
+      },
+      "gate_proj": {
+        "matrices": 18,
+        "weights": 56623104,
+        "zero_fraction_sum": 5.600451,
+        "relative_error_sum": 9.261245,
+        "mean_zero_fraction": 0.311136,
+        "mean_relative_error": 0.514514
+      },
+      "k_proj": {
+        "matrices": 18,
+        "weights": 18874368,
+        "zero_fraction_sum": 5.622353,
+        "relative_error_sum": 9.348901,
+        "mean_zero_fraction": 0.312353,
+        "mean_relative_error": 0.519383
+      },
+      "o_proj": {
+        "matrices": 18,
+        "weights": 37748736,
+        "zero_fraction_sum": 5.594165,
+        "relative_error_sum": 9.253918,
+        "mean_zero_fraction": 0.310787,
+        "mean_relative_error": 0.514107
+      },
+      "q_proj": {
+        "matrices": 18,
+        "weights": 37748736,
+        "zero_fraction_sum": 5.634083,
+        "relative_error_sum": 9.296559,
+        "mean_zero_fraction": 0.313005,
+        "mean_relative_error": 0.516475
+      },
+      "up_proj": {
+        "matrices": 18,
+        "weights": 56623104,
+        "zero_fraction_sum": 5.640313,
+        "relative_error_sum": 9.295254,
+        "mean_zero_fraction": 0.313351,
+        "mean_relative_error": 0.516403
+      },
+      "v_proj": {
+        "matrices": 18,
+        "weights": 18874368,
+        "zero_fraction_sum": 5.700555,
+        "relative_error_sum": 9.339985,
+        "mean_zero_fraction": 0.316697,
+        "mean_relative_error": 0.518888
+      }
+    },
+    "matrices": 126,
+    "worst_relative_error": [
+      {
+        "name": "model.layers.16.mlp.down_proj",
+        "layer": 16,
+        "kind": "down_proj",
+        "group": "mlp",
+        "weights": 3145728,
+        "zero_fraction": 0.321075,
+        "relative_error": 0.53971,
+        "weight_norm": 42.280804
+      },
+      {
+        "name": "model.layers.16.self_attn.k_proj",
+        "layer": 16,
+        "kind": "k_proj",
+        "group": "attention",
+        "weights": 1048576,
+        "zero_fraction": 0.314097,
+        "relative_error": 0.534002,
+        "weight_norm": 24.352373
+      },
+      {
+        "name": "model.layers.10.mlp.down_proj",
+        "layer": 10,
+        "kind": "down_proj",
+        "group": "mlp",
+        "weights": 3145728,
+        "zero_fraction": 0.320068,
+        "relative_error": 0.533255,
+        "weight_norm": 41.915039
+      },
+      {
+        "name": "model.layers.14.mlp.down_proj",
+        "layer": 14,
+        "kind": "down_proj",
+        "group": "mlp",
+        "weights": 3145728,
+        "zero_fraction": 0.319387,
+        "relative_error": 0.53273,
+        "weight_norm": 41.871437
+      },
+      {
+        "name": "model.layers.15.mlp.down_proj",
+        "layer": 15,
+        "kind": "down_proj",
+        "group": "mlp",
+        "weights": 3145728,
+        "zero_fraction": 0.318896,
+        "relative_error": 0.532193,
+        "weight_norm": 41.816338
+      }
+    ]
+  },
+  "survivors": [
+    "keep_k_proj",
+    "keep_v_proj",
+    "keep_gate_proj",
+    "keep_down_proj",
+    "keep_attention",
+    "keep_mlp",
+    "keep_last_quantised_layer"
+  ],
+  "collapsed_keeps": [
+    "keep_q_proj",
+    "keep_o_proj",
+    "keep_up_proj",
+    "keep_first_layer"
+  ],
+  "limits": [
+    "60 questions from the first 60 usable rows of the C-Eval slice; a 60-question sample cannot resolve differences below about ten points.",
+    "Only the ternary quantiser in the lab repository is tested; NF4 in the same model does not collapse, so this is a statement about this quantiser, not about 1.58 bits.",
+    "Depth is fixed at the first 18 layers, the prefix length that collapsed in the sweep; longer prefixes collapse onto a different letter and are not covered here.",
+    "Keeping a class in float32 removes both its rounding error and its share of the memory saving, so a surviving condition is a diagnosis, not a deployable format."
+  ],
+  "seconds": 60.4
+}

@@ -96,6 +96,8 @@ COLLAPSE_SHARE = 0.90
 PREFIX_SCHEMA = "quantscope-prefix-scan-v1"
 LINEAR_PER_LAYER = 7
 NF4_SCHEMA = "quantscope-nf4-bench-v1"
+LAYER_CLIFF_SCHEMA = "quantscope-layer-cliff-v1"
+CLIFF_KINDS = ("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj")
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
 
@@ -698,6 +700,105 @@ def _check_nf4(payload: dict, checks: list[dict]) -> None:
             "the page says the real 4-bit container is smaller")
 
 
+def _check_layer_cliff(payload: dict, checks: list[dict]) -> None:
+    """The 18-layer cliff: which weight class, put back to float32, breaks the collapse."""
+    for field in ("model", "protocol", "conditions", "matrix_stats", "limits", "anchor"):
+        if field not in payload:
+            raise ReproduceError(f"layer cliff: missing {field!r}")
+    protocol = payload["protocol"]
+    depth = protocol.get("quantised_layers")
+    collapse = protocol.get("collapse_share")
+    if not isinstance(depth, int) or depth <= 0:
+        raise ReproduceError(f"layer cliff: quantised_layers must be a positive integer, got {depth!r}")
+    if not isinstance(collapse, (int, float)) or not 0 < collapse <= 1:
+        raise ReproduceError(f"layer cliff: collapse_share must be in (0, 1], got {collapse!r}")
+    questions = protocol.get("questions")
+    if not isinstance(questions, int) or questions <= 0:
+        raise ReproduceError(f"layer cliff: questions must be a positive integer, got {questions!r}")
+
+    conditions = payload["conditions"]
+    if not isinstance(conditions, list) or not conditions:
+        raise ReproduceError("layer cliff: conditions must be a non-empty list")
+    names = [item.get("condition") for item in conditions]
+    if len(set(names)) != len(names):
+        raise ReproduceError(f"layer cliff: duplicate condition names: {names}")
+    for required in ("all_quantised",):
+        if required not in names:
+            raise ReproduceError(f"layer cliff: the {required} condition is missing")
+
+    total_matrices = depth * LINEAR_PER_LAYER
+    for item in conditions:
+        name = item["condition"]
+        quantised = item.get("quantised_matrices")
+        kept = item.get("float32_matrices")
+        if not isinstance(quantised, int) or not isinstance(kept, int):
+            raise ReproduceError(f"layer cliff: {name}: matrix counts must be integers")
+        if quantised + kept != total_matrices:
+            raise ReproduceError(
+                f"layer cliff: {name} accounts for {quantised} + {kept} matrices, "
+                f"but {depth} layers hold {total_matrices}")
+        count = item.get("count")
+        histogram = item.get("histogram")
+        if not isinstance(histogram, dict) or not histogram or sum(histogram.values()) != count:
+            raise ReproduceError(f"layer cliff: {name}: the histogram does not sum to {count}")
+        if not isinstance(item.get("correct"), int) or item["correct"] > count:
+            raise ReproduceError(f"layer cliff: {name}: {item.get('correct')!r} correct of {count}")
+        most = max(histogram, key=lambda letter: histogram[letter])
+        if item.get("most_common") != most:
+            raise ReproduceError(
+                f"layer cliff: {name}: most_common is {item.get('most_common')!r}, "
+                f"the histogram says {most!r}")
+        _check(checks, f"cliff.{name}.most_common_share", item["most_common_share"],
+               histogram[most] / count, 1e-5)
+
+    collapsed_row = next(item for item in conditions if item["condition"] == "all_quantised")
+    if collapsed_row["most_common_share"] < collapse:
+        raise ReproduceError(
+            "layer cliff: the all_quantised condition is not collapsed "
+            f"(share {collapsed_row['most_common_share']}), so the page's question has no subject")
+
+    anchor = payload["anchor"]
+    if anchor.get("layers_quantised") != depth:
+        raise ReproduceError(
+            f"layer cliff: the anchor covers {anchor.get('layers_quantised')} layers, "
+            f"the protocol says {depth}")
+    if (anchor["correct"], anchor["most_common"], anchor["histogram"]) != (
+        collapsed_row["correct"],
+        collapsed_row["most_common"],
+        collapsed_row["histogram"],
+    ):
+        raise ReproduceError("layer cliff: the anchor row disagrees with the all_quantised condition")
+
+    survivors = sorted(item["condition"] for item in conditions
+                       if item["most_common_share"] < collapse)
+    recorded = sorted(payload.get("survivors") or [])
+    if recorded != survivors:
+        raise ReproduceError(
+            f"layer cliff: survivors {recorded} do not match the shares {survivors}")
+    kept = sorted(item["condition"] for item in conditions[1:]
+                  if item["most_common_share"] >= collapse)
+    stated = sorted(payload.get("collapsed_keeps") or [])
+    if stated != kept:
+        raise ReproduceError(f"layer cliff: collapsed_keeps {stated} do not match the shares {kept}")
+
+    stats = payload["matrix_stats"]
+    if stats.get("matrices") != collapsed_row["quantised_matrices"]:
+        raise ReproduceError(
+            f"layer cliff: matrix_stats counts {stats.get('matrices')} matrices, "
+            f"the all_quantised condition quantised {collapsed_row['quantised_matrices']}")
+    by_kind = stats.get("by_kind") or {}
+    if sorted(by_kind) != sorted(CLIFF_KINDS):
+        raise ReproduceError(f"layer cliff: by_kind covers {sorted(by_kind)}, not the seven projections")
+    for kind, bucket in by_kind.items():
+        if bucket.get("matrices") != depth:
+            raise ReproduceError(
+                f"layer cliff: {kind}: {bucket.get('matrices')} matrices for {depth} layers")
+        _check(checks, f"cliff.by_kind.{kind}.mean_zero_fraction", bucket["mean_zero_fraction"],
+               bucket["zero_fraction_sum"] / bucket["matrices"], 2e-6)
+        _check(checks, f"cliff.by_kind.{kind}.mean_relative_error", bucket["mean_relative_error"],
+               bucket["relative_error_sum"] / bucket["matrices"], 2e-6)
+
+
 def _bundle_paths(evidence_path=None) -> list[Path]:
     """Which bundles to check: the one asked for, or the whole evidence directory."""
     if evidence_path:
@@ -710,6 +811,7 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths += sorted(EVIDENCE_DIR.glob("packing_equivalence*.json"))
     paths += sorted(EVIDENCE_DIR.glob("prefix_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("nf4_*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("layer_cliff*.json"))
     return paths
 
 
@@ -733,6 +835,8 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_prefix_scan(payload, checks)
     elif schema == NF4_SCHEMA:
         _check_nf4(payload, checks)
+    elif schema == LAYER_CLIFF_SCHEMA:
+        _check_layer_cliff(payload, checks)
     else:
         raise ReproduceError(f"{name}: unknown evidence schema {schema!r}")
 

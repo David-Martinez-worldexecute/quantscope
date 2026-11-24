@@ -30,7 +30,7 @@ drift apart."
 run.py  ──►  manifest + predictions (sha256 of data, model, protocol)
                      │
                      ├─► verify   : re-derive accuracy, argmax, hashes
-                     ├─► reproduce: recompute all 177 published numbers
+                     ├─► reproduce: recompute all 203 published numbers
                      └─► figures  : five SVGs, rendered from the evidence
 ```
 
@@ -119,6 +119,11 @@ Two things are true at once, and I want both on the record:
   either rung. A real 4-bit container (NF4, on the GPU) holds 4.5x fewer bytes, keeps
   answering, and spreads its answers over several letters on the same 12 questions — so
   'low bits' is not the cause on its own.
+- **The damage is load-bearing, not spread evenly.** At 18 quantised layers, putting k, v,
+  gate or down back to float32 brings the answers back (best: 20/60); putting q, o, up
+  or the whole first layer back leaves every answer on one letter. All seven kinds lose
+  31.1%-31.7% of their weights to zero, so nothing was rounded harder -- the
+  difference is where that error goes next.
 
 This same table used to have 171 rows, and at that size every one of the three intervals
 contained zero — I reported "no accuracy loss is demonstrated" and meant it. Tripling the
@@ -216,7 +221,7 @@ exciting number with a paragraph.
 
 ```bash
 pip install quantscope
-python -m quantscope.cli reproduce        # 177 numbers, from the evidence bytes
+python -m quantscope.cli reproduce        # 203 numbers, from the evidence bytes
 python -m quantscope.cli demo --out runs/demo
 python -m quantscope.cli verify --run runs/demo/run
 ```

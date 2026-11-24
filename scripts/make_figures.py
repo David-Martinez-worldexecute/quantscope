@@ -28,6 +28,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "ff_evidence.json"
 BENCH_EVIDENCE = ROOT / "docs" / "evidence" / "bench_qwen3_0.6b.json"
 REAL_EVIDENCE = ROOT / "docs" / "evidence" / "real_model_qwen3_0.6b.json"
+PREFIX_EVIDENCE = ROOT / "docs" / "evidence" / "prefix_scan.json"
 OUT_DIR = ROOT / "docs" / "img"
 
 WIDTH = 760
@@ -401,11 +402,74 @@ def figure_accuracy_vs_payload(real: dict, bench: dict) -> str:
     return "\n".join(parts)
 
 
-def build(bundle: dict, bench: dict | None = None, real: dict | None = None) -> dict[str, str]:
+LETTER_COLORS = {"A": BLUE, "B": GOLD, "C": GREEN, "D": RED}
+
+
+def figure_layer_collapse(prefix: dict) -> str:
+    """Share of the most common answer as the first N layers are ternarised."""
+    order = sorted(prefix["conditions"], key=lambda item: item["layers_quantised"])
+    assert prefix["protocol"]["questions"] == 60
+    assert prefix["protocol"]["collapse_share"] == 0.9
+    collapsed = [item["layers_quantised"] for item in order
+                 if item["most_common_share"] >= prefix["protocol"]["collapse_share"]]
+    assert collapsed, "no prefix collapsed: the claim this figure draws has no support"
+    assert prefix["first_collapse"] == min(collapsed)
+
+    parts = frame(
+        "Where the ternary model stops answering",
+        "Sixty questions, one layer deeper at a time; a bar is how often one letter was chosen",
+        "Bar chart: for N from 12 to 28, the share of the sixty answers that went to the most "
+        "common letter when the first N transformer layers are ternarised. Bars are coloured by "
+        "the letter that dominated. The first collapse is at 18 layers, the model spreads out "
+        "again from 19 to 22, and from 23 layers on it collapses onto D.",
+    )
+    left, right = 96.0, WIDTH - 48.0
+    top, bottom = 132.0, HEIGHT - 104.0
+    for index in range(5):
+        share = index * 25
+        y = bottom - (bottom - top) * index / 4
+        parts.append(f'<line x1="{left:.1f}" y1="{y:.1f}" x2="{right:.1f}" y2="{y:.1f}" '
+                     f'stroke="{GRID}" stroke-width="1"/>')
+        parts.append(text(left - 12, y + 4, f"{share}%", size=11, fill=MUTED, anchor="end"))
+    line_y = bottom - (bottom - top) * prefix["protocol"]["collapse_share"]
+    parts.append(f'<line x1="{left:.1f}" y1="{line_y:.1f}" x2="{right:.1f}" y2="{line_y:.1f}" '
+                 f'stroke="{GOLD}" stroke-width="1.2" stroke-dasharray="6 5"/>')
+    parts.append(text(right - 4, line_y - 8, "one letter on at least 90% of questions",
+                      size=10.5, fill=GOLD, anchor="end"))
+
+    slot = (right - left) / len(order)
+    bar_w = slot * 0.58
+    for index, item in enumerate(order):
+        share = item["most_common_share"] * 100
+        height = (bottom - top) * share / 100.0
+        x = left + slot * index + (slot - bar_w) / 2
+        parts.append(f'<rect x="{x:.1f}" y="{bottom - height:.1f}" width="{bar_w:.1f}" '
+                     f'height="{height:.1f}" rx="3" fill="{LETTER_COLORS[item["most_common"]]}"/>')
+        parts.append(text(x + bar_w / 2, bottom - height - 8, item["most_common"],
+                          size=11, fill=BG, anchor="middle", weight="bold"))
+        if index % 2 == 0 or index == len(order) - 1:
+            parts.append(text(x + bar_w / 2, bottom + 20, str(item["layers_quantised"]),
+                              size=10.5, fill=MUTED, anchor="middle"))
+    parts.append(text((left + right) / 2, bottom + 42, "quantised layers (a prefix, not a block)",
+                      size=11, fill=MUTED, anchor="middle"))
+    parts.append(text(40, HEIGHT - 44,
+                      "18 layers: every answer A, and A is right 10 times out of 60, so the score "
+                      "is the constant-answer score.", size=10.5, fill=MUTED))
+    parts.append(text(40, HEIGHT - 26,
+                      "23 layers on: every answer D, 15 right out of 60 — again the constant. "
+                      "Between them the model is not collapsed.", size=10.5, fill=MUTED))
+    parts.append(svg_close())
+    return "\n".join(parts)
+
+
+def build(bundle: dict, bench: dict | None = None, real: dict | None = None,
+          prefix: dict | None = None) -> dict[str, str]:
     if bench is None:
         bench = load_bundle(BENCH_EVIDENCE)
     if real is None:
         real = load_bundle(REAL_EVIDENCE)
+    if prefix is None:
+        prefix = load_bundle(PREFIX_EVIDENCE)
     if not OUT_DIR.is_dir():
         OUT_DIR.mkdir(parents=True)
     return {
@@ -414,6 +478,7 @@ def build(bundle: dict, bench: dict | None = None, real: dict | None = None) -> 
         "fig-label-isolation-recovery.svg": figure_recovery(bundle),
         "fig-cpu-cost.svg": figure_cost(bench),
         "fig-accuracy-vs-payload.svg": figure_accuracy_vs_payload(real, bench),
+        "fig-layer-collapse.svg": figure_layer_collapse(prefix),
     }
 
 
@@ -424,10 +489,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--evidence", help="bundle to read (defaults to docs/evidence/ff_evidence.json)")
     parser.add_argument("--bench", help="cost bundle to read (defaults to docs/evidence/bench_qwen3_0.6b.json)")
     parser.add_argument("--real", help="real-model bundle (defaults to docs/evidence/real_model_qwen3_0.6b.json)")
+    parser.add_argument("--prefix", help="prefix sweep (defaults to docs/evidence/prefix_scan.json)")
     args = parser.parse_args(argv)
 
     figures = build(load_bundle(args.evidence), load_bundle(args.bench or BENCH_EVIDENCE),
-                    load_bundle(args.real or REAL_EVIDENCE))
+                    load_bundle(args.real or REAL_EVIDENCE),
+                    load_bundle(args.prefix or PREFIX_EVIDENCE))
     problems = []
     for name, body in figures.items():
         for needle in leak_needles():
