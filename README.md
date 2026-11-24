@@ -12,8 +12,9 @@
   changing only *where the quantization scale is computed* recovers **2.96 of them (64.1%)**. The
   cost was mostly a scale-alignment problem, not a bit-width problem. Two more figures and the
   places where the argument breaks are in [what-this-is.md](docs/what-this-is.md).
-- **One command.** `python -m quantscope.cli reproduce` recomputes all **101** published numbers —
-  including the 171-question, four-format real-model run and its bootstrap intervals — from the
+- **One command.** `python -m quantscope.cli reproduce` recomputes all **110** published numbers —
+  including the 600-question, four-format real-model run, its bootstrap and paired intervals, and
+  the CPU timing and held-weight rows — from the
   evidence files in this repository, and fails if any of them stops following from the bytes beside
   it.
 - **What it costs.** The same four formats on one CPU: payload falls from 2274 MiB to 725 MiB, but
@@ -78,12 +79,12 @@ figure drifts from either file.
 
 ![Payload in MiB and prefill latency for the four weight formats on one CPU: the bytes fall with every bit removed, but only the real INT8 kernel also gets faster.](docs/img/fig-cpu-cost.svg)
 
-![Accuracy against payload for the four formats: the points sit inside wide, overlapping 95% intervals, and INT4 keeps FP32-level accuracy at about a third of the payload.](docs/img/fig-accuracy-vs-payload.svg)
+![Accuracy against payload for the four formats: INT8's loss clears its interval, the INT4 and ternary intervals still contain zero, and INT4 keeps FP32-level accuracy at about a third of the payload.](docs/img/fig-accuracy-vs-payload.svg)
 
 The scatter puts the two halves of the story in one frame: INT4 holds FP32-level
-accuracy at about a third of the payload, ternary gives up eight points and — in this
-implementation — buys no speed, and every interval is wide enough that 171 questions
-cannot rank the middle two formats.
+accuracy at about a third of the payload, ternary gives up four points and — in this
+implementation — buys no speed, and on 600 questions only the INT8 loss is larger than
+its own noise, so the middle two formats still cannot be ranked against each other.
 
 The cost picture is the newer half: [docs/cost-of-each-format.md](docs/cost-of-each-format.md)
 has the numbers, the measurement protocol and the sentence that says which rows are simulated in
@@ -109,25 +110,25 @@ Same initialization per seed (verified by state hash), 12 training units, 120,00
 predictions, independently re-audited. The study is about a small forward-forward network on
 MNIST, not about a language model.
 
-### Real model: Qwen3-0.6B, 171 multiple-choice questions
+### Real model: Qwen3-0.6B, 600 multiple-choice questions
 
 Measured once, on CPU, in float32, with the same prompt protocol this repository documents
-(one template, A/B/C/D single-token logits, no generated reasoning):
+(one template, A/B/C/D single-token logits, no generated reasoning). The interval is a
+bootstrap over the 600 per-question outcomes, so it can be recomputed rather than trusted:
 
-| weight format | correct | accuracy | delta vs FP32 | flips (FP32 right→wrong / wrong→right) |
-| --- | --- | --- | --- | --- |
-| FP32 | 56 / 171 | 32.75% | — | — |
-| INT8 dynamic (PyTorch) | 45 / 171 | 26.32% | −6.43 pp | 27 / 16 |
-| INT4 RTN, group 64 | 54 / 171 | 31.58% | −1.17 pp | 28 / 26 |
-| ternary (1.58-bit) | 42 / 171 | 24.56% | −8.19 pp | 49 / 35 |
+| weight format | correct | accuracy | 95% interval | delta vs FP32 | 95% interval on the paired delta |
+| --- | --- | --- | --- | --- | --- |
+| FP32 | 183 / 600 | 30.50% | 26.83–34.17% | — | — |
+| INT8 dynamic (PyTorch) | 136 / 600 | 22.67% | 19.33–25.83% | −7.83 pp | −11.33 to −4.50 pp |
+| INT4 RTN, group 64 | 177 / 600 | 29.50% | 25.83–33.33% | −1.00 pp | −5.33 to +3.50 pp |
+| ternary (1.58-bit) | 160 / 600 | 26.67% | 23.17–30.33% | −3.83 pp | −9.50 to +2.00 pp |
 
-Read it as one run on one 171-item set, not as a benchmark ranking: there is no seed variance
-here, the interval around a 171-item accuracy is wide, and the base model answers only a third of
-these questions correctly in the first place. What the numbers do support is narrower and still
-useful: PyTorch's dynamic INT8 cost −6.43 pp, INT4 round-to-nearest −1.17 pp, and ternary
-−8.19 pp — that ordering tells you how much of the loss is the method and how much is just
-fewer bits. The flips are not symmetric either — ternary turned 49 correct answers wrong
-while recovering 35.
+Read it as one run on one 600-item slice, not as a benchmark ranking. What it does support is
+narrow: PyTorch's dynamic INT8 lost 7.83 pp and its paired interval excludes zero, so that loss
+is established here; INT4 (−1.00 pp) and ternary (−3.83 pp) both have intervals that contain
+zero, so neither loss is shown on this set. The earlier 171-question version of this table had
+every interval crossing zero — tripling the sample established one loss and left two open, and
+that reversal is reported rather than smoothed over.
 
 These numbers were produced by the laboratory harness that shares this protocol, not by this
 package's `run` command: v0.1.0 loads only the documented toy format. The per-item evidence,
@@ -157,7 +158,7 @@ evidence file is `docs/evidence/qwen35_forward.json`.
 Two commands, no GPU, no downloads:
 
 ```bash
-python -m quantscope.cli reproduce   # recompute all 101 published numbers from the evidence bundle
+python -m quantscope.cli reproduce   # recompute all 110 published numbers from the evidence bundle
 python -m quantscope.cli demo --out runs/demo && python -m quantscope.cli verify --run runs/demo/run
 ```
 

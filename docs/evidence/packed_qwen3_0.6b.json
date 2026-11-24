@@ -1,0 +1,67 @@
+{
+  "schema": "quantscope-packed-v1",
+  "generated_utc": "2026-11-23T17:10:33Z",
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "isolation": "one child process per mode",
+    "group_size": 64,
+    "prompt_tokens": 128,
+    "max_new_tokens": 32,
+    "prefill_repeats": 5,
+    "decode_repeats": 3,
+    "threads": 4,
+    "device": "cpu",
+    "dtype": "float32",
+    "note": "packed weights with an unfused dequantise-then-multiply path; no fused kernel"
+  },
+  "modes": {
+    "baseline": {
+      "mode": "baseline",
+      "replaced_linear_layers": 0,
+      "payload_bytes": 2384199680,
+      "load_seconds": 5.752,
+      "prefill_ms_median": 935.7,
+      "prefill_ms_min": 900.0,
+      "prefill_ms_max": 985.5,
+      "decode_seconds": 6.003,
+      "decode_tokens_per_second": 5.331,
+      "peak_rss_mib": 3549.043,
+      "rss_settled_mib": 3513.898
+    },
+    "int4": {
+      "mode": "int4",
+      "replaced_linear_layers": 196,
+      "payload_bytes": 247726080,
+      "load_seconds": 7.146,
+      "prefill_ms_median": 1868.2,
+      "prefill_ms_min": 1768.6,
+      "prefill_ms_max": 2077.1,
+      "decode_seconds": 31.875,
+      "decode_tokens_per_second": 1.004,
+      "peak_rss_mib": 3562.848,
+      "rss_settled_mib": 3534.996
+    },
+    "ternary": {
+      "mode": "ternary",
+      "replaced_linear_layers": 196,
+      "payload_bytes": 137625600,
+      "load_seconds": 6.348,
+      "prefill_ms_median": 2356.5,
+      "prefill_ms_min": 2216.1,
+      "prefill_ms_max": 2454.0,
+      "decode_seconds": 41.085,
+      "decode_tokens_per_second": 0.779,
+      "peak_rss_mib": 3558.008,
+      "rss_settled_mib": 3528.984
+    }
+  },
+  "rss_settled_falls_with_payload": false,
+  "limits": [
+    "Teaching-grade packing: weights are stored at half a byte (INT4) or a quarter byte (ternary) per value, but the dequantise is a Python/chunked torch path, not a fused kernel, so the speed column is a lower bound on this machine, not on the format.",
+    "Peak and settled RSS do not fall when the weights are packed: packing happens after the float32 checkpoint is loaded in the same process, and the allocator keeps those pages. The payload column is what the format stores; `packed_footprint.json` measures the deployment-side number by streaming the checkpoint instead.",
+    "Only nn.Linear layers outside lm_head are packed; embeddings and norms stay float32.",
+    "One CPU, torch 2.6.0, float32, 128-token prompt, 32 greedy tokens."
+  ]
+}

@@ -9,9 +9,11 @@ ways. Neither one needs a GPU, and neither one downloads a model.
 python -m quantscope.cli reproduce            # or: reproduce --evidence <path> --out report.json
 ```
 
-This reads `docs/evidence/` and recomputes 101 numbers: the per-seed mean accuracy of
-each precision mode, the per-block `accuracy_mean` of every ablation, and all 21 `headline_pp`
-percentages the README and the study pages quote. Each check compares the stored value with the value
+This reads `docs/evidence/` and recomputes 110 numbers: the per-seed mean accuracy of
+each precision mode, the per-block `accuracy_mean` of every ablation, all 21 `headline_pp`
+percentages the README and the study pages quote, the 600-question real-model table with its
+bootstrap and paired intervals, and the timing, payload and held-weight rows of the three
+CPU bundles. Each check compares the stored value with the value
 recomputed from the counts sitting next to it; the last line prints how many numbers were checked and
 how many mismatched, and the exit code is 0 only when nothing mismatched.
 
@@ -111,14 +113,14 @@ What it cannot show: GPU memory, generation throughput, cache growth, or answer 
 ## 3. The real-model evaluation (Qwen3-0.6B, CPU, one run)
 
 `docs/real-model-qwen3-0.6b.md` is the receipt for the real-model table in the
-README: 171 four-option questions, three weight formats, CPU float32, the
-protocol this repo documents. It lists the SHA-256 of the manifest, of the three
-per-item prediction files and of the prepared question file, so a copy of the
-evidence can be checked without trusting this page.
+README: 600 four-option questions across 52 subjects, four weight formats (FP32 and
+three quantised ones), CPU float32, the protocol this repo documents. It lists the
+SHA-256 of the manifest, of the four per-item prediction files and of the prepared
+question file, so a copy of the evidence can be checked without trusting this page.
 
 Two things are deliberately *not* in this repository:
 
-- **The question text.** The 171 items come from a research-licensed evaluation
+- **The question text.** The 600 items come from a research-licensed evaluation
   set. Redistributing them is not covered by that licence, so the repo ships the
   hash and the counts, and anyone who has the set can prepare it the same way and
   compare the hash before trusting the numbers.

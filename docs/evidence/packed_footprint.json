@@ -1,0 +1,51 @@
+{
+  "schema": "quantscope-packed-footprint-v1",
+  "generated_utc": "2026-11-23T17:05:12Z",
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0",
+    "weight_file": "model.safetensors"
+  },
+  "protocol": {
+    "isolation": "one child process per mode",
+    "group_size": 64,
+    "note": "streams model.safetensors one tensor at a time and keeps only what the format stores; no forward pass, so this is weight footprint rather than inference memory"
+  },
+  "modes": {
+    "baseline": {
+      "mode": "baseline",
+      "matrices": 196,
+      "held_tensors": 196,
+      "held_bytes": 1761607680,
+      "held_mib": 1680.0,
+      "load_seconds": 0.462,
+      "rss_peak_mib": 2908.469,
+      "rss_settled_mib": 2908.469
+    },
+    "int4": {
+      "mode": "int4",
+      "matrices": 196,
+      "held_tensors": 392,
+      "held_bytes": 247726080,
+      "held_mib": 236.25,
+      "load_seconds": 1.481,
+      "rss_peak_mib": 1599.848,
+      "rss_settled_mib": 759.734
+    },
+    "ternary": {
+      "mode": "ternary",
+      "matrices": 196,
+      "held_tensors": 392,
+      "held_bytes": 137625600,
+      "held_mib": 131.25,
+      "load_seconds": 1.464,
+      "rss_peak_mib": 1459.57,
+      "rss_settled_mib": 619.457
+    }
+  },
+  "limits": [
+    "Footprint only: no forward pass runs, so this says how many bytes the stored weights need, not how much memory inference needs.",
+    "The packed arrays are this repository's teaching format (uint8 codes plus one float32 scale per 64 weights), not GGUF or bitsandbytes.",
+    "lm_head is excluded, as everywhere else in this repository.",
+    "Settled RSS also contains the interpreter, the tokenizer and the temporary float32 tensor being packed; the number to compare across rows is held_bytes."
+  ]
+}

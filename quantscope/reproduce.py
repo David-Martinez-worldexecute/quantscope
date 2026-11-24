@@ -79,6 +79,9 @@ FF_SCHEMA = "ff-evidence-v2"
 REAL_MODEL_SCHEMA = "quantscope-real-model-v1"
 REAL_MODEL_MODES = ("baseline", "int8", "int4", "ternary")
 BENCH_SCHEMA = "quantscope-bench-v1"
+PACKED_SCHEMA = "quantscope-packed-v1"
+PACKED_MODES = ("baseline", "int4", "ternary")
+FOOTPRINT_SCHEMA = "quantscope-packed-footprint-v1"
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
 
@@ -373,6 +376,97 @@ def _check_bench(payload: dict, checks: list[dict]) -> None:
             ", ".join(f"{mode} {sizes[mode]}" for mode in BENCH_MODES))
 
 
+def _check_packed(payload: dict, checks: list[dict]) -> None:
+    """The packed run: the same model with INT4 and ternary weights really stored small.
+
+    The point of this bundle is a memory claim, so the checks tie the stored timing
+    identities together and refuse to accept a payload order that would make the
+    table lie. Peak RSS cannot be recomputed from anything, so it is only required
+    to be present and positive.
+    """
+    for required in ("model", "protocol", "modes", "limits"):
+        if required not in payload:
+            raise ReproduceError(f"packed bundle is missing '{required}'")
+    modes = payload["modes"]
+    if sorted(modes) != sorted(PACKED_MODES):
+        raise ReproduceError(f"expected modes {sorted(PACKED_MODES)}, got {sorted(modes)}")
+    protocol = payload["protocol"]
+    if protocol.get("isolation") != "one child process per mode":
+        raise ReproduceError(
+            "packed bundle does not record per-mode process isolation: "
+            f"{protocol.get('isolation')!r}")
+    max_new_tokens = protocol["max_new_tokens"]
+    if max_new_tokens <= 0:
+        raise ReproduceError(f"max_new_tokens is {max_new_tokens}")
+
+    sizes = {}
+    for mode in PACKED_MODES:
+        block = modes[mode]
+        if block["decode_seconds"] <= 0:
+            raise ReproduceError(f"{mode}: decode_seconds is {block['decode_seconds']}")
+        rss = block.get("peak_rss_mib")
+        if rss is None or rss <= 0:
+            raise ReproduceError(f"{mode}: peak_rss_mib is {rss!r}")
+        _check(checks, f"packed.{mode}.decode_tokens_per_second",
+               block["decode_tokens_per_second"],
+               max_new_tokens / block["decode_seconds"], TOL_RATE,
+               note="the stored rate must equal new tokens / stored decode seconds")
+        median = block["prefill_ms_median"]
+        low, high = block["prefill_ms_min"], block["prefill_ms_max"]
+        _check(checks, f"packed.{mode}.prefill_ms_median", median,
+               min(max(median, low), high), 0,
+               note="the median must sit between the stored min and max")
+        sizes[mode] = block["payload_bytes"]
+
+    if not (sizes["ternary"] < sizes["int4"] < sizes["baseline"]):
+        raise ReproduceError(
+            "packed payload sizes are not ordered by width: " +
+            ", ".join(f"{mode} {sizes[mode]}" for mode in PACKED_MODES))
+
+
+def _check_footprint(payload: dict, checks: list[dict]) -> None:
+    """What the weights occupy when the checkpoint is streamed instead of loaded.
+
+    This is the bundle behind the sentence "the low-bit formats really are smaller": it
+    never builds the model, so the number it reports is the stored weights rather than
+    the float32 copy plus the packed one. Two identities are recomputable from the
+    stored bytes (held_mib and the tensor count), and the ordering is the claim itself,
+    so a payload that reverses it would make the page lie.
+    """
+    for required in ("model", "protocol", "modes", "limits"):
+        if required not in payload:
+            raise ReproduceError(f"footprint bundle is missing '{required}'")
+    modes = payload["modes"]
+    if sorted(modes) != sorted(PACKED_MODES):
+        raise ReproduceError(f"expected modes {sorted(PACKED_MODES)}, got {sorted(modes)}")
+
+    held = {}
+    for mode in PACKED_MODES:
+        block = modes[mode]
+        held[mode] = block["held_bytes"]
+        _check(checks, f"footprint.{mode}.held_mib", block["held_mib"],
+               block["held_bytes"] / (1024 * 1024), 0.001,
+               note="MiB must be the stored bytes divided by 1024*1024")
+        expected_tensors = block["matrices"] if mode == "baseline" else block["matrices"] * 2
+        if block["held_tensors"] != expected_tensors:
+            raise ReproduceError(
+                f"{mode}: {block['held_tensors']} stored tensors for {block['matrices']} "
+                "matrices; each packed matrix stores codes plus scales")
+        rss = block.get("rss_settled_mib")
+        if rss is None or rss <= 0:
+            raise ReproduceError(f"{mode}: rss_settled_mib is {rss!r}")
+        if block["load_seconds"] <= 0:
+            raise ReproduceError(f"{mode}: load_seconds is {block['load_seconds']}")
+
+    if not (held["ternary"] < held["int4"] < held["baseline"]):
+        raise ReproduceError(
+            "held weight bytes are not ordered by width: " +
+            ", ".join(f"{mode} {held[mode]}" for mode in PACKED_MODES))
+    settled = {mode: modes[mode]["rss_settled_mib"] for mode in PACKED_MODES}
+    if not (settled["ternary"] < settled["int4"] < settled["baseline"]):
+        raise ReproduceError(f"settled RSS does not fall with the held bytes: {settled}")
+
+
 def _bundle_paths(evidence_path=None) -> list[Path]:
     """Which bundles to check: the one asked for, or the whole evidence directory."""
     if evidence_path:
@@ -380,6 +474,7 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths = [DEFAULT_EVIDENCE]
     paths += sorted(EVIDENCE_DIR.glob("real_model_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("bench_*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("packed_*.json"))
     return paths
 
 
@@ -391,6 +486,10 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_real_model(payload, checks)
     elif schema == BENCH_SCHEMA:
         _check_bench(payload, checks)
+    elif schema == PACKED_SCHEMA:
+        _check_packed(payload, checks)
+    elif schema == FOOTPRINT_SCHEMA:
+        _check_footprint(payload, checks)
     else:
         raise ReproduceError(f"{name}: unknown evidence schema {schema!r}")
 

@@ -30,7 +30,7 @@ drift apart."
 run.py  ──►  manifest + predictions (sha256 of data, model, protocol)
                      │
                      ├─► verify   : re-derive accuracy, argmax, hashes
-                     ├─► reproduce: recompute all 101 published numbers
+                     ├─► reproduce: recompute all 110 published numbers
                      └─► figures  : five SVGs, rendered from the evidence
 ```
 
@@ -93,22 +93,28 @@ training set at all.
 
 ### A small real-model check
 
-Qwen3-0.6B, 171 multiple-choice questions, one run per format, CPU:
+Qwen3-0.6B, 600 multiple-choice questions, one run per format, CPU:
 
-| weight format | correct | accuracy | delta vs FP32 | FP32 right → wrong | FP32 wrong → right |
+| weight format | correct | accuracy | 95% interval | delta vs FP32 | 95% interval on the paired delta |
 | --- | --- | --- | --- | --- | --- |
-| FP32 | 56 / 171 | 32.75% | — | — | — |
-| INT8 dynamic (PyTorch) | 45 / 171 | 26.32% | −6.43 pp | 27 | 16 |
-| INT4 RTN, group 64 | 54 / 171 | 31.58% | −1.17 pp | 28 | 26 |
-| ternary, group 64 | 42 / 171 | 24.56% | −8.19 pp | 49 | 35 |
+| FP32 | 183 / 600 | 30.50% | 26.83–34.17% | — | — |
+| INT8 dynamic (PyTorch) | 136 / 600 | 22.67% | 19.33–25.83% | −7.83 pp | −11.33 to −4.50 pp |
+| INT4 RTN, group 64 | 177 / 600 | 29.50% | 25.83–33.33% | −1.00 pp | −5.33 to +3.50 pp |
+| ternary, group 64 | 160 / 600 | 26.67% | 23.17–30.33% | −3.83 pp | −9.50 to +2.00 pp |
 
 Two things are true at once, and I want both on the record:
 
-- **Ternary costs a lot here**: −8.19 pp, with 49 answers broken and 35 rescued.
-- **The INT8-vs-INT4 ordering is not a result.** With 171 questions the 95%
-  interval is roughly ±7 pp; the 5.41 pp gap between them sits inside it. What the
-  table supports is "the dynamic-activation path introduced more error than
-  weight-only rounding did on this machine", not "INT8 is worse than INT4".
+- **Only the INT8 loss is established here.** Its paired interval is −11.33 to −4.50 pp,
+  which excludes zero: it broke 80 answers FP32 got right and rescued 33.
+- **The other two are not.** INT4 (−1.00 pp) and ternary (−3.83 pp) both have paired
+  intervals that contain zero, and their intervals overlap each other heavily. Saying
+  "ternary is worse than INT4" is not supported by this set.
+
+This same table used to have 171 rows, and at that size every one of the three intervals
+contained zero — I reported "no accuracy loss is demonstrated" and meant it. Tripling the
+question count established one loss and left two open. That reversal is the most useful
+thing on this page: the conclusion moved because the sample moved, not because the model
+did.
 
 ### What each format costs, on one CPU
 
@@ -123,6 +129,14 @@ it is the only row that runs a real quantised kernel. The 4- and 2-bit rows are
 simulated in float32, so they save memory on paper and pay a small penalty in
 time. That distinction is the whole point of the page:
 [the measurement and its limits](cost-of-each-format.md).
+
+The payload numbers are arithmetic from the layer shapes; two further runs turn them
+into measurements. Packing the 196 matrices and then keeping only the packed codes
+drops the stored weights from **1680 MiB** to **236 MiB** (INT4) and **131 MiB**
+(ternary), and in that run the resident set follows: 2.84 GiB down to 0.74 and 0.60
+GiB. Packing *after* a full float32 load does not follow — RSS stays flat and decode
+falls to 1.0 and 0.8 tok/s, because that path unpacks a chunk at a time with no fused
+kernel. Both receipts are in `docs/evidence/`.
 
 ## What I actually think about AI
 
@@ -148,15 +162,16 @@ not in doubt. Layer 0 is simultaneously the bottleneck *and* the only place
 supervision enters. Calling that "local" is formally true and practically
 misleading: the layer is local in its gradients and global in its job.
 
-**3. A percentage hides the thing you want to know.** "−1.17 pp" could be 5 answers
-flipped out of 400, or 28 broken and 26 rescued — same number, different worlds.
-The real-model table is now the worked example. INT4 sits 1.17 pp below FP32, but
-the paired interval is [−9.94, +7.02] pp; INT8 is [−14.04, +1.17] and ternary is
-[−18.71, +2.34]. **Every one of the three intervals contains zero.** The honest
-sentence is therefore "no accuracy loss is demonstrated at 171 questions", not
-"INT4 is the safe choice" — and the FP32 row's own interval, [25.73%, 39.77%],
-says why: 171 questions is a wide net. Paired counts (`right→wrong`, `wrong→right`),
-a sample size and an interval are the minimum honest unit of reporting.
+**3. A percentage hides the thing you want to know.** "−1.00 pp" could be 5 answers
+flipped out of 400, or 95 broken and 89 rescued — same number, different worlds. The
+real-model table is the worked example, and it got sharper when the set grew from 171
+to 600 questions. At 171, INT8 sat 6.43 pp below FP32 with a paired interval of
+[−14.04, +1.17] pp — inside its own noise, so I wrote "no loss demonstrated". At 600
+the same method's interval is [−11.33, −4.50] pp: the loss now survives, while INT4
+(−1.00 pp, [−5.33, +3.50]) and ternary (−3.83 pp, [−9.50, +2.00]) still cross zero.
+Nothing about the quantisers changed; the sample did. A conclusion that flips with n
+is a conclusion that was never about the model. Paired counts (`right→wrong`,
+`wrong→right`), a sample size and an interval are the minimum honest unit of reporting.
 
 **4. Claims about machine intelligence need accounting, not adjectives.** What
 struck me most is not that a 1.58-bit network reaches 89.5% — it is how much of
@@ -174,8 +189,9 @@ exciting number with a paragraph.
   need its own run, not an extrapolation from this one.
 - Three seeds. The 4.62 pp cost is stable across them; the third decimal place is
   not.
-- The real-model table is a single run per format, on 171 questions. It is a
-  sanity check, not a benchmark entry.
+- The real-model table is a single run per format, on 600 questions from one C-Eval
+  validation slice. It is a sanity check, not a benchmark entry, and the intervals say
+  which parts of it are established and which are not.
 - INT8 here is `torch.ao.quantization.quantize_dynamic`. It is neither GGUF
   `Q4_K_M` nor bitsandbytes NF4. Speed and payload are measured, but only here:
   one CPU, `torch` 2.6.0, 128-token prompt, 32 greedy tokens. The payload column is
@@ -190,7 +206,7 @@ exciting number with a paragraph.
 
 ```bash
 pip install quantscope
-python -m quantscope.cli reproduce        # 101 numbers, from the evidence bytes
+python -m quantscope.cli reproduce        # 110 numbers, from the evidence bytes
 python -m quantscope.cli demo --out runs/demo
 python -m quantscope.cli verify --run runs/demo/run
 ```
