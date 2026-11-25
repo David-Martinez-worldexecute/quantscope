@@ -12,7 +12,7 @@
   changing only *where the quantization scale is computed* recovers **2.96 of them (64.1%)**. The
   cost was mostly a scale-alignment problem, not a bit-width problem. Two more figures and the
   places where the argument breaks are in [what-this-is.md](docs/what-this-is.md).
-- **One command.** `python -m quantscope.cli reproduce` recomputes all **203** published numbers —
+- **One command.** `python -m quantscope.cli reproduce` recomputes all **389** published numbers —
   including the 600-question, four-format real-model run, its bootstrap and paired intervals, and
   the CPU timing and held-weight rows — from the
   evidence files in this repository, and fails if any of them stops following from the bytes beside
@@ -176,7 +176,7 @@ evidence file is `docs/evidence/qwen35_forward.json`.
 Two commands, no GPU, no downloads:
 
 ```bash
-python -m quantscope.cli reproduce   # recompute all 203 published numbers from the evidence bundle
+python -m quantscope.cli reproduce   # recompute all 389 published numbers from the evidence bundle
 python -m quantscope.cli demo --out runs/demo && python -m quantscope.cli verify --run runs/demo/run
 ```
 

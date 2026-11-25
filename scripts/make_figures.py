@@ -434,8 +434,6 @@ def figure_layer_collapse(prefix: dict) -> str:
     line_y = bottom - (bottom - top) * prefix["protocol"]["collapse_share"]
     parts.append(f'<line x1="{left:.1f}" y1="{line_y:.1f}" x2="{right:.1f}" y2="{line_y:.1f}" '
                  f'stroke="{GOLD}" stroke-width="1.2" stroke-dasharray="6 5"/>')
-    parts.append(text(right - 4, line_y - 8, "one letter on at least 90% of questions",
-                      size=10.5, fill=GOLD, anchor="end"))
 
     slot = (right - left) / len(order)
     bar_w = slot * 0.58
@@ -450,6 +448,8 @@ def figure_layer_collapse(prefix: dict) -> str:
         if index % 2 == 0 or index == len(order) - 1:
             parts.append(text(x + bar_w / 2, bottom + 20, str(item["layers_quantised"]),
                               size=10.5, fill=MUTED, anchor="middle"))
+    parts.append(text(left + 4, line_y - 7, "one letter on at least 90% of questions",
+                      size=10, fill=GOLD, anchor="start"))
     parts.append(text((left + right) / 2, bottom + 42, "quantised layers (a prefix, not a block)",
                       size=11, fill=MUTED, anchor="middle"))
     parts.append(text(40, HEIGHT - 44,

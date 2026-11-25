@@ -1,0 +1,597 @@
+{
+  "collapsed_group_sizes": [
+    64
+  ],
+  "generated_utc": "2026-11-25T14:04:19Z",
+  "limits": [
+    "three group sizes only: 32, 64 and 128, all on the same 600 questions and the same checkpoint",
+    "a group size is a different quantiser, so a row that does not collapse is not the same experiment failing -- it is the answer to a different question",
+    "the raw sweeps live beside this file in acceptance_runs; this bundle carries the numbers the page quotes",
+    "the 0.90 share threshold is a reading aid, and the near-threshold row is reported as near-threshold rather than resolved"
+  ],
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "collapse_share": 0.9,
+    "group_sizes": [
+      32,
+      64,
+      128
+    ],
+    "quantisation": "ternary per-group absmean; only the group size changes between rows",
+    "quantised_layers": 18,
+    "questions": 600
+  },
+  "rows": [
+    {
+      "collapsed": false,
+      "collapsed_keeps": [],
+      "conditions": [
+        {
+          "condition": "all_quantised",
+          "correct": 159,
+          "count": 600,
+          "histogram": {
+            "A": 166,
+            "B": 0,
+            "C": 403,
+            "D": 31
+          },
+          "most_common": "C",
+          "most_common_share": 0.6716666666666666,
+          "quantised_matrices": 126
+        },
+        {
+          "condition": "keep_q_proj",
+          "correct": 146,
+          "count": 600,
+          "histogram": {
+            "A": 295,
+            "B": 41,
+            "C": 236,
+            "D": 28
+          },
+          "most_common": "A",
+          "most_common_share": 0.49166666666666664,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_k_proj",
+          "correct": 138,
+          "count": 600,
+          "histogram": {
+            "A": 150,
+            "B": 7,
+            "C": 291,
+            "D": 152
+          },
+          "most_common": "C",
+          "most_common_share": 0.485,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_v_proj",
+          "correct": 130,
+          "count": 600,
+          "histogram": {
+            "A": 345,
+            "B": 39,
+            "C": 159,
+            "D": 57
+          },
+          "most_common": "A",
+          "most_common_share": 0.575,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_o_proj",
+          "correct": 148,
+          "count": 600,
+          "histogram": {
+            "A": 228,
+            "B": 0,
+            "C": 0,
+            "D": 372
+          },
+          "most_common": "D",
+          "most_common_share": 0.62,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_gate_proj",
+          "correct": 166,
+          "count": 600,
+          "histogram": {
+            "A": 181,
+            "B": 132,
+            "C": 207,
+            "D": 80
+          },
+          "most_common": "C",
+          "most_common_share": 0.345,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_up_proj",
+          "correct": 142,
+          "count": 600,
+          "histogram": {
+            "A": 271,
+            "B": 205,
+            "C": 92,
+            "D": 32
+          },
+          "most_common": "A",
+          "most_common_share": 0.45166666666666666,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_down_proj",
+          "correct": 133,
+          "count": 600,
+          "histogram": {
+            "A": 417,
+            "B": 3,
+            "C": 33,
+            "D": 147
+          },
+          "most_common": "A",
+          "most_common_share": 0.695,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_attention",
+          "correct": 148,
+          "count": 600,
+          "histogram": {
+            "A": 158,
+            "B": 0,
+            "C": 41,
+            "D": 401
+          },
+          "most_common": "D",
+          "most_common_share": 0.6683333333333333,
+          "quantised_matrices": 54
+        },
+        {
+          "condition": "keep_mlp",
+          "correct": 124,
+          "count": 600,
+          "histogram": {
+            "A": 391,
+            "B": 27,
+            "C": 47,
+            "D": 135
+          },
+          "most_common": "A",
+          "most_common_share": 0.6516666666666666,
+          "quantised_matrices": 72
+        },
+        {
+          "condition": "keep_first_layer",
+          "correct": 157,
+          "count": 600,
+          "histogram": {
+            "A": 105,
+            "B": 56,
+            "C": 439,
+            "D": 0
+          },
+          "most_common": "C",
+          "most_common_share": 0.7316666666666667,
+          "quantised_matrices": 119
+        },
+        {
+          "condition": "keep_last_quantised_layer",
+          "correct": 161,
+          "count": 600,
+          "histogram": {
+            "A": 62,
+            "B": 0,
+            "C": 28,
+            "D": 510
+          },
+          "most_common": "D",
+          "most_common_share": 0.85,
+          "quantised_matrices": 119
+        }
+      ],
+      "group_size": 32,
+      "survivors": [
+        "all_quantised",
+        "keep_attention",
+        "keep_down_proj",
+        "keep_first_layer",
+        "keep_gate_proj",
+        "keep_k_proj",
+        "keep_last_quantised_layer",
+        "keep_mlp",
+        "keep_o_proj",
+        "keep_q_proj",
+        "keep_up_proj",
+        "keep_v_proj"
+      ]
+    },
+    {
+      "collapsed": true,
+      "collapsed_keeps": [
+        "keep_first_layer",
+        "keep_q_proj",
+        "keep_up_proj"
+      ],
+      "conditions": [
+        {
+          "condition": "all_quantised",
+          "correct": 121,
+          "count": 600,
+          "histogram": {
+            "A": 596,
+            "B": 0,
+            "C": 0,
+            "D": 4
+          },
+          "most_common": "A",
+          "most_common_share": 0.9933333333333333,
+          "quantised_matrices": 126
+        },
+        {
+          "condition": "keep_q_proj",
+          "correct": 122,
+          "count": 600,
+          "histogram": {
+            "A": 552,
+            "B": 46,
+            "C": 0,
+            "D": 2
+          },
+          "most_common": "A",
+          "most_common_share": 0.92,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_k_proj",
+          "correct": 136,
+          "count": 600,
+          "histogram": {
+            "A": 213,
+            "B": 126,
+            "C": 88,
+            "D": 173
+          },
+          "most_common": "A",
+          "most_common_share": 0.355,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_v_proj",
+          "correct": 146,
+          "count": 600,
+          "histogram": {
+            "A": 281,
+            "B": 276,
+            "C": 29,
+            "D": 14
+          },
+          "most_common": "A",
+          "most_common_share": 0.4683333333333333,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_o_proj",
+          "correct": 124,
+          "count": 600,
+          "histogram": {
+            "A": 531,
+            "B": 1,
+            "C": 1,
+            "D": 67
+          },
+          "most_common": "A",
+          "most_common_share": 0.885,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_gate_proj",
+          "correct": 156,
+          "count": 600,
+          "histogram": {
+            "A": 211,
+            "B": 139,
+            "C": 146,
+            "D": 104
+          },
+          "most_common": "A",
+          "most_common_share": 0.3516666666666667,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_up_proj",
+          "correct": 124,
+          "count": 600,
+          "histogram": {
+            "A": 582,
+            "B": 15,
+            "C": 0,
+            "D": 3
+          },
+          "most_common": "A",
+          "most_common_share": 0.97,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_down_proj",
+          "correct": 131,
+          "count": 600,
+          "histogram": {
+            "A": 319,
+            "B": 2,
+            "C": 3,
+            "D": 276
+          },
+          "most_common": "A",
+          "most_common_share": 0.5316666666666666,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_attention",
+          "correct": 140,
+          "count": 600,
+          "histogram": {
+            "A": 117,
+            "B": 0,
+            "C": 28,
+            "D": 455
+          },
+          "most_common": "D",
+          "most_common_share": 0.7583333333333333,
+          "quantised_matrices": 54
+        },
+        {
+          "condition": "keep_mlp",
+          "correct": 132,
+          "count": 600,
+          "histogram": {
+            "A": 338,
+            "B": 24,
+            "C": 53,
+            "D": 185
+          },
+          "most_common": "A",
+          "most_common_share": 0.5633333333333334,
+          "quantised_matrices": 72
+        },
+        {
+          "condition": "keep_first_layer",
+          "correct": 120,
+          "count": 600,
+          "histogram": {
+            "A": 597,
+            "B": 3,
+            "C": 0,
+            "D": 0
+          },
+          "most_common": "A",
+          "most_common_share": 0.995,
+          "quantised_matrices": 119
+        },
+        {
+          "condition": "keep_last_quantised_layer",
+          "correct": 139,
+          "count": 600,
+          "histogram": {
+            "A": 271,
+            "B": 0,
+            "C": 128,
+            "D": 201
+          },
+          "most_common": "A",
+          "most_common_share": 0.45166666666666666,
+          "quantised_matrices": 119
+        }
+      ],
+      "group_size": 64,
+      "survivors": [
+        "keep_attention",
+        "keep_down_proj",
+        "keep_gate_proj",
+        "keep_k_proj",
+        "keep_last_quantised_layer",
+        "keep_mlp",
+        "keep_o_proj",
+        "keep_v_proj"
+      ]
+    },
+    {
+      "collapsed": false,
+      "collapsed_keeps": [
+        "keep_first_layer",
+        "keep_up_proj"
+      ],
+      "conditions": [
+        {
+          "condition": "all_quantised",
+          "correct": 135,
+          "count": 600,
+          "histogram": {
+            "A": 528,
+            "B": 10,
+            "C": 11,
+            "D": 51
+          },
+          "most_common": "A",
+          "most_common_share": 0.88,
+          "quantised_matrices": 126
+        },
+        {
+          "condition": "keep_q_proj",
+          "correct": 134,
+          "count": 600,
+          "histogram": {
+            "A": 320,
+            "B": 264,
+            "C": 11,
+            "D": 5
+          },
+          "most_common": "A",
+          "most_common_share": 0.5333333333333333,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_k_proj",
+          "correct": 142,
+          "count": 600,
+          "histogram": {
+            "A": 213,
+            "B": 24,
+            "C": 63,
+            "D": 300
+          },
+          "most_common": "D",
+          "most_common_share": 0.5,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_v_proj",
+          "correct": 148,
+          "count": 600,
+          "histogram": {
+            "A": 144,
+            "B": 281,
+            "C": 167,
+            "D": 8
+          },
+          "most_common": "B",
+          "most_common_share": 0.4683333333333333,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_o_proj",
+          "correct": 122,
+          "count": 600,
+          "histogram": {
+            "A": 368,
+            "B": 11,
+            "C": 8,
+            "D": 213
+          },
+          "most_common": "A",
+          "most_common_share": 0.6133333333333333,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_gate_proj",
+          "correct": 156,
+          "count": 600,
+          "histogram": {
+            "A": 49,
+            "B": 208,
+            "C": 131,
+            "D": 212
+          },
+          "most_common": "D",
+          "most_common_share": 0.35333333333333333,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_up_proj",
+          "correct": 123,
+          "count": 600,
+          "histogram": {
+            "A": 554,
+            "B": 27,
+            "C": 19,
+            "D": 0
+          },
+          "most_common": "A",
+          "most_common_share": 0.9233333333333333,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_down_proj",
+          "correct": 147,
+          "count": 600,
+          "histogram": {
+            "A": 136,
+            "B": 12,
+            "C": 0,
+            "D": 452
+          },
+          "most_common": "D",
+          "most_common_share": 0.7533333333333333,
+          "quantised_matrices": 108
+        },
+        {
+          "condition": "keep_attention",
+          "correct": 130,
+          "count": 600,
+          "histogram": {
+            "A": 148,
+            "B": 3,
+            "C": 35,
+            "D": 414
+          },
+          "most_common": "D",
+          "most_common_share": 0.69,
+          "quantised_matrices": 54
+        },
+        {
+          "condition": "keep_mlp",
+          "correct": 145,
+          "count": 600,
+          "histogram": {
+            "A": 274,
+            "B": 25,
+            "C": 62,
+            "D": 239
+          },
+          "most_common": "A",
+          "most_common_share": 0.45666666666666667,
+          "quantised_matrices": 72
+        },
+        {
+          "condition": "keep_first_layer",
+          "correct": 124,
+          "count": 600,
+          "histogram": {
+            "A": 585,
+            "B": 15,
+            "C": 0,
+            "D": 0
+          },
+          "most_common": "A",
+          "most_common_share": 0.975,
+          "quantised_matrices": 119
+        },
+        {
+          "condition": "keep_last_quantised_layer",
+          "correct": 140,
+          "count": 600,
+          "histogram": {
+            "A": 366,
+            "B": 109,
+            "C": 28,
+            "D": 97
+          },
+          "most_common": "A",
+          "most_common_share": 0.61,
+          "quantised_matrices": 119
+        }
+      ],
+      "group_size": 128,
+      "survivors": [
+        "all_quantised",
+        "keep_attention",
+        "keep_down_proj",
+        "keep_gate_proj",
+        "keep_k_proj",
+        "keep_last_quantised_layer",
+        "keep_mlp",
+        "keep_o_proj",
+        "keep_q_proj",
+        "keep_v_proj"
+      ]
+    }
+  ],
+  "schema": "quantscope-granularity-v1"
+}

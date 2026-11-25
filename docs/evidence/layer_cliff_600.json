@@ -1,0 +1,375 @@
+{
+  "schema": "quantscope-layer-cliff-v1",
+  "generated_utc": "2026-11-25T13:05:04Z",
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "questions": 600,
+    "quantised_layers": 18,
+    "group_size": 64,
+    "max_tokens": 96,
+    "scoring": "last-position single-token A/B/C/D logits",
+    "quantisation": "ternary per-group absmean (same formula as the lab quantiser)",
+    "collapse_share": 0.9,
+    "device": "cuda",
+    "torch": "2.6.0+cu124",
+    "cuda": "12.4",
+    "threads": 4
+  },
+  "baseline": {
+    "correct": 171,
+    "count": 600,
+    "histogram": {
+      "A": 378,
+      "B": 91,
+      "C": 56,
+      "D": 75
+    },
+    "most_common": "A",
+    "most_common_share": 0.63,
+    "mean_gap": 6.594162
+  },
+  "conditions": [
+    {
+      "condition": "all_quantised",
+      "quantised_matrices": 126,
+      "float32_matrices": 0,
+      "correct": 121,
+      "count": 600,
+      "histogram": {
+        "A": 596,
+        "B": 0,
+        "C": 0,
+        "D": 4
+      },
+      "most_common": "A",
+      "most_common_share": 0.993333,
+      "mean_gap": 5.454461
+    },
+    {
+      "condition": "keep_q_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 122,
+      "count": 600,
+      "histogram": {
+        "A": 552,
+        "B": 46,
+        "C": 0,
+        "D": 2
+      },
+      "most_common": "A",
+      "most_common_share": 0.92,
+      "mean_gap": 6.154971
+    },
+    {
+      "condition": "keep_k_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 136,
+      "count": 600,
+      "histogram": {
+        "A": 213,
+        "B": 126,
+        "C": 88,
+        "D": 173
+      },
+      "most_common": "A",
+      "most_common_share": 0.355,
+      "mean_gap": 3.221451
+    },
+    {
+      "condition": "keep_v_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 146,
+      "count": 600,
+      "histogram": {
+        "A": 281,
+        "B": 276,
+        "C": 29,
+        "D": 14
+      },
+      "most_common": "A",
+      "most_common_share": 0.468333,
+      "mean_gap": 4.976103
+    },
+    {
+      "condition": "keep_o_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 124,
+      "count": 600,
+      "histogram": {
+        "A": 531,
+        "B": 1,
+        "C": 1,
+        "D": 67
+      },
+      "most_common": "A",
+      "most_common_share": 0.885,
+      "mean_gap": 5.007443
+    },
+    {
+      "condition": "keep_gate_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 156,
+      "count": 600,
+      "histogram": {
+        "A": 211,
+        "B": 139,
+        "C": 146,
+        "D": 104
+      },
+      "most_common": "A",
+      "most_common_share": 0.351667,
+      "mean_gap": 3.335954
+    },
+    {
+      "condition": "keep_up_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 124,
+      "count": 600,
+      "histogram": {
+        "A": 582,
+        "B": 15,
+        "C": 0,
+        "D": 3
+      },
+      "most_common": "A",
+      "most_common_share": 0.97,
+      "mean_gap": 7.748779
+    },
+    {
+      "condition": "keep_down_proj",
+      "quantised_matrices": 108,
+      "float32_matrices": 18,
+      "correct": 131,
+      "count": 600,
+      "histogram": {
+        "A": 319,
+        "B": 2,
+        "C": 3,
+        "D": 276
+      },
+      "most_common": "A",
+      "most_common_share": 0.531667,
+      "mean_gap": 2.39674
+    },
+    {
+      "condition": "keep_attention",
+      "quantised_matrices": 54,
+      "float32_matrices": 72,
+      "correct": 140,
+      "count": 600,
+      "histogram": {
+        "A": 117,
+        "B": 0,
+        "C": 28,
+        "D": 455
+      },
+      "most_common": "D",
+      "most_common_share": 0.758333,
+      "mean_gap": 6.764895
+    },
+    {
+      "condition": "keep_mlp",
+      "quantised_matrices": 72,
+      "float32_matrices": 54,
+      "correct": 132,
+      "count": 600,
+      "histogram": {
+        "A": 338,
+        "B": 24,
+        "C": 53,
+        "D": 185
+      },
+      "most_common": "A",
+      "most_common_share": 0.563333,
+      "mean_gap": 3.390179
+    },
+    {
+      "condition": "keep_first_layer",
+      "quantised_matrices": 119,
+      "float32_matrices": 7,
+      "correct": 120,
+      "count": 600,
+      "histogram": {
+        "A": 597,
+        "B": 3,
+        "C": 0,
+        "D": 0
+      },
+      "most_common": "A",
+      "most_common_share": 0.995,
+      "mean_gap": 6.506582
+    },
+    {
+      "condition": "keep_last_quantised_layer",
+      "quantised_matrices": 119,
+      "float32_matrices": 7,
+      "correct": 139,
+      "count": 600,
+      "histogram": {
+        "A": 271,
+        "B": 0,
+        "C": 128,
+        "D": 201
+      },
+      "most_common": "A",
+      "most_common_share": 0.451667,
+      "mean_gap": 5.301453
+    }
+  ],
+  "anchor": {
+    "layers_quantised": 18,
+    "correct": 121,
+    "count": 600,
+    "histogram": {
+      "A": 596,
+      "B": 0,
+      "C": 0,
+      "D": 4
+    },
+    "most_common": "A",
+    "most_common_share": 0.993333
+  },
+  "matrix_stats": {
+    "by_kind": {
+      "down_proj": {
+        "matrices": 18,
+        "weights": 56623104,
+        "zero_fraction_sum": 5.7005,
+        "relative_error_sum": 9.48965,
+        "mean_zero_fraction": 0.316694,
+        "mean_relative_error": 0.527203
+      },
+      "gate_proj": {
+        "matrices": 18,
+        "weights": 56623104,
+        "zero_fraction_sum": 5.600451,
+        "relative_error_sum": 9.261245,
+        "mean_zero_fraction": 0.311136,
+        "mean_relative_error": 0.514514
+      },
+      "k_proj": {
+        "matrices": 18,
+        "weights": 18874368,
+        "zero_fraction_sum": 5.622353,
+        "relative_error_sum": 9.348901,
+        "mean_zero_fraction": 0.312353,
+        "mean_relative_error": 0.519383
+      },
+      "o_proj": {
+        "matrices": 18,
+        "weights": 37748736,
+        "zero_fraction_sum": 5.594165,
+        "relative_error_sum": 9.253918,
+        "mean_zero_fraction": 0.310787,
+        "mean_relative_error": 0.514107
+      },
+      "q_proj": {
+        "matrices": 18,
+        "weights": 37748736,
+        "zero_fraction_sum": 5.634083,
+        "relative_error_sum": 9.296559,
+        "mean_zero_fraction": 0.313005,
+        "mean_relative_error": 0.516475
+      },
+      "up_proj": {
+        "matrices": 18,
+        "weights": 56623104,
+        "zero_fraction_sum": 5.640313,
+        "relative_error_sum": 9.295254,
+        "mean_zero_fraction": 0.313351,
+        "mean_relative_error": 0.516403
+      },
+      "v_proj": {
+        "matrices": 18,
+        "weights": 18874368,
+        "zero_fraction_sum": 5.700555,
+        "relative_error_sum": 9.339985,
+        "mean_zero_fraction": 0.316697,
+        "mean_relative_error": 0.518888
+      }
+    },
+    "matrices": 126,
+    "worst_relative_error": [
+      {
+        "name": "model.layers.16.mlp.down_proj",
+        "layer": 16,
+        "kind": "down_proj",
+        "group": "mlp",
+        "weights": 3145728,
+        "zero_fraction": 0.321075,
+        "relative_error": 0.53971,
+        "weight_norm": 42.280804
+      },
+      {
+        "name": "model.layers.16.self_attn.k_proj",
+        "layer": 16,
+        "kind": "k_proj",
+        "group": "attention",
+        "weights": 1048576,
+        "zero_fraction": 0.314097,
+        "relative_error": 0.534002,
+        "weight_norm": 24.352373
+      },
+      {
+        "name": "model.layers.10.mlp.down_proj",
+        "layer": 10,
+        "kind": "down_proj",
+        "group": "mlp",
+        "weights": 3145728,
+        "zero_fraction": 0.320068,
+        "relative_error": 0.533255,
+        "weight_norm": 41.915039
+      },
+      {
+        "name": "model.layers.14.mlp.down_proj",
+        "layer": 14,
+        "kind": "down_proj",
+        "group": "mlp",
+        "weights": 3145728,
+        "zero_fraction": 0.319387,
+        "relative_error": 0.53273,
+        "weight_norm": 41.871437
+      },
+      {
+        "name": "model.layers.15.mlp.down_proj",
+        "layer": 15,
+        "kind": "down_proj",
+        "group": "mlp",
+        "weights": 3145728,
+        "zero_fraction": 0.318896,
+        "relative_error": 0.532193,
+        "weight_norm": 41.816338
+      }
+    ]
+  },
+  "survivors": [
+    "keep_k_proj",
+    "keep_v_proj",
+    "keep_o_proj",
+    "keep_gate_proj",
+    "keep_down_proj",
+    "keep_attention",
+    "keep_mlp",
+    "keep_last_quantised_layer"
+  ],
+  "collapsed_keeps": [
+    "keep_q_proj",
+    "keep_up_proj",
+    "keep_first_layer"
+  ],
+  "limits": [
+    "600 questions from the first 600 usable rows of the C-Eval slice; a 60-question sample cannot resolve differences below about ten points.",
+    "Only the ternary quantiser in the lab repository is tested; NF4 in the same model does not collapse, so this is a statement about this quantiser, not about 1.58 bits.",
+    "Depth is fixed at the first 18 layers, the prefix length that collapsed in the sweep; longer prefixes collapse onto a different letter and are not covered here.",
+    "Keeping a class in float32 removes both its rounding error and its share of the memory saving, so a surviving condition is a diagnosis, not a deployable format."
+  ],
+  "seconds": 575.6
+}

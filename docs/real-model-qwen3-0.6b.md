@@ -94,6 +94,120 @@ The tensor numbers say the split is not about *how much* was rounded. Across the
 
 Read this table with the sample in mind: 60 questions, so a share that moves by a tenth is a handful of answers, and a single condition is not enough to rank two classes. What it does support is the coarse split — some classes are load-bearing for the collapse and others are not.
 
+### The same ablation at 600 questions
+
+Putting one class of weight back is the kind of result that can turn on a handful of answers, so the ablation runs again over 600 questions, with the same 18 quantised layers and the same quantiser. The table keeps both sample sizes next to each other for every class.
+
+| put back in float32 | 60 questions: share | 600 questions: share | 600 questions: correct |
+| --- | --- | --- | --- |
+| none: every matrix quantised | 100.0% | 99.3% | 121 / 600 |
+| attention (q, k, v, o) | 78.3% | 75.8% | 140 / 600 |
+| MLP (gate, up, down) | 60.0% | 56.3% | 132 / 600 |
+| the last quantised layer (17) | 45.0% | 45.2% | 139 / 600 |
+| the first layer (0) | 100.0% | 99.5% | 120 / 600 |
+| q projection | 95.0% | 92.0% | 122 / 600 |
+| k projection | 36.7% | 35.5% | 136 / 600 |
+| v projection | 48.3% | 46.8% | 146 / 600 |
+| o projection | 90.0% | 88.5% | 124 / 600 |
+| gate projection | 31.7% | 35.2% | 156 / 600 |
+| up projection | 100.0% | 97.0% | 124 / 600 |
+| down projection | 51.7% | 53.2% | 131 / 600 |
+
+The classes that break the collapse on both sample sizes: attention (q, k, v, o), MLP (gate, up, down), the last quantised layer (17), k projection, v projection, gate projection, down projection.
+
+o projection joins them at the larger sample (90.0% at 60 questions, 88.5% at 600). Both of those shares sit around the 0.90 line this page uses to call a row collapsed, so whether that class belongs in the list is not resolved by either sample size — it is the one cell of the table that the data does not settle.
+
+None of the restores recovers the float32 model: the best single restore (gate projection) answers 156 of 600 (26.0%), while the same checkpoint in float32 answers 171 of 600 (28.5%). A surviving condition says which weights carry the damage; it is not a cheaper format.
+
+The tensor numbers do not move with the sample size, because they do not depend on any question: the 126 matrices of those 18 layers still lose 31.1% to 31.7% of their weights to zero and still sit at relative error 0.514 to 0.527, whatever the questions say.
+
+## The same sweep at ten times the questions
+
+Sixty questions is enough to locate a collapse, not enough to defend one. The same prefix sweep therefore runs again over 600 questions, drawn as the first 600 rows of the same C-Eval validation file as the 60-question slice, so the smaller sample is a prefix of the larger one rather than a different draw.
+
+| quantised layers | 60 questions: letter (share) | 60 accuracy | 600 questions: letter (share) | 600 accuracy |
+| --- | --- | --- | --- | --- |
+| 12 | D (73.3%) | 17 / 60 (28.3%) | D (71.5%) | 166 / 600 (27.7%) |
+| 13 | D (51.7%) | 18 / 60 (30.0%) | D (53.7%) | 164 / 600 (27.3%) |
+| 14 | B (61.7%) | 13 / 60 (21.7%) | B (61.8%) | 146 / 600 (24.3%) |
+| 15 | A (41.7%) | 14 / 60 (23.3%) | A (43.5%) | 146 / 600 (24.3%) |
+| 16 | A (50.0%) | 15 / 60 (25.0%) | A (44.2%) | 142 / 600 (23.7%) |
+| 17 | D (45.0%) | 12 / 60 (20.0%) | A (45.2%) | 139 / 600 (23.2%) |
+| 18 | A (100.0%) | 10 / 60 (16.7%) | A (99.3%) | 121 / 600 (20.2%) |
+| 19 | B (63.3%) | 14 / 60 (23.3%) | B (60.2%) | 152 / 600 (25.3%) |
+| 20 | A (58.3%) | 15 / 60 (25.0%) | A (61.7%) | 140 / 600 (23.3%) |
+| 21 | B (51.7%) | 12 / 60 (20.0%) | B (52.8%) | 132 / 600 (22.0%) |
+| 22 | C (55.0%) | 19 / 60 (31.7%) | C (52.8%) | 148 / 600 (24.7%) |
+| 23 | D (100.0%) | 15 / 60 (25.0%) | D (99.0%) | 160 / 600 (26.7%) |
+| 24 | A (95.0%) | 11 / 60 (18.3%) | A (92.7%) | 128 / 600 (21.3%) |
+| 25 | D (98.3%) | 15 / 60 (25.0%) | D (98.8%) | 159 / 600 (26.5%) |
+| 26 | D (100.0%) | 15 / 60 (25.0%) | D (100.0%) | 159 / 600 (26.5%) |
+| 27 | D (100.0%) | 15 / 60 (25.0%) | D (99.8%) | 159 / 600 (26.5%) |
+| 28 | D (98.3%) | 15 / 60 (25.0%) | D (99.7%) | 160 / 600 (26.7%) |
+
+- Collapsed at 60 questions: 18, 23, 24, 25, 26, 27, 28
+- Collapsed at 600 questions: 18, 23, 24, 25, 26, 27, 28
+- Same set: yes
+- Constant-answer baselines: at 60 questions A 16.7%, B 28.3%, C 30.0%, D 25.0%; at 600 questions A 20.3%, B 23.5%, C 29.7%, D 26.5%
+
+The collapsed sets are identical, so the cliff is not a small-sample artefact. The one row whose leading letter changes is the last prefix before the first collapse, and its shares overlap at the two sample sizes — that is a few letters trading places, not a difference the data supports.
+
+### What a collapsed row actually scores
+
+A row that answers one letter on nine questions in ten looks like a collapse, but its accuracy is not automatically better than printing that letter. Comparing each collapsed row's accuracy interval with the score of always answering that letter is what turns "it collapsed" into a statement about knowledge.
+
+| sample | quantised layers | letter | accuracy | always that letter | verdict |
+| --- | --- | --- | --- | --- | --- |
+| 60 | 18 | A | 16.7% | 16.7% | not proven to differ from always-A |
+| 60 | 23 | D | 25.0% | 25.0% | not proven to differ from always-D |
+| 60 | 24 | A | 18.3% | 16.7% | not proven to differ from always-A |
+| 60 | 25 | D | 25.0% | 25.0% | not proven to differ from always-D |
+| 60 | 26 | D | 25.0% | 25.0% | not proven to differ from always-D |
+| 60 | 27 | D | 25.0% | 25.0% | not proven to differ from always-D |
+| 60 | 28 | D | 25.0% | 25.0% | not proven to differ from always-D |
+| 600 | 18 | A | 20.2% | 20.3% | not proven to differ from always-A |
+| 600 | 23 | D | 26.7% | 26.5% | not proven to differ from always-D |
+| 600 | 24 | A | 21.3% | 20.3% | not proven to differ from always-A |
+| 600 | 25 | D | 26.5% | 26.5% | not proven to differ from always-D |
+| 600 | 26 | D | 26.5% | 26.5% | not proven to differ from always-D |
+| 600 | 27 | D | 26.5% | 26.5% | not proven to differ from always-D |
+| 600 | 28 | D | 26.7% | 26.5% | not proven to differ from always-D |
+
+Every one of those rows scores what its constant-answer baseline scores, within the interval. So the sweep says where the model stops answering, and it does not say that whatever it keeps answering is worth anything: at those depths the model has not been shown to differ from printing one letter.
+
+These rows are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/scaling_check.json`, which carries both sweeps' histograms, the accuracy intervals and the verdict table.
+
+## The collapse belongs to one quantiser, not to eighteen layers
+
+Everything above fixes the group size at 64. Group size is the width over which one scale factor is shared, so changing it changes the quantiser itself — which makes the obvious control worth running: the same 18 quantised layers, the same 600 questions, at group sizes 32, 64, 128.
+
+| group size | all-quantised answer | share of that letter | correct | collapsed |
+| --- | --- | --- | --- | --- |
+| 32 | C | 67.2% | 159 / 600 | no |
+| 64 | A | 99.3% | 121 / 600 | yes |
+| 128 | A | 88.0% | 135 / 600 | no |
+
+Only group size 64 reaches 90% on one letter. At group size 32, 128 the model still spreads its answers, so "eighteen layers collapses the model" is a statement about group-64 absmean quantisation and not about depth on its own.
+
+- At group size 32 the same depth answers 159 of 600 correctly — 26.5%, against the float32 model's 28.5% — with C leading at 67.2%.
+- At group size 128 the same depth answers 135 of 600 correctly — 22.5%, against the float32 model's 28.5% — with A leading at 88.0%.
+
+The rest of this page stays on group size 64, because that is the setting the earlier runs used and changing it mid-comparison would mix two quantisers into one table. What this section establishes is narrower and firmer: the cliff is not a law of 1.58-bit weights, it is the behaviour of this scale-sharing width on this checkpoint.
+
+These rows are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/granularity.json`.
+
+## An attempt to explain the depth, and why it failed
+
+The sweep says where the model stops answering; it does not say why the cost is paid at that depth rather than at another. The natural next measurement is how far the hidden state drifts from its float32 value as more layers are quantised — a drift curve growing with depth would be the mechanism. This section reports that measurement because it did not work, and the failure is the informative part.
+
+The relative Frobenius drift is bounded above by $\sqrt{2}$ ≈ 1.414, and the first quantised layer alone already moves the state by 0.813. Every prefix from 4 to 28 layers lands at 1.453–1.511, which is the bound, not a depth-dependent quantity.
+
+Once one quantised layer has decorrelated the hidden state from its float32 counterpart, "how far it moved" has nowhere left to grow. So the curve is flat in depth by construction, and the interaction factor computed from it cannot be read as layers amplifying each other. Reporting it as an amplification law would be inventing the criterion the measurement was supposed to find.
+
+What would be needed instead: a metric bounded away from saturation — the logit margin on the correct answer, or the per-layer relative error of the attention output rather than the full hidden state — measured at the same depths. That is not done here, and this page does not claim a mechanism for the cliff.
+
+The numbers above are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/amplification.json`, which also records the saturation verdict so a reader can see the measurement was retired rather than quietly dropped.
+
 ## What the intervals say, and what they do not
 
 The paired interval resamples the per-question outcomes with the same seed the bundle records (12345, 4000 resamples), so it can be recomputed from the stored 0/1 sequence instead of believed.

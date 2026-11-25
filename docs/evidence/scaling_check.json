@@ -1,0 +1,943 @@
+{
+  "schema": "quantscope-scaling-check-v1",
+  "generated_utc": "2026-11-25T12:56:28Z",
+  "z": 1.959963984540054,
+  "intervals": "wilson score, 95%, two-sided",
+  "constants": {
+    "60": {
+      "A": 0.16666666666666666,
+      "B": 0.2833333333333333,
+      "C": 0.3,
+      "D": 0.25
+    },
+    "600": {
+      "A": 0.20333333333333334,
+      "B": 0.235,
+      "C": 0.2966666666666667,
+      "D": 0.265
+    }
+  },
+  "rows": {
+    "60": [
+      {
+        "layers": 12,
+        "questions": 60,
+        "correct": 17,
+        "accuracy": 0.2833333333333333,
+        "accuracy_ci": [
+          0.1851,
+          0.4077
+        ],
+        "most_common": "D",
+        "most_common_count": 44,
+        "most_common_share": 0.7333333333333333,
+        "share_ci": [
+          0.6099,
+          0.8287
+        ],
+        "histogram": {
+          "A": 7,
+          "B": 6,
+          "C": 3,
+          "D": 44
+        }
+      },
+      {
+        "layers": 13,
+        "questions": 60,
+        "correct": 18,
+        "accuracy": 0.3,
+        "accuracy_ci": [
+          0.199,
+          0.4251
+        ],
+        "most_common": "D",
+        "most_common_count": 31,
+        "most_common_share": 0.5166666666666667,
+        "share_ci": [
+          0.3931,
+          0.6382
+        ],
+        "histogram": {
+          "A": 3,
+          "B": 25,
+          "C": 1,
+          "D": 31
+        }
+      },
+      {
+        "layers": 14,
+        "questions": 60,
+        "correct": 13,
+        "accuracy": 0.21666666666666667,
+        "accuracy_ci": [
+          0.1312,
+          0.3362
+        ],
+        "most_common": "B",
+        "most_common_count": 37,
+        "most_common_share": 0.6166666666666667,
+        "share_ci": [
+          0.4902,
+          0.7291
+        ],
+        "histogram": {
+          "A": 13,
+          "B": 37,
+          "C": 3,
+          "D": 7
+        }
+      },
+      {
+        "layers": 15,
+        "questions": 60,
+        "correct": 14,
+        "accuracy": 0.23333333333333334,
+        "accuracy_ci": [
+          0.1444,
+          0.3544
+        ],
+        "most_common": "A",
+        "most_common_count": 25,
+        "most_common_share": 0.4166666666666667,
+        "share_ci": [
+          0.3006,
+          0.5427
+        ],
+        "histogram": {
+          "A": 25,
+          "B": 10,
+          "C": 14,
+          "D": 11
+        }
+      },
+      {
+        "layers": 16,
+        "questions": 60,
+        "correct": 15,
+        "accuracy": 0.25,
+        "accuracy_ci": [
+          0.1578,
+          0.3723
+        ],
+        "most_common": "A",
+        "most_common_count": 30,
+        "most_common_share": 0.5,
+        "share_ci": [
+          0.3774,
+          0.6226
+        ],
+        "histogram": {
+          "A": 30,
+          "B": 0,
+          "C": 16,
+          "D": 14
+        }
+      },
+      {
+        "layers": 17,
+        "questions": 60,
+        "correct": 12,
+        "accuracy": 0.2,
+        "accuracy_ci": [
+          0.1183,
+          0.3178
+        ],
+        "most_common": "D",
+        "most_common_count": 27,
+        "most_common_share": 0.45,
+        "share_ci": [
+          0.3309,
+          0.5751
+        ],
+        "histogram": {
+          "A": 20,
+          "B": 0,
+          "C": 13,
+          "D": 27
+        }
+      },
+      {
+        "layers": 18,
+        "questions": 60,
+        "correct": 10,
+        "accuracy": 0.16666666666666666,
+        "accuracy_ci": [
+          0.0931,
+          0.2803
+        ],
+        "most_common": "A",
+        "most_common_count": 60,
+        "most_common_share": 1.0,
+        "share_ci": [
+          0.9398,
+          1.0
+        ],
+        "histogram": {
+          "A": 60,
+          "B": 0,
+          "C": 0,
+          "D": 0
+        }
+      },
+      {
+        "layers": 19,
+        "questions": 60,
+        "correct": 14,
+        "accuracy": 0.23333333333333334,
+        "accuracy_ci": [
+          0.1444,
+          0.3544
+        ],
+        "most_common": "B",
+        "most_common_count": 38,
+        "most_common_share": 0.6333333333333333,
+        "share_ci": [
+          0.5068,
+          0.7438
+        ],
+        "histogram": {
+          "A": 7,
+          "B": 38,
+          "C": 12,
+          "D": 3
+        }
+      },
+      {
+        "layers": 20,
+        "questions": 60,
+        "correct": 15,
+        "accuracy": 0.25,
+        "accuracy_ci": [
+          0.1578,
+          0.3723
+        ],
+        "most_common": "A",
+        "most_common_count": 35,
+        "most_common_share": 0.5833333333333334,
+        "share_ci": [
+          0.4573,
+          0.6994
+        ],
+        "histogram": {
+          "A": 35,
+          "B": 3,
+          "C": 3,
+          "D": 19
+        }
+      },
+      {
+        "layers": 21,
+        "questions": 60,
+        "correct": 12,
+        "accuracy": 0.2,
+        "accuracy_ci": [
+          0.1183,
+          0.3178
+        ],
+        "most_common": "B",
+        "most_common_count": 31,
+        "most_common_share": 0.5166666666666667,
+        "share_ci": [
+          0.3931,
+          0.6382
+        ],
+        "histogram": {
+          "A": 18,
+          "B": 31,
+          "C": 11,
+          "D": 0
+        }
+      },
+      {
+        "layers": 22,
+        "questions": 60,
+        "correct": 19,
+        "accuracy": 0.31666666666666665,
+        "accuracy_ci": [
+          0.2131,
+          0.4423
+        ],
+        "most_common": "C",
+        "most_common_count": 33,
+        "most_common_share": 0.55,
+        "share_ci": [
+          0.4249,
+          0.6691
+        ],
+        "histogram": {
+          "A": 5,
+          "B": 0,
+          "C": 33,
+          "D": 22
+        }
+      },
+      {
+        "layers": 23,
+        "questions": 60,
+        "correct": 15,
+        "accuracy": 0.25,
+        "accuracy_ci": [
+          0.1578,
+          0.3723
+        ],
+        "most_common": "D",
+        "most_common_count": 60,
+        "most_common_share": 1.0,
+        "share_ci": [
+          0.9398,
+          1.0
+        ],
+        "histogram": {
+          "A": 0,
+          "B": 0,
+          "C": 0,
+          "D": 60
+        }
+      },
+      {
+        "layers": 24,
+        "questions": 60,
+        "correct": 11,
+        "accuracy": 0.18333333333333332,
+        "accuracy_ci": [
+          0.1056,
+          0.2992
+        ],
+        "most_common": "A",
+        "most_common_count": 57,
+        "most_common_share": 0.95,
+        "share_ci": [
+          0.863,
+          0.9829
+        ],
+        "histogram": {
+          "A": 57,
+          "B": 0,
+          "C": 1,
+          "D": 2
+        }
+      },
+      {
+        "layers": 25,
+        "questions": 60,
+        "correct": 15,
+        "accuracy": 0.25,
+        "accuracy_ci": [
+          0.1578,
+          0.3723
+        ],
+        "most_common": "D",
+        "most_common_count": 59,
+        "most_common_share": 0.9833333333333333,
+        "share_ci": [
+          0.9114,
+          0.9971
+        ],
+        "histogram": {
+          "A": 1,
+          "B": 0,
+          "C": 0,
+          "D": 59
+        }
+      },
+      {
+        "layers": 26,
+        "questions": 60,
+        "correct": 15,
+        "accuracy": 0.25,
+        "accuracy_ci": [
+          0.1578,
+          0.3723
+        ],
+        "most_common": "D",
+        "most_common_count": 60,
+        "most_common_share": 1.0,
+        "share_ci": [
+          0.9398,
+          1.0
+        ],
+        "histogram": {
+          "A": 0,
+          "B": 0,
+          "C": 0,
+          "D": 60
+        }
+      },
+      {
+        "layers": 27,
+        "questions": 60,
+        "correct": 15,
+        "accuracy": 0.25,
+        "accuracy_ci": [
+          0.1578,
+          0.3723
+        ],
+        "most_common": "D",
+        "most_common_count": 60,
+        "most_common_share": 1.0,
+        "share_ci": [
+          0.9398,
+          1.0
+        ],
+        "histogram": {
+          "A": 0,
+          "B": 0,
+          "C": 0,
+          "D": 60
+        }
+      },
+      {
+        "layers": 28,
+        "questions": 60,
+        "correct": 15,
+        "accuracy": 0.25,
+        "accuracy_ci": [
+          0.1578,
+          0.3723
+        ],
+        "most_common": "D",
+        "most_common_count": 59,
+        "most_common_share": 0.9833333333333333,
+        "share_ci": [
+          0.9114,
+          0.9971
+        ],
+        "histogram": {
+          "A": 1,
+          "B": 0,
+          "C": 0,
+          "D": 59
+        }
+      }
+    ],
+    "600": [
+      {
+        "layers": 12,
+        "questions": 600,
+        "correct": 166,
+        "accuracy": 0.27666666666666667,
+        "accuracy_ci": [
+          0.2424,
+          0.3138
+        ],
+        "most_common": "D",
+        "most_common_count": 429,
+        "most_common_share": 0.715,
+        "share_ci": [
+          0.6776,
+          0.7497
+        ],
+        "histogram": {
+          "A": 92,
+          "B": 52,
+          "C": 27,
+          "D": 429
+        }
+      },
+      {
+        "layers": 13,
+        "questions": 600,
+        "correct": 164,
+        "accuracy": 0.2733333333333333,
+        "accuracy_ci": [
+          0.2392,
+          0.3104
+        ],
+        "most_common": "D",
+        "most_common_count": 322,
+        "most_common_share": 0.5366666666666666,
+        "share_ci": [
+          0.4967,
+          0.5762
+        ],
+        "histogram": {
+          "A": 24,
+          "B": 248,
+          "C": 6,
+          "D": 322
+        }
+      },
+      {
+        "layers": 14,
+        "questions": 600,
+        "correct": 146,
+        "accuracy": 0.24333333333333335,
+        "accuracy_ci": [
+          0.2107,
+          0.2792
+        ],
+        "most_common": "B",
+        "most_common_count": 371,
+        "most_common_share": 0.6183333333333333,
+        "share_ci": [
+          0.5788,
+          0.6563
+        ],
+        "histogram": {
+          "A": 155,
+          "B": 371,
+          "C": 9,
+          "D": 65
+        }
+      },
+      {
+        "layers": 15,
+        "questions": 600,
+        "correct": 146,
+        "accuracy": 0.24333333333333335,
+        "accuracy_ci": [
+          0.2107,
+          0.2792
+        ],
+        "most_common": "A",
+        "most_common_count": 261,
+        "most_common_share": 0.435,
+        "share_ci": [
+          0.3959,
+          0.475
+        ],
+        "histogram": {
+          "A": 261,
+          "B": 65,
+          "C": 167,
+          "D": 107
+        }
+      },
+      {
+        "layers": 16,
+        "questions": 600,
+        "correct": 142,
+        "accuracy": 0.23666666666666666,
+        "accuracy_ci": [
+          0.2044,
+          0.2723
+        ],
+        "most_common": "A",
+        "most_common_count": 265,
+        "most_common_share": 0.44166666666666665,
+        "share_ci": [
+          0.4024,
+          0.4816
+        ],
+        "histogram": {
+          "A": 265,
+          "B": 12,
+          "C": 160,
+          "D": 163
+        }
+      },
+      {
+        "layers": 17,
+        "questions": 600,
+        "correct": 139,
+        "accuracy": 0.23166666666666666,
+        "accuracy_ci": [
+          0.1997,
+          0.2671
+        ],
+        "most_common": "A",
+        "most_common_count": 271,
+        "most_common_share": 0.45166666666666666,
+        "share_ci": [
+          0.4123,
+          0.4917
+        ],
+        "histogram": {
+          "A": 271,
+          "B": 0,
+          "C": 128,
+          "D": 201
+        }
+      },
+      {
+        "layers": 18,
+        "questions": 600,
+        "correct": 121,
+        "accuracy": 0.20166666666666666,
+        "accuracy_ci": [
+          0.1715,
+          0.2356
+        ],
+        "most_common": "A",
+        "most_common_count": 596,
+        "most_common_share": 0.9933333333333333,
+        "share_ci": [
+          0.983,
+          0.9974
+        ],
+        "histogram": {
+          "A": 596,
+          "B": 0,
+          "C": 0,
+          "D": 4
+        }
+      },
+      {
+        "layers": 19,
+        "questions": 600,
+        "correct": 152,
+        "accuracy": 0.25333333333333335,
+        "accuracy_ci": [
+          0.2202,
+          0.2896
+        ],
+        "most_common": "B",
+        "most_common_count": 361,
+        "most_common_share": 0.6016666666666667,
+        "share_ci": [
+          0.562,
+          0.6401
+        ],
+        "histogram": {
+          "A": 84,
+          "B": 361,
+          "C": 104,
+          "D": 51
+        }
+      },
+      {
+        "layers": 20,
+        "questions": 600,
+        "correct": 140,
+        "accuracy": 0.23333333333333334,
+        "accuracy_ci": [
+          0.2013,
+          0.2688
+        ],
+        "most_common": "A",
+        "most_common_count": 370,
+        "most_common_share": 0.6166666666666667,
+        "share_ci": [
+          0.5771,
+          0.6547
+        ],
+        "histogram": {
+          "A": 370,
+          "B": 47,
+          "C": 33,
+          "D": 150
+        }
+      },
+      {
+        "layers": 21,
+        "questions": 600,
+        "correct": 132,
+        "accuracy": 0.22,
+        "accuracy_ci": [
+          0.1887,
+          0.2549
+        ],
+        "most_common": "B",
+        "most_common_count": 317,
+        "most_common_share": 0.5283333333333333,
+        "share_ci": [
+          0.4883,
+          0.568
+        ],
+        "histogram": {
+          "A": 160,
+          "B": 317,
+          "C": 117,
+          "D": 6
+        }
+      },
+      {
+        "layers": 22,
+        "questions": 600,
+        "correct": 148,
+        "accuracy": 0.24666666666666667,
+        "accuracy_ci": [
+          0.2139,
+          0.2827
+        ],
+        "most_common": "C",
+        "most_common_count": 317,
+        "most_common_share": 0.5283333333333333,
+        "share_ci": [
+          0.4883,
+          0.568
+        ],
+        "histogram": {
+          "A": 32,
+          "B": 0,
+          "C": 317,
+          "D": 251
+        }
+      },
+      {
+        "layers": 23,
+        "questions": 600,
+        "correct": 160,
+        "accuracy": 0.26666666666666666,
+        "accuracy_ci": [
+          0.2328,
+          0.3035
+        ],
+        "most_common": "D",
+        "most_common_count": 594,
+        "most_common_share": 0.99,
+        "share_ci": [
+          0.9784,
+          0.9954
+        ],
+        "histogram": {
+          "A": 6,
+          "B": 0,
+          "C": 0,
+          "D": 594
+        }
+      },
+      {
+        "layers": 24,
+        "questions": 600,
+        "correct": 128,
+        "accuracy": 0.21333333333333335,
+        "accuracy_ci": [
+          0.1824,
+          0.2479
+        ],
+        "most_common": "A",
+        "most_common_count": 556,
+        "most_common_share": 0.9266666666666666,
+        "share_ci": [
+          0.903,
+          0.9449
+        ],
+        "histogram": {
+          "A": 556,
+          "B": 2,
+          "C": 29,
+          "D": 13
+        }
+      },
+      {
+        "layers": 25,
+        "questions": 600,
+        "correct": 159,
+        "accuracy": 0.265,
+        "accuracy_ci": [
+          0.2313,
+          0.3017
+        ],
+        "most_common": "D",
+        "most_common_count": 593,
+        "most_common_share": 0.9883333333333333,
+        "share_ci": [
+          0.9761,
+          0.9943
+        ],
+        "histogram": {
+          "A": 7,
+          "B": 0,
+          "C": 0,
+          "D": 593
+        }
+      },
+      {
+        "layers": 26,
+        "questions": 600,
+        "correct": 159,
+        "accuracy": 0.265,
+        "accuracy_ci": [
+          0.2313,
+          0.3017
+        ],
+        "most_common": "D",
+        "most_common_count": 600,
+        "most_common_share": 1.0,
+        "share_ci": [
+          0.9936,
+          1.0
+        ],
+        "histogram": {
+          "A": 0,
+          "B": 0,
+          "C": 0,
+          "D": 600
+        }
+      },
+      {
+        "layers": 27,
+        "questions": 600,
+        "correct": 159,
+        "accuracy": 0.265,
+        "accuracy_ci": [
+          0.2313,
+          0.3017
+        ],
+        "most_common": "D",
+        "most_common_count": 599,
+        "most_common_share": 0.9983333333333333,
+        "share_ci": [
+          0.9906,
+          0.9997
+        ],
+        "histogram": {
+          "A": 1,
+          "B": 0,
+          "C": 0,
+          "D": 599
+        }
+      },
+      {
+        "layers": 28,
+        "questions": 600,
+        "correct": 160,
+        "accuracy": 0.26666666666666666,
+        "accuracy_ci": [
+          0.2328,
+          0.3035
+        ],
+        "most_common": "D",
+        "most_common_count": 598,
+        "most_common_share": 0.9966666666666667,
+        "share_ci": [
+          0.9879,
+          0.9991
+        ],
+        "histogram": {
+          "A": 2,
+          "B": 0,
+          "C": 0,
+          "D": 598
+        }
+      }
+    ]
+  },
+  "collapsed": {
+    "60": [
+      18,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "600": [
+      18,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "same_set": true
+  },
+  "collapsed_vs_constants": [
+    {
+      "sample": "60",
+      "layers": 18,
+      "letter": "A",
+      "accuracy": 0.16666666666666666,
+      "constant": 0.16666666666666666,
+      "verdict": "not proven to differ from always-A"
+    },
+    {
+      "sample": "60",
+      "layers": 23,
+      "letter": "D",
+      "accuracy": 0.25,
+      "constant": 0.25,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "60",
+      "layers": 24,
+      "letter": "A",
+      "accuracy": 0.18333333333333332,
+      "constant": 0.16666666666666666,
+      "verdict": "not proven to differ from always-A"
+    },
+    {
+      "sample": "60",
+      "layers": 25,
+      "letter": "D",
+      "accuracy": 0.25,
+      "constant": 0.25,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "60",
+      "layers": 26,
+      "letter": "D",
+      "accuracy": 0.25,
+      "constant": 0.25,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "60",
+      "layers": 27,
+      "letter": "D",
+      "accuracy": 0.25,
+      "constant": 0.25,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "60",
+      "layers": 28,
+      "letter": "D",
+      "accuracy": 0.25,
+      "constant": 0.25,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "600",
+      "layers": 18,
+      "letter": "A",
+      "accuracy": 0.20166666666666666,
+      "constant": 0.20333333333333334,
+      "verdict": "not proven to differ from always-A"
+    },
+    {
+      "sample": "600",
+      "layers": 23,
+      "letter": "D",
+      "accuracy": 0.26666666666666666,
+      "constant": 0.265,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "600",
+      "layers": 24,
+      "letter": "A",
+      "accuracy": 0.21333333333333335,
+      "constant": 0.20333333333333334,
+      "verdict": "not proven to differ from always-A"
+    },
+    {
+      "sample": "600",
+      "layers": 25,
+      "letter": "D",
+      "accuracy": 0.265,
+      "constant": 0.265,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "600",
+      "layers": 26,
+      "letter": "D",
+      "accuracy": 0.265,
+      "constant": 0.265,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "600",
+      "layers": 27,
+      "letter": "D",
+      "accuracy": 0.265,
+      "constant": 0.265,
+      "verdict": "not proven to differ from always-D"
+    },
+    {
+      "sample": "600",
+      "layers": 28,
+      "letter": "D",
+      "accuracy": 0.26666666666666666,
+      "constant": 0.265,
+      "verdict": "not proven to differ from always-D"
+    }
+  ]
+}

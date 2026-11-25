@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import random
 from pathlib import Path
 
@@ -97,6 +98,9 @@ PREFIX_SCHEMA = "quantscope-prefix-scan-v1"
 LINEAR_PER_LAYER = 7
 NF4_SCHEMA = "quantscope-nf4-bench-v1"
 LAYER_CLIFF_SCHEMA = "quantscope-layer-cliff-v1"
+SCALING_SCHEMA = "quantscope-scaling-check-v1"
+AMP_SCHEMA = "quantscope-amplification-v1"
+GRANULARITY_SCHEMA = "quantscope-granularity-v1"
 CLIFF_KINDS = ("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj")
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
@@ -799,6 +803,327 @@ def _check_layer_cliff(payload: dict, checks: list[dict]) -> None:
                bucket["relative_error_sum"] / bucket["matrices"], 2e-6)
 
 
+def _check_scaling(payload: dict, checks: list[dict]) -> None:
+    """The same sweep at sixty and at six hundred questions: does the collapse survive?
+
+    Two things are recomputed here and nowhere else: the collapsed set of each sample, and
+    the verdict that says whether a collapsed row scores anything better than printing one
+    letter. The verdict is the whole point of the bundle, so it cannot be copied from the
+    bundle — a stale verdict would keep claiming a mechanism after the numbers moved.
+    """
+    for field in ("schema", "z", "intervals", "constants", "rows", "collapsed",
+                  "collapsed_vs_constants"):
+        if field not in payload:
+            raise ReproduceError(f"scaling check: missing {field!r}")
+
+    rows = payload["rows"]
+    if not isinstance(rows, dict) or len(rows) < 2:
+        raise ReproduceError(f"scaling check: rows must cover at least two samples, got {rows!r}")
+    samples = sorted(rows)
+    constants = payload["constants"]
+    collapsed: dict[str, list[int]] = {}
+    per_sample: dict[str, dict[int, dict]] = {}
+
+    for label in samples:
+        entries = rows[label]
+        if not isinstance(entries, list) or not entries:
+            raise ReproduceError(f"scaling check: {label}: rows must be a non-empty list")
+        sample_constants = constants.get(label)
+        if not isinstance(sample_constants, dict) or sorted(sample_constants) != ["A", "B", "C", "D"]:
+            raise ReproduceError(
+                f"scaling check: {label}: constants must cover A/B/C/D, got {sample_constants!r}")
+        for letter, value in sample_constants.items():
+            if not isinstance(value, (int, float)) or not 0 <= value <= 1:
+                raise ReproduceError(f"scaling check: {label}: always-{letter} is {value!r}")
+        # The four constants are the shares of the four gold letters, so they sum to one.
+        _check(checks, f"scaling.{label}.constants_sum", sum(sample_constants.values()), 1.0, 1e-9)
+
+        seen: list[int] = []
+        for row in entries:
+            layers = row.get("layers")
+            questions = row.get("questions")
+            histogram = row.get("histogram")
+            if not isinstance(layers, int) or layers <= 0:
+                raise ReproduceError(f"scaling check: {label}: layers must be a positive integer")
+            if not isinstance(questions, int) or questions <= 0:
+                raise ReproduceError(f"scaling check: {label}: {layers}: questions must be positive")
+            if not isinstance(histogram, dict) or not histogram or sum(histogram.values()) != questions:
+                raise ReproduceError(
+                    f"scaling check: {label}: {layers}: the histogram does not sum to {questions}")
+            if not isinstance(row.get("correct"), int) or row["correct"] > questions:
+                raise ReproduceError(
+                    f"scaling check: {label}: {layers}: {row.get('correct')!r} correct of {questions}")
+            most = max(histogram, key=lambda letter: histogram[letter])
+            if row.get("most_common") != most:
+                raise ReproduceError(
+                    f"scaling check: {label}: {layers}: most_common is {row.get('most_common')!r}, "
+                    f"the histogram says {most!r}")
+            interval = row.get("accuracy_ci")
+            if not isinstance(interval, list) or len(interval) != 2:
+                raise ReproduceError(f"scaling check: {label}: {layers}: accuracy_ci must be [low, high]")
+            _check(checks, f"scaling.{label}.{layers:02d}.accuracy",
+                   row["accuracy"], row["correct"] / questions, 1e-5)
+            _check(checks, f"scaling.{label}.{layers:02d}.most_common_share",
+                   row["most_common_share"], histogram[most] / questions, 1e-5)
+            seen.append(layers)
+
+        if seen != sorted(set(seen)):
+            raise ReproduceError(
+                f"scaling check: {label}: the layers must ascend without repeats, got {seen}")
+        per_sample[label] = {row["layers"]: row for row in entries}
+        collapsed[label] = sorted(row["layers"] for row in entries
+                                  if row["most_common_share"] >= COLLAPSE_SHARE)
+        if not collapsed[label]:
+            raise ReproduceError(
+                f"scaling check: {label}: nothing collapsed at {COLLAPSE_SHARE}, "
+                "so the bundle has no question to answer")
+
+    stored_collapsed = payload["collapsed"]
+    for label, computed in collapsed.items():
+        if stored_collapsed.get(label) != computed:
+            raise ReproduceError(
+                f"scaling check: {label}: stored collapsed {stored_collapsed.get(label)}, "
+                f"the shares say {computed}")
+    same = all(collapsed[other] == collapsed[samples[0]] for other in samples[1:])
+    if bool(stored_collapsed.get("same_set")) != same:
+        raise ReproduceError(
+            f"scaling check: stored same_set {stored_collapsed.get('same_set')!r}, recomputed {same}")
+
+    expected: dict[tuple[str, int], tuple[str, str, float]] = {}
+    for label in samples:
+        for layers in collapsed[label]:
+            row = per_sample[label][layers]
+            letter = row["most_common"]
+            constant = constants[label][letter]
+            low, high = row["accuracy_ci"]
+            if low <= constant <= high:
+                verdict = f"not proven to differ from always-{letter}"
+            elif row["accuracy"] > constant:
+                verdict = f"above always-{letter}"
+            else:
+                verdict = f"below always-{letter}"
+            expected[(label, layers)] = (letter, verdict, row["accuracy"])
+
+    stored_verdicts = payload["collapsed_vs_constants"]
+    if not isinstance(stored_verdicts, list):
+        raise ReproduceError("scaling check: collapsed_vs_constants must be a list")
+    stored: dict[tuple[str, int], dict] = {}
+    for item in stored_verdicts:
+        key = (item.get("sample"), item.get("layers"))
+        if key in stored:
+            raise ReproduceError(f"scaling check: the verdict table lists {key} twice")
+        stored[key] = item
+    if sorted(stored) != sorted(expected):
+        raise ReproduceError(
+            f"scaling check: the verdict table covers {sorted(stored)}, "
+            f"but the collapsed rows are {sorted(expected)}")
+    for key, item in stored.items():
+        letter, verdict, accuracy = expected[key]
+        if item.get("letter") != letter:
+            raise ReproduceError(
+                f"scaling check: {key[0]} questions at {key[1]} layers: letter "
+                f"{item.get('letter')!r}, the histogram says {letter!r}")
+        if item.get("verdict") != verdict:
+            raise ReproduceError(
+                f"scaling check: {key[0]} questions at {key[1]} layers: stored verdict "
+                f"{item.get('verdict')!r}, recomputed {verdict!r}")
+        _check(checks, f"scaling.{key[0]}.{key[1]:02d}.accuracy_vs_constant",
+               item["accuracy"], accuracy, 1e-5)
+
+
+def _fit_exponent(curve: list[float]) -> float:
+    """Slope of ln(drift) against layer index, over the layers whose drift is measurable."""
+    points = [(index, value) for index, value in enumerate(curve) if value > 1e-6]
+    if len(points) < 3:
+        return 0.0
+    count = len(points)
+    mean_x = sum(index for index, _ in points) / count
+    mean_y = sum(math.log(value) for _, value in points) / count
+    denominator = sum((index - mean_x) ** 2 for index, _ in points)
+    if denominator == 0:
+        return 0.0
+    return sum((index - mean_x) * (math.log(value) - mean_y) for index, value in points) / denominator
+
+
+def _check_amplification(payload: dict, checks: list[dict]) -> None:
+    """Does the drift grow like independent per-layer damage, or like an amplified chain?"""
+    for field in ("model", "protocol", "layers", "depth_axis", "prefixes", "single_layers",
+                  "first_drift_crossing", "limits"):
+        if field not in payload:
+            raise ReproduceError(f"amplification: missing {field!r}")
+    protocol = payload["protocol"]
+    questions = protocol.get("questions")
+    if not isinstance(questions, int) or questions <= 0:
+        raise ReproduceError(f"amplification: questions must be a positive integer, got {questions!r}")
+    layers = payload["layers"]
+    if not isinstance(layers, int) or layers <= 0:
+        raise ReproduceError(f"amplification: layers must be a positive integer, got {layers!r}")
+    axis = payload["depth_axis"]
+    if not isinstance(axis, int) or axis <= 0:
+        raise ReproduceError(f"amplification: depth_axis must be a positive integer, got {axis!r}")
+
+    singles = payload["single_layers"]
+    if not isinstance(singles, list) or len(singles) != layers:
+        raise ReproduceError(
+            f"amplification: single_layers holds {len(singles) if isinstance(singles, list) else singles!r} rows, "
+            f"one per layer was expected ({layers})")
+    if [item.get("layer_index") for item in singles] != list(range(layers)):
+        raise ReproduceError(f"amplification: single layer indices are not 0..{layers - 1}")
+    for item in singles:
+        if item.get("own_layer_drift", -1) < 0 or item.get("final_hidden_drift", -1) < 0:
+            raise ReproduceError(f"amplification: layer {item['layer_index']} reports a negative drift")
+
+    prefixes = payload["prefixes"]
+    if not isinstance(prefixes, list) or not prefixes:
+        raise ReproduceError("amplification: prefixes must be a non-empty list")
+    depths = [block.get("layers_quantised") for block in prefixes]
+    if depths != sorted(set(depths)):
+        raise ReproduceError(f"amplification: prefix depths do not rise strictly: {depths}")
+    for depth in depths:
+        if not isinstance(depth, int) or depth <= 0 or depth > layers:
+            raise ReproduceError(f"amplification: prefix depth {depth!r} is outside 1..{layers}")
+
+    for block in prefixes:
+        depth = block["layers_quantised"]
+        if block.get("quantised_matrices") != depth * LINEAR_PER_LAYER:
+            raise ReproduceError(
+                f"amplification: {depth} layers report {block.get('quantised_matrices')!r} matrices, "
+                f"not {depth * LINEAR_PER_LAYER}")
+        curve = block.get("hidden_drift")
+        if not isinstance(curve, list) or len(curve) != axis:
+            raise ReproduceError(
+                f"amplification: the drift curve at {depth} layers has "
+                f"{len(curve) if isinstance(curve, list) else curve!r} points, not {axis}")
+        if any(value < 0 for value in curve):
+            raise ReproduceError(f"amplification: the drift curve at {depth} layers goes negative")
+        _check(checks, f"amplification.prefix.{depth:02d}.final_hidden_drift",
+               block["final_hidden_drift"], curve[-1], 1e-6)
+        _check(checks, f"amplification.prefix.{depth:02d}.log_drift_exponent",
+               block["log_drift_exponent"], _fit_exponent(curve), 1e-5)
+        quadrature = sum(
+            item["final_hidden_drift"] ** 2 for item in singles if item["layer_index"] < depth
+        ) ** 0.5
+        _check(checks, f"amplification.prefix.{depth:02d}.independent_quadrature",
+               block["independent_quadrature"], quadrature, 1e-6)
+        factor = block.get("interaction_factor")
+        if quadrature > 0:
+            _check(checks, f"amplification.prefix.{depth:02d}.interaction_factor",
+                   factor, curve[-1] / quadrature, 1e-4)
+        elif factor is not None:
+            raise ReproduceError(
+                f"amplification: {depth} layers report an interaction factor with no quadrature to divide by")
+
+    crossing = [block["layers_quantised"] for block in prefixes if block["final_hidden_drift"] >= 1.0]
+    expected = min(crossing) if crossing else None
+    if payload["first_drift_crossing"] != expected:
+        raise ReproduceError(
+            f"amplification: first_drift_crossing is {payload['first_drift_crossing']!r}, "
+            f"the curves say {expected!r}")
+
+
+def _check_granularity(payload: dict, checks: list[dict]) -> None:
+    """One depth, three group sizes: does the collapse survive a change of quantiser?
+
+    A group size that does not collapse is not a failed experiment, so the checker never
+    requires a collapse at every row. It requires the two stored summaries -- which classes
+    break the collapse, and which group sizes collapsed at all -- to follow from the shares.
+    """
+    for field in ("model", "protocol", "rows", "collapsed_group_sizes", "limits"):
+        if field not in payload:
+            raise ReproduceError(f"granularity: missing {field!r}")
+    protocol = payload["protocol"]
+    collapse = protocol.get("collapse_share")
+    if not isinstance(collapse, (int, float)) or not 0 < collapse <= 1:
+        raise ReproduceError(f"granularity: collapse_share must be in (0, 1], got {collapse!r}")
+    declared = protocol.get("group_sizes")
+    if not isinstance(declared, list) or len(declared) < 2:
+        raise ReproduceError(
+            f"granularity: at least two group sizes are needed to compare, got {declared!r}")
+    questions = protocol.get("questions")
+    depth = protocol.get("quantised_layers")
+    for name, value in (("questions", questions), ("quantised_layers", depth)):
+        if not isinstance(value, int) or value <= 0:
+            raise ReproduceError(f"granularity: {name} must be a positive integer, got {value!r}")
+
+    rows = payload["rows"]
+    if not isinstance(rows, list) or len(rows) != len(declared):
+        raise ReproduceError(
+            f"granularity: rows must hold one entry per group size "
+            f"({len(declared)}), got {len(rows) if isinstance(rows, list) else rows!r}")
+    seen_sizes = []
+    collapsed_sizes = []
+    for row in rows:
+        size = row.get("group_size")
+        if size not in declared:
+            raise ReproduceError(f"granularity: group size {size!r} is not one of {declared}")
+        if size in seen_sizes:
+            raise ReproduceError(f"granularity: group size {size!r} appears twice")
+        seen_sizes.append(size)
+        conditions = row.get("conditions")
+        if not isinstance(conditions, list) or not conditions:
+            raise ReproduceError(f"granularity: group size {size}: conditions must be a non-empty list")
+        shares = {}
+        for item in conditions:
+            name = item.get("condition")
+            if name in shares:
+                raise ReproduceError(f"granularity: group size {size}: {name!r} appears twice")
+            count = item.get("count")
+            histogram = item.get("histogram")
+            if count != questions:
+                raise ReproduceError(
+                    f"granularity: group size {size}: {name!r} counts {count!r} questions, "
+                    f"the protocol says {questions}")
+            if not isinstance(histogram, dict) or not histogram or sum(histogram.values()) != count:
+                raise ReproduceError(
+                    f"granularity: group size {size}: {name!r} histogram does not sum to {count}")
+            most = max(histogram, key=lambda letter: histogram[letter])
+            if item.get("most_common") != most:
+                raise ReproduceError(
+                    f"granularity: group size {size}: {name!r} most_common is "
+                    f"{item.get('most_common')!r}, the histogram says {most!r}")
+            if not isinstance(item.get("correct"), int) or item["correct"] > count:
+                raise ReproduceError(
+                    f"granularity: group size {size}: {name!r} reports {item.get('correct')!r} correct")
+            _check(checks, f"granularity.g{size}.{name}.most_common_share",
+                   item["most_common_share"], histogram[most] / count, 1e-5)
+            shares[name] = histogram[most] / count
+        if "all_quantised" not in shares:
+            raise ReproduceError(f"granularity: group size {size}: no all_quantised condition")
+
+    # Second pass: the summaries, now that every share is known.
+    by_size = {}
+    for row in rows:
+        size = row["group_size"]
+        shares = {item["condition"]: item["histogram"][max(item["histogram"],
+                  key=lambda letter: item["histogram"][letter])] / item["count"]
+                  for item in row["conditions"]}
+        by_size[size] = shares
+        collapsed_here = shares["all_quantised"] >= collapse
+        if bool(row.get("collapsed")) != collapsed_here:
+            raise ReproduceError(
+                f"granularity: group size {size}: stored collapsed {row.get('collapsed')!r}, "
+                f"the share {shares['all_quantised']:.4f} says {collapsed_here}")
+        if collapsed_here:
+            collapsed_sizes.append(size)
+        survivors = sorted(name for name, share in shares.items() if share < collapse)
+        stored = sorted(row.get("survivors") or [])
+        if stored != survivors:
+            raise ReproduceError(
+                f"granularity: group size {size}: survivors {stored} do not match the shares {survivors}")
+        keeps = sorted(name for name in shares
+                       if name != "all_quantised" and shares[name] >= collapse)
+        stated = sorted(row.get("collapsed_keeps") or [])
+        if stated != keeps:
+            raise ReproduceError(
+                f"granularity: group size {size}: collapsed_keeps {stated} do not match {keeps}")
+
+    stored_collapsed = sorted(payload["collapsed_group_sizes"])
+    if stored_collapsed != sorted(collapsed_sizes):
+        raise ReproduceError(
+            f"granularity: collapsed_group_sizes {stored_collapsed} do not match the shares "
+            f"{sorted(collapsed_sizes)}")
+
+
 def _bundle_paths(evidence_path=None) -> list[Path]:
     """Which bundles to check: the one asked for, or the whole evidence directory."""
     if evidence_path:
@@ -812,6 +1137,9 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths += sorted(EVIDENCE_DIR.glob("prefix_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("nf4_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("layer_cliff*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("scaling_*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("amplification*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("granularity*.json"))
     return paths
 
 
@@ -837,6 +1165,12 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_nf4(payload, checks)
     elif schema == LAYER_CLIFF_SCHEMA:
         _check_layer_cliff(payload, checks)
+    elif schema == SCALING_SCHEMA:
+        _check_scaling(payload, checks)
+    elif schema == AMP_SCHEMA:
+        _check_amplification(payload, checks)
+    elif schema == GRANULARITY_SCHEMA:
+        _check_granularity(payload, checks)
     else:
         raise ReproduceError(f"{name}: unknown evidence schema {schema!r}")
 
