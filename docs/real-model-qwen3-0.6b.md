@@ -198,6 +198,16 @@ The weight-level relative error is close to 0.51 at every one of these widths: 0
 
 These rows are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/granularity.json`.
 
+Three hypotheses about why group 64 is the worst of the three were tested and all three were falsified on the stored weights. They are recorded here because a reader should know which explanations have been ruled out.
+
+First, the error is not larger at 64: the weight-level relative error is 0.5141-0.5272 at 64, against 0.5094-0.5222 at 32 and 0.5164-0.5297 at 128, a spread of about four percent while the answer entropy differs by a factor of nineteen.
+
+Second, no output channel is deleted: across the first, ninth and eighteenth layers, the number of output channels whose entire row rounds to zero is zero at every group size. The 31% zero fraction is element-level, not channel-level.
+
+Third, the same weights are zeroed at every width: the Jaccard overlap between the zero-element masks is 0.90 to 0.95, so the three quantisers are not sacrificing different weights. And the recovered matrices all sit at a cosine of 0.886 / 0.884 / 0.883 against float32, a difference of three parts in ten thousand that runs the wrong way to explain the collapse.
+
+Amplitude, position and direction of the weight error are therefore all decoupled from the collapse. On the stored weights the three quantisers are almost indistinguishable, which puts the difference in the forward pass rather than in the weights, and this page does not measure that. The explanation remains open.
+
 ## An attempt to explain the depth, and why it failed
 
 The sweep says where the model stops answering; it does not say why the cost is paid at that depth rather than at another. The natural next measurement is how far the hidden state drifts from its float32 value as more layers are quantised — a drift curve growing with depth would be the mechanism. This section reports that measurement because it did not work, and the failure is the informative part.
