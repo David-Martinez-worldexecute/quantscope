@@ -194,6 +194,8 @@ Only group size 64 reaches 90% on one letter. At group size 32, 128 the model st
 
 The rest of this page stays on group size 64, because that is the setting the earlier runs used and changing it mid-comparison would mix two quantisers into one table. What this section establishes is narrower and firmer: the cliff is not a law of 1.58-bit weights, it is the behaviour of this scale-sharing width on this checkpoint.
 
+The weight-level relative error is close to 0.51 at every one of these widths: 0.509 to 0.522 at group 32, 0.514 to 0.527 at 64, 0.516 to 0.530 at 128. So the collapse is not a story about coarser groups destroying more of the weights - the error barely moves. Whatever separates the three rows lives in how the error is distributed across the matrix, not in how large it is, and this page does not identify what.
+
 These rows are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/granularity.json`.
 
 ## An attempt to explain the depth, and why it failed
@@ -202,7 +204,9 @@ The sweep says where the model stops answering; it does not say why the cost is 
 
 The relative Frobenius drift is bounded above by $\sqrt{2}$ ≈ 1.414, and the first quantised layer alone already moves the state by 0.813. Every prefix from 4 to 28 layers lands at 1.453–1.511, which is the bound, not a depth-dependent quantity.
 
-Once one quantised layer has decorrelated the hidden state from its float32 counterpart, "how far it moved" has nowhere left to grow. So the curve is flat in depth by construction, and the interaction factor computed from it cannot be read as layers amplifying each other. Reporting it as an amplification law would be inventing the criterion the measurement was supposed to find.
+The curve is not simply flat, and the shape matters. Quantising the very first layer already moves the state by 0.81. Layers 1 to 23 then add almost nothing: the drift sits between 0.966 and 0.973 across twenty-three quantised layers. Layers 24 to 27 push it from 0.98 to 1.04, and the final layer jumps to 1.46 - nearly the bound in one step. So the growth is not spread evenly across depth: it is a first-layer jump plus a last-layer jump, which is why the interaction factor computed from the whole curve cannot be read as layers amplifying each other.
+
+That shape is the most useful thing this measurement produced, even though it did not answer the question it was built for: whatever carries the damage is concentrated at the two ends of the network, not accumulated evenly layer by layer.
 
 What would be needed instead: a metric bounded away from saturation — the logit margin on the correct answer, or the per-layer relative error of the attention output rather than the full hidden state — measured at the same depths. That is not done here, and this page does not claim a mechanism for the cliff.
 

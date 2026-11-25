@@ -2,7 +2,7 @@
   "collapsed_group_sizes": [
     64
   ],
-  "generated_utc": "2026-11-25T14:04:19Z",
+  "generated_utc": "2026-11-25T14:53:58Z",
   "limits": [
     "three group sizes only: 32, 64 and 128, all on the same 600 questions and the same checkpoint",
     "a group size is a different quantiser, so a row that does not collapse is not the same experiment failing -- it is the answer to a different question",

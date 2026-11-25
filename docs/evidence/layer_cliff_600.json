@@ -1,6 +1,6 @@
 {
   "schema": "quantscope-layer-cliff-v1",
-  "generated_utc": "2026-11-25T13:05:04Z",
+  "generated_utc": "2026-11-25T14:44:25Z",
   "model": {
     "name": "Qwen3-0.6B-c1899de289a0"
   },
@@ -235,7 +235,19 @@
       "D": 4
     },
     "most_common": "A",
-    "most_common_share": 0.993333
+    "most_common_share": 0.993333,
+    "prefix_group_size": 64,
+    "same_granularity": true,
+    "prefix_layers_quantised": 18,
+    "prefix_correct": 121,
+    "prefix_count": 600,
+    "prefix_most_common": "A",
+    "prefix_histogram": {
+      "A": 596,
+      "B": 0,
+      "C": 0,
+      "D": 4
+    }
   },
   "matrix_stats": {
     "by_kind": {
@@ -371,5 +383,5 @@
     "Depth is fixed at the first 18 layers, the prefix length that collapsed in the sweep; longer prefixes collapse onto a different letter and are not covered here.",
     "Keeping a class in float32 removes both its rounding error and its share of the memory saving, so a surviving condition is a diagnosis, not a deployable format."
   ],
-  "seconds": 575.6
+  "seconds": 495.7
 }
