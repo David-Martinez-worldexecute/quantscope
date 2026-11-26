@@ -1,0 +1,273 @@
+{
+  "analysis": {
+    "ci_halfwidth_pp": 6.3511,
+    "depths_below_baseline": [
+      6,
+      11,
+      13,
+      18
+    ],
+    "depths_overlapping_baseline": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10,
+      12,
+      14,
+      15,
+      16,
+      17
+    ],
+    "n_overlapping": 14,
+    "n_total": 18,
+    "questions": 200,
+    "questions_needed_for_3pp": 2100,
+    "standard_error_pp": 3.2404,
+    "verdict": "uninterpretable: most depths cannot be distinguished from the baseline at this sample size"
+  },
+  "baseline": {
+    "accuracy": 0.35,
+    "correct": 70,
+    "wilson95": [
+      0.287288,
+      0.418365
+    ]
+  },
+  "claims": {
+    "complete_sweep_for_g32": true,
+    "most_depths_overlap_baseline": true,
+    "no_monotonic_descent": true
+  },
+  "constant_answer": {
+    "count": 68,
+    "letter": "C",
+    "share": 0.34
+  },
+  "generated_utc": "2026-11-26T12:21:41Z",
+  "gold_histogram": {
+    "A": 38,
+    "B": 49,
+    "C": 68,
+    "D": 45
+  },
+  "limits": [
+    "One checkpoint, 200 questions, one run per condition: the intervals are wider than a 600-question run and adjacent depths will often overlap.",
+    "The quantiser is per-group absmean simulated in float32; accuracy only.",
+    "Layers are applied in index order, so 'depth' here means how many of the first L transformer blocks carry ternary weights, not which ones.",
+    "Only group 32 finished; g64 reached 11 layers and g128 never started, so the granularity question is not answered by this bundle.",
+    "Repeating the same 600 questions several times would narrow the printed interval without narrowing the real one; the model answers each question the same way."
+  ],
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "applied": "incrementally: layer L is ternarised on top of 1..L-1",
+    "cuda": "12.4",
+    "device": "cuda",
+    "granularities": [
+      32,
+      64,
+      128
+    ],
+    "layers": 18,
+    "questions": 200,
+    "readout": "mean log P(option tokens | question + options) / token count",
+    "torch": "2.6.0+cu124",
+    "truncation": "none",
+    "why": "the published prefix sweep used a letter-argmax readout that scores below a constant-answer baseline here; this repeats it at the readout that clears it, and carries three granularities so both open questions share one pass"
+  },
+  "schema": "quantscope-layer-sweep-v1",
+  "source": {
+    "file": "sweep_200.json",
+    "sha256": "b1c55176829c338e12e53b63f93ef3ea88c2f2e7d603973a1fba8915b7410444"
+  },
+  "sweeps": {
+    "32": [
+      {
+        "accuracy": 0.315,
+        "correct": 63,
+        "delta_pp": -3.5,
+        "layers": 1,
+        "wilson95": [
+          0.254623,
+          0.38235
+        ]
+      },
+      {
+        "accuracy": 0.295,
+        "correct": 59,
+        "delta_pp": -5.5,
+        "layers": 2,
+        "wilson95": [
+          0.236139,
+          0.361587
+        ]
+      },
+      {
+        "accuracy": 0.29,
+        "correct": 58,
+        "delta_pp": -6.0,
+        "layers": 3,
+        "wilson95": [
+          0.23154,
+          0.356375
+        ]
+      },
+      {
+        "accuracy": 0.28,
+        "correct": 56,
+        "delta_pp": -7.0,
+        "layers": 4,
+        "wilson95": [
+          0.222369,
+          0.345923
+        ]
+      },
+      {
+        "accuracy": 0.245,
+        "correct": 49,
+        "delta_pp": -10.5,
+        "layers": 5,
+        "wilson95": [
+          0.190569,
+          0.309042
+        ]
+      },
+      {
+        "accuracy": 0.19,
+        "correct": 38,
+        "delta_pp": -16.0,
+        "layers": 6,
+        "wilson95": [
+          0.141672,
+          0.250012
+        ]
+      },
+      {
+        "accuracy": 0.24,
+        "correct": 48,
+        "delta_pp": -11.0,
+        "layers": 7,
+        "wilson95": [
+          0.186066,
+          0.303733
+        ]
+      },
+      {
+        "accuracy": 0.27,
+        "correct": 54,
+        "delta_pp": -8.0,
+        "layers": 8,
+        "wilson95": [
+          0.213234,
+          0.335434
+        ]
+      },
+      {
+        "accuracy": 0.275,
+        "correct": 55,
+        "delta_pp": -7.5,
+        "layers": 9,
+        "wilson95": [
+          0.217797,
+          0.340683
+        ]
+      },
+      {
+        "accuracy": 0.265,
+        "correct": 53,
+        "delta_pp": -8.5,
+        "layers": 10,
+        "wilson95": [
+          0.208682,
+          0.330176
+        ]
+      },
+      {
+        "accuracy": 0.205,
+        "correct": 41,
+        "delta_pp": -14.5,
+        "layers": 11,
+        "wilson95": [
+          0.154862,
+          0.266257
+        ]
+      },
+      {
+        "accuracy": 0.235,
+        "correct": 47,
+        "delta_pp": -11.5,
+        "layers": 12,
+        "wilson95": [
+          0.181574,
+          0.298414
+        ]
+      },
+      {
+        "accuracy": 0.21,
+        "correct": 42,
+        "delta_pp": -14.0,
+        "layers": 13,
+        "wilson95": [
+          0.159284,
+          0.271646
+        ]
+      },
+      {
+        "accuracy": 0.24,
+        "correct": 48,
+        "delta_pp": -11.0,
+        "layers": 14,
+        "wilson95": [
+          0.186066,
+          0.303733
+        ]
+      },
+      {
+        "accuracy": 0.255,
+        "correct": 51,
+        "delta_pp": -9.5,
+        "layers": 15,
+        "wilson95": [
+          0.199605,
+          0.319629
+        ]
+      },
+      {
+        "accuracy": 0.24,
+        "correct": 48,
+        "delta_pp": -11.0,
+        "layers": 16,
+        "wilson95": [
+          0.186066,
+          0.303733
+        ]
+      },
+      {
+        "accuracy": 0.235,
+        "correct": 47,
+        "delta_pp": -11.5,
+        "layers": 17,
+        "wilson95": [
+          0.181574,
+          0.298414
+        ]
+      },
+      {
+        "accuracy": 0.205,
+        "correct": 41,
+        "delta_pp": -14.5,
+        "layers": 18,
+        "wilson95": [
+          0.154862,
+          0.266257
+        ]
+      }
+    ]
+  }
+}

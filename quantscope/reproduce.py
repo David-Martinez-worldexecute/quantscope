@@ -104,6 +104,7 @@ GRANULARITY_SCHEMA = "quantscope-granularity-v1"
 FAIR_SCHEMA = "quantscope-fair-remeasure-v1"
 SCORING_SCHEMA = "quantscope-scoring-comparison-v1"
 COST_SCHEMA = "quantscope-quant-cost-v1"
+SWEEP_SCHEMA = "quantscope-layer-sweep-v1"
 CLIFF_KINDS = ("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj")
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
@@ -1040,6 +1041,52 @@ def _record(checks: list[dict], check_id: str, stored, recomputed,
     })
 
 
+def _check_sweep(payload: dict, checks: list[dict]) -> None:
+    """A sweep whose honest verdict is that it cannot be read.
+
+    The bundle has to survive the check that it is a record of what ran, and that its own
+    negative claim follows from its numbers: most depths overlap the baseline interval, so
+    the curve does not locate where the damage starts.
+    """
+    for field in ("model", "protocol", "baseline", "constant_answer", "sweeps", "analysis",
+                  "claims"):
+        if field not in payload:
+            raise ReproduceError(f"sweep: missing {field!r}")
+
+    total = payload["protocol"]["questions"]
+    base = payload["baseline"]
+    low, high = base["wilson95"]
+    _record(checks, "sweep:baseline_accuracy",
+            base["accuracy"], round(base["correct"] / total, 6), 1e-9)
+
+    # Every stored point must agree with its own integer count.
+    for group, curve in payload["sweeps"].items():
+        for entry in curve:
+            _record(checks, f"sweep:g{group}:layer{entry['layers']}:accuracy",
+                    entry["accuracy"], round(entry["correct"] / total, 6), 1e-9)
+            lo, hi = entry["wilson95"]
+            _record(checks, f"sweep:g{group}:layer{entry['layers']}:interval",
+                    True, lo <= entry["accuracy"] <= hi)
+
+    curve = payload["sweeps"].get("32")
+    if curve is None:
+        raise ReproduceError("sweep: no curve for group 32")
+
+    overlapping = [e["layers"] for e in curve
+                   if not (e["wilson95"][1] < low or e["wilson95"][0] > high)]
+    below = [e["layers"] for e in curve
+             if e["wilson95"][1] < low]
+
+    _record(checks, "sweep:overlapping_depths", payload["analysis"]["depths_overlapping_baseline"], overlapping)
+    _record(checks, "sweep:below_baseline_depths", payload["analysis"]["depths_below_baseline"], below)
+    _record(checks, "sweep:count_overlapping", payload["analysis"]["n_overlapping"], len(overlapping))
+    _record(checks, "sweep:claim_most_overlap",
+            payload["claims"]["most_depths_overlap_baseline"],
+            len(overlapping) > len(curve) / 2)
+    _record(checks, "sweep:claim_complete_g32",
+            payload["claims"]["complete_sweep_for_g32"], len(curve) == 18)
+
+
 def _check_cost(payload: dict, checks: list[dict]) -> None:
     """Quantization cost under the readout that can see the question.
 
@@ -1322,6 +1369,7 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths += sorted(EVIDENCE_DIR.glob("fair_remeasure*.json"))
     paths += sorted(EVIDENCE_DIR.glob("scoring_comparison*.json"))
     paths += sorted(EVIDENCE_DIR.glob("quant_cost*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("layer_sweep*.json"))
     return paths
 
 
@@ -1357,6 +1405,8 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_scoring(payload, checks)
     elif schema == COST_SCHEMA:
         _check_cost(payload, checks)
+    elif schema == SWEEP_SCHEMA:
+        _check_sweep(payload, checks)
     elif schema == GRANULARITY_SCHEMA:
         _check_granularity(payload, checks)
     else:

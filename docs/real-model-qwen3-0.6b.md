@@ -355,6 +355,62 @@ where the damage saturates, and a per-layer sweep would show granularity matteri
 that point. The per-layer sweep decides between them, and it is the next run.
 
 
+## A sweep that failed, and why it is in here
+
+The open question from the section above is whether the damage saturates by eighteen layers
+or accumulates from the first. A per-layer sweep answers that, so one was run: quantise
+layers 1..L for L = 1..18, measure 200 questions at each depth.
+
+It came out unreadable, and the reason is worth more than the curve.
+
+**200 questions has a 95% interval half-width of ±6.35 points.** The curve jumps 8 points
+between layer 6 (−16.0 pp) and layer 8 (−8.0 pp) — more than twice the standard error — then
+returns to −11.0 at layer 7. That is one number sampled eighteen times with noise, not a
+shape.
+
+Checked properly, against the baseline interval [28.7%, 41.8%]:
+
+- **14 of 18 depths have an interval that overlaps the baseline.** At fourteen depths the
+  measurement cannot tell the quantised model from the unquantised one.
+- Only 4 depths (6, 11, 13, 18) sit clearly below the baseline, and they are scattered
+  across the whole curve rather than clustered anywhere.
+
+So this run does **not** locate where the damage starts. Reporting a "cliff" from it would
+be the same mistake as the withdrawn sections: drawing a threshold across noise.
+
+### What it would take
+
+| difference to resolve | required SE | questions needed |
+| --- | --- | --- |
+| 8 points | 2.8 pp | ~270 |
+| 5 points | 1.7 pp | ~700 |
+| 3 points | 1.0 pp | ~2,100 |
+| adjacent layers (~2-3 points) | 0.8 pp | ~3,000 |
+
+The local C-Eval validation slice holds 600 questions in total. Reaching 3,000 means
+switching to a training split or a different benchmark, which changes what is being
+measured.
+
+**Repeating the same questions several times and averaging is not a workaround.** The model
+returns the same answer for the same input, so repetition narrows the printed interval
+without narrowing the real one. It would be the most convincing-looking way to manufacture a
+result here, which is why the sweep bundle records `complete: false` and states its own
+verdict as `uninterpretable`.
+
+### The one thing that does survive
+
+**Layer 1 already costs 3.5 points, and the curve never has a flat-then-steep shape**: from
+layer 5 onward it wanders between −7 and −16 with a mean near −11.5, matching the 600-question
+full-quantisation figure of −11.0 pp.
+
+So the cost accumulates from the first layer at a roughly uniform rate. That directly
+contradicts the withdrawn "cliff at eighteen" claim, which said the first seventeen layers
+were safe.
+
+The granularity question stays open. Answering it needs a lower-variance statistic — a paired
+per-question likelihood change rather than two independent accuracy rates — not more layers.
+
+
 ## Evidence
 
 The run's own files are not redistributed in this repository, but their digests are recorded in the bundle, and `python -m quantscope.cli reproduce` recomputes the published numbers from the per-question outcomes stored next to them:
