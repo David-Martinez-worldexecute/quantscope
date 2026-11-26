@@ -2,6 +2,35 @@
 
 This page records one real evaluation so a reader can check the numbers in the README instead of trusting them. It is deliberately narrow: one model, one slice of questions, one run, CPU only.
 
+> **Status (2026-11-26): the depth and granularity conclusions on this page are withdrawn.**
+>
+> Two measurement defects were found after the results below were published.
+>
+> 1. **Truncation.** The layer-ablation scorer passed `max_tokens=96` together with
+>    `truncation=True`, so 48.3% of the 600 questions arrived as a fragment that ended
+>    mid-option, without the answer instruction and without the assistant turn. Feeding
+>    the prompts whole moves the float32 baseline from 28.5% to 30.5%. The four-format
+>    table below was produced by different lab-side code that never truncated, which is
+>    why its FP32 row already reads 30.5% and is unaffected.
+>
+> 2. **Position bias.** Swapping the correct option into A/B/C/D moves the hit rate
+>    between 85% and 5%, identically in the baseline and in all three quantised
+>    conditions. The scorer reads the option's position far more than its content.
+>
+> With those defects known, the honest reading of the baseline is: **30.5% with a 95%
+> interval of [26.95%, 34.30%], against a constant-answer-C baseline of 29.7%.** The
+> interval contains the constant baseline, so this checkpoint does not show measurable
+> answering ability on this slice at all — and a "collapse" measured on top of that is
+> a collapse of a distribution, not of an ability.
+>
+> The three granularities, re-measured without truncation and with the bias reported:
+> g32 25.5% [22.18, 29.14], g64 20.3% [17.31, 23.74], g128 22.3% [19.18, 25.84]. All
+> three intervals overlap, so they cannot be ranked against each other.
+>
+> Sections marked **[withdrawn]** below carry conclusions that this measurement cannot
+> support. `docs/evidence/fair_remeasure.json` holds the replacement numbers.
+
+
 ## What was measured
 
 - Model: `Qwen/Qwen3-0.6B`, revision `c1899de289a04d12100db370d81485cdf75e47ca`, 9 files. `model.safetensors` SHA-256 `f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b`; every file's hash is in the evidence bundle.
@@ -35,7 +64,7 @@ Every accuracy is also read against the constant-answer baseline of 29.67% (alwa
 
 The counts, shares and constant-answer figures are recomputed from this bundle by `python -m quantscope.cli reproduce`; the bundle is `docs/evidence/answer_distribution.json`.
 
-## One layer at a time, not four at a time
+## [withdrawn] One layer at a time, not four at a time
 
 The four-format table above quantises every attention and MLP matrix in the model. It does not say how many layers have to lose their float32 weights before the model stops answering, and the first attempt could not say either: it quantised blocks of 4 layers, so its rungs sat at 16 and 20 quantised layers, and the collapse happens between them. Sweeping one layer at a time on the same 60-question slice makes it visible.
 
@@ -69,7 +98,7 @@ Third, it is not monotone. Prefixes from 19 to 22 layers answer with several let
 
 These rows are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/prefix_scan.json`, which carries the protocol, the per-prefix histograms and the collapse ordering.
 
-## Which weights carry it
+## [withdrawn] Which weights carry it
 
 The sweep says *how much* of the model has to lose its float32 weights before it stops answering, not *what* it loses. So fix the depth at 18 quantised layers (every answer the same letter) and put one class of weight back: the same 60 questions, the same quantiser everywhere else.
 
@@ -121,7 +150,7 @@ None of the restores recovers the float32 model: the best single restore (gate p
 
 The tensor numbers do not move with the sample size, because they do not depend on any question: the 126 matrices of those 18 layers still lose 31.1% to 31.7% of their weights to zero and still sit at relative error 0.514 to 0.527, whatever the questions say.
 
-## The same sweep at ten times the questions
+## [withdrawn] The same sweep at ten times the questions
 
 Sixty questions is enough to locate a collapse, not enough to defend one. The same prefix sweep therefore runs again over 600 questions, drawn as the first 600 rows of the same C-Eval validation file as the 60-question slice, so the smaller sample is a prefix of the larger one rather than a different draw.
 
@@ -177,7 +206,7 @@ Every one of those rows scores what its constant-answer baseline scores, within 
 
 These rows are recomputed by `python -m quantscope.cli reproduce` from `docs/evidence/scaling_check.json`, which carries both sweeps' histograms, the accuracy intervals and the verdict table.
 
-## The collapse belongs to one quantiser, not to eighteen layers
+## [withdrawn] The collapse belongs to one quantiser, not to eighteen layers
 
 Everything above fixes the group size at 64. Group size is the width over which one scale factor is shared, so changing it changes the quantiser itself — which makes the obvious control worth running: the same 18 quantised layers, the same 600 questions, at group sizes 32, 64, 128.
 
@@ -208,7 +237,7 @@ Third, the same weights are zeroed at every width: the Jaccard overlap between t
 
 Amplitude, position and direction of the weight error are therefore all decoupled from the collapse. On the stored weights the three quantisers are almost indistinguishable, which puts the difference in the forward pass rather than in the weights, and this page does not measure that. The explanation remains open.
 
-## An attempt to explain the depth, and why it failed
+## [withdrawn] An attempt to explain the depth, and why it failed
 
 The sweep says where the model stops answering; it does not say why the cost is paid at that depth rather than at another. The natural next measurement is how far the hidden state drifts from its float32 value as more layers are quantised — a drift curve growing with depth would be the mechanism. This section reports that measurement because it did not work, and the failure is the informative part.
 

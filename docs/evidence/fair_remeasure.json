@@ -1,0 +1,150 @@
+{
+  "baseline": {
+    "accuracy": 0.305,
+    "correct": 183,
+    "histogram": {
+      "A": 454,
+      "B": 93,
+      "C": 13,
+      "D": 40
+    },
+    "input_tokens": {
+      "max": 323,
+      "mean": 107.6,
+      "min": 56
+    },
+    "position_bias_rates": {
+      "A": 0.85,
+      "B": 0.29,
+      "C": 0.05,
+      "D": 0.17
+    },
+    "position_bias_spread": 0.8,
+    "position_bias_verdict": "reads position, not content",
+    "truncated": 0,
+    "wilson95": [
+      0.269497,
+      0.342984
+    ]
+  },
+  "claims": {
+    "all_quantised_below_constant": true,
+    "baseline_contains_constant": true,
+    "position_bias_identical_across_conditions": true
+  },
+  "conditions": [
+    {
+      "accuracy": 0.255,
+      "constant_baseline_inside_interval": false,
+      "correct": 153,
+      "count": 600,
+      "group_size": 32,
+      "histogram": {
+        "A": 161,
+        "B": 0,
+        "C": 407,
+        "D": 32
+      },
+      "most_common": "C",
+      "most_common_share": 0.678333,
+      "position_bias_rates": {
+        "A": 0.85,
+        "B": 0.29,
+        "C": 0.05,
+        "D": 0.17
+      },
+      "position_bias_spread": 0.8,
+      "wilson95": [
+        0.221759,
+        0.291358
+      ]
+    },
+    {
+      "accuracy": 0.203333,
+      "constant_baseline_inside_interval": false,
+      "correct": 122,
+      "count": 600,
+      "group_size": 64,
+      "histogram": {
+        "A": 595,
+        "B": 0,
+        "C": 1,
+        "D": 4
+      },
+      "most_common": "A",
+      "most_common_share": 0.991667,
+      "position_bias_rates": {
+        "A": 0.85,
+        "B": 0.29,
+        "C": 0.05,
+        "D": 0.17
+      },
+      "position_bias_spread": 0.8,
+      "wilson95": [
+        0.173063,
+        0.237378
+      ]
+    },
+    {
+      "accuracy": 0.223333,
+      "constant_baseline_inside_interval": false,
+      "correct": 134,
+      "count": 600,
+      "group_size": 128,
+      "histogram": {
+        "A": 514,
+        "B": 19,
+        "C": 15,
+        "D": 52
+      },
+      "most_common": "A",
+      "most_common_share": 0.856667,
+      "position_bias_rates": {
+        "A": 0.85,
+        "B": 0.29,
+        "C": 0.05,
+        "D": 0.17
+      },
+      "position_bias_spread": 0.8,
+      "wilson95": [
+        0.191828,
+        0.258359
+      ]
+    }
+  ],
+  "constant_answer": {
+    "count": 178,
+    "letter": "C",
+    "note": "a model that always answers this letter scores this much; an accuracy at or below it carries no evidence of reading the question",
+    "share": 0.296667
+  },
+  "generated_utc": "2026-11-26T11:10:43Z",
+  "limits": [
+    "One checkpoint, one 600-item C-Eval validation slice, one run per granularity.",
+    "Position bias is measured on 100 of the 600 questions, so its interval is wider than the accuracy interval shown beside it.",
+    "The three granularity intervals overlap; they are not a ranking.",
+    "This bundle measures accuracy only. It says nothing about throughput or memory."
+  ],
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "bias_questions": 100,
+    "granularities": [
+      32,
+      64,
+      128
+    ],
+    "prefix_layers": 18,
+    "questions": 600,
+    "scoring": "last-position single-token A/B/C/D logits, argmax",
+    "truncation": "none; a prompt over the limit raises instead",
+    "why": "the earlier bundles used a scorer that truncated at 96 tokens (48.3% of questions affected) and reported no position bias; this bundle fixes the first and reports the second"
+  },
+  "schema": "quantscope-fair-remeasure-v1",
+  "sources": {
+    "cliff_fair_g128.json": "d658da78a9fbd015301ba8063c015d0d09c66f15fb306f5cb31b575e029c78aa",
+    "cliff_fair_g32.json": "166b2e8d7b835bec283731986c806fa228773b338669908577ae439aa0ae1fd0",
+    "cliff_fair_g64.json": "7af2fd15906a520f5a57d1b83c3ab9225da4a59899188f85d5164628c587c5a1"
+  }
+}

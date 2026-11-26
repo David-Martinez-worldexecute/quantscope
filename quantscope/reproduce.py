@@ -101,6 +101,7 @@ LAYER_CLIFF_SCHEMA = "quantscope-layer-cliff-v1"
 SCALING_SCHEMA = "quantscope-scaling-check-v1"
 AMP_SCHEMA = "quantscope-amplification-v1"
 GRANULARITY_SCHEMA = "quantscope-granularity-v1"
+FAIR_SCHEMA = "quantscope-fair-remeasure-v1"
 CLIFF_KINDS = ("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj")
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
@@ -1021,6 +1022,74 @@ def _check_amplification(payload: dict, checks: list[dict]) -> None:
             f"the curves say {expected!r}")
 
 
+def _record(checks: list[dict], check_id: str, stored, recomputed,
+            tolerance: float = 0.0) -> None:
+    """Append one check in the shape the CLI prints and the report counts."""
+    checks.append({
+        "id": check_id,
+        "stored": stored,
+        "recomputed": recomputed,
+        "delta": (abs(stored - recomputed)
+                  if isinstance(stored, (int, float)) and isinstance(recomputed, (int, float))
+                  else 0.0),
+        "tolerance": tolerance,
+        "ok": stored == recomputed if tolerance == 0.0
+              else abs(stored - recomputed) <= tolerance,
+    })
+
+
+def _check_fair(payload: dict, checks: list[dict]) -> None:
+    """The fair re-measurement: baseline vs the constant answer, and the bias spread.
+
+    Every number here is re-derived from the integers in the bundle. The claims block is
+    also recomputed rather than trusted, because those three booleans are what the page
+    leans on when it says the baseline shows no measurable ability.
+    """
+    for field in ("model", "protocol", "baseline", "constant_answer", "conditions", "claims"):
+        if field not in payload:
+            raise ReproduceError(f"fair: missing {field!r}")
+
+    baseline = payload["baseline"]
+    constant = payload["constant_answer"]
+    conditions = payload["conditions"]
+    total = payload["protocol"]["questions"]
+
+    _record(checks, "fair:baseline_accuracy",
+            baseline["accuracy"], round(baseline["correct"] / total, 6), 1e-9)
+
+    low, high = baseline["wilson95"]
+    _record(checks, "fair:baseline_interval_contains_own_accuracy",
+            True, low <= baseline["accuracy"] <= high)
+
+    contains = low <= constant["share"] <= high
+    _record(checks, "fair:baseline_contains_constant",
+            payload["claims"]["baseline_contains_constant"], contains)
+
+    all_below = all(block["wilson95"][1] < constant["share"] for block in conditions)
+    _record(checks, "fair:all_quantised_below_constant",
+            payload["claims"]["all_quantised_below_constant"], all_below)
+
+    spreads = {block["position_bias_spread"] for block in conditions}
+    spreads.add(baseline["position_bias_spread"])
+    _record(checks, "fair:bias_identical_across_conditions",
+            payload["claims"]["position_bias_identical_across_conditions"], len(spreads) == 1)
+
+    for block in conditions:
+        tag = f"fair:g{block['group_size']}"
+        _record(checks, f"{tag}:accuracy",
+                block["accuracy"], round(block["correct"] / block["count"], 6), 1e-9)
+        lo, hi = block["wilson95"]
+        _record(checks, f"{tag}:interval_contains_accuracy",
+                True, lo <= block["accuracy"] <= hi)
+        _record(checks, f"{tag}:histogram_sums_to_count",
+                block["count"], sum(block["histogram"].values()))
+        _record(checks, f"{tag}:most_common_matches_histogram",
+                block["most_common"],
+                max(block["histogram"], key=block["histogram"].get))
+
+    _record(checks, "fair:no_prompt_truncated", 0, baseline["truncated"])
+
+
 def _check_granularity(payload: dict, checks: list[dict]) -> None:
     """One depth, three group sizes: does the collapse survive a change of quantiser?
 
@@ -1140,6 +1209,7 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths += sorted(EVIDENCE_DIR.glob("scaling_*.json"))
     paths += sorted(EVIDENCE_DIR.glob("amplification*.json"))
     paths += sorted(EVIDENCE_DIR.glob("granularity*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("fair_remeasure*.json"))
     return paths
 
 
@@ -1169,6 +1239,8 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_scaling(payload, checks)
     elif schema == AMP_SCHEMA:
         _check_amplification(payload, checks)
+    elif schema == FAIR_SCHEMA:
+        _check_fair(payload, checks)
     elif schema == GRANULARITY_SCHEMA:
         _check_granularity(payload, checks)
     else:

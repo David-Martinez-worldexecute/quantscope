@@ -12,7 +12,7 @@
   changing only *where the quantization scale is computed* recovers **2.96 of them (64.1%)**. The
   cost was mostly a scale-alignment problem, not a bit-width problem. Two more figures and the
   places where the argument breaks are in [what-this-is.md](docs/what-this-is.md).
-- **One command.** `python -m quantscope.cli reproduce` recomputes all **389** published numbers —
+- **One command.** `python -m quantscope.cli reproduce` recomputes all **407** published numbers —
   including the 600-question, four-format real-model run, its bootstrap and paired intervals, and
   the CPU timing and held-weight rows — from the
   evidence files in this repository, and fails if any of them stops following from the bytes beside
@@ -34,6 +34,12 @@ guess when the sample count does not match what was asked for.
 **Start here:** [What this project is, and what I think it means](docs/what-this-is.md) — why it
 exists, the five figures, four claims about AI that the measurements support, and the places where
 I think the argument breaks.
+
+> **Correction in progress (2026-11-26).** The layer-ablation scorer truncated 48.3% of
+> prompts and follows the option's position, not its content. The four-format table below is
+> unaffected; its 30.5% baseline sits against a 29.7% constant-answer baseline that its
+> interval contains. Depth and granularity claims are marked withdrawn in
+> [the real-model page](docs/real-model-qwen3-0.6b.md).
 
 ## Install
 
