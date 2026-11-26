@@ -103,6 +103,7 @@ AMP_SCHEMA = "quantscope-amplification-v1"
 GRANULARITY_SCHEMA = "quantscope-granularity-v1"
 FAIR_SCHEMA = "quantscope-fair-remeasure-v1"
 SCORING_SCHEMA = "quantscope-scoring-comparison-v1"
+COST_SCHEMA = "quantscope-quant-cost-v1"
 CLIFF_KINDS = ("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj")
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
@@ -1039,6 +1040,67 @@ def _record(checks: list[dict], check_id: str, stored, recomputed,
     })
 
 
+def _check_cost(payload: dict, checks: list[dict]) -> None:
+    """Quantization cost under the readout that can see the question.
+
+    The bundle's job is to say three things and not more: the baseline clears the constant
+    answer, every granularity sits below it, and the granularities cannot be told apart.
+    Each is recomputed here from the integers rather than trusted, because together they
+    are what retires the "group 64 is special" claim.
+    """
+    for field in ("model", "protocol", "baseline", "constant_answer", "conditions",
+                  "claims", "random_guess_share"):
+        if field not in payload:
+            raise ReproduceError(f"cost: missing {field!r}")
+
+    baseline = payload["baseline"]
+    constant = payload["constant_answer"]["share"]
+    total = payload["protocol"]["questions"]
+    conditions = payload["conditions"]
+
+    _record(checks, "cost:baseline_accuracy",
+            baseline["accuracy"], round(baseline["correct"] / total, 6), 1e-9)
+    low, high = baseline["wilson95"]
+    _record(checks, "cost:baseline_clears_constant", True, low > constant)
+    _record(checks, "cost:claim_baseline_clears_constant",
+            payload["claims"]["baseline_clears_constant"], low > constant)
+
+    for block in conditions:
+        tag = f"cost:g{block['group_size']}"
+        _record(checks, f"{tag}:accuracy",
+                block["accuracy"], round(block["correct"] / total, 6), 1e-9)
+        lo, hi = block["wilson95"]
+        _record(checks, f"{tag}:interval_contains_accuracy",
+                True, lo <= block["accuracy"] <= hi)
+        _record(checks, f"{tag}:below_constant", True, hi < constant)
+        _record(checks, f"{tag}:delta_pp",
+                block["delta_pp"],
+                round((block["correct"] - baseline["correct"]) / total * 100, 4), 1e-6)
+        _record(checks, f"{tag}:net_loss",
+                block["net_loss"], block["right_to_wrong"] - block["wrong_to_right"])
+        _record(checks, f"{tag}:below_random_guess",
+                block["group_size"] in payload["claims"]["granularities_below_random_guess"],
+                block["accuracy"] < payload["random_guess_share"])
+
+    all_below = all(b["wilson95"][1] < constant for b in conditions)
+    _record(checks, "cost:claim_every_granularity_below_constant",
+            payload["claims"]["every_granularity_below_constant"], all_below)
+
+    overlapping = True
+    for i in range(len(conditions)):
+        for j in range(i + 1, len(conditions)):
+            a, b = conditions[i]["wilson95"], conditions[j]["wilson95"]
+            if b[0] > a[1] or a[0] > b[1]:
+                overlapping = False
+    _record(checks, "cost:claim_granularities_indistinguishable",
+            payload["claims"]["granularities_indistinguishable"], overlapping)
+
+    recomputed_below = sorted(b["group_size"] for b in conditions
+                              if b["accuracy"] < payload["random_guess_share"])
+    _record(checks, "cost:claim_granularities_below_random_guess",
+            payload["claims"]["granularities_below_random_guess"], recomputed_below)
+
+
 def _check_scoring(payload: dict, checks: list[dict]) -> None:
     """The scoring-method comparison: does swapping the readout clear the constant baseline?
 
@@ -1259,6 +1321,7 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths += sorted(EVIDENCE_DIR.glob("granularity*.json"))
     paths += sorted(EVIDENCE_DIR.glob("fair_remeasure*.json"))
     paths += sorted(EVIDENCE_DIR.glob("scoring_comparison*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("quant_cost*.json"))
     return paths
 
 
@@ -1292,6 +1355,8 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_fair(payload, checks)
     elif schema == SCORING_SCHEMA:
         _check_scoring(payload, checks)
+    elif schema == COST_SCHEMA:
+        _check_cost(payload, checks)
     elif schema == GRANULARITY_SCHEMA:
         _check_granularity(payload, checks)
     else:

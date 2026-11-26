@@ -307,6 +307,54 @@ then the format table above stays as it is, with its intervals, because those nu
 measured and the intervals say what they support.
 
 
+## What eighteen layers of ternary weights actually cost
+
+With the readout from the section above (option log-likelihood, length-normalised), the
+first eighteen layers were quantised and the same 600 questions re-asked. 126 matrices per
+condition, identical protocol, no truncation.
+
+| condition | correct | accuracy | 95% interval | delta vs baseline | right→wrong | wrong→right |
+| --- | --- | --- | --- | --- | --- | --- |
+| FP32 baseline | 217 / 600 | **36.17%** | [32.42%, 40.09%] | — | — | — |
+| 18 layers, group 32 | 151 / 600 | **25.17%** | [21.86%, 28.79%] | **-11.00 pp** | 160 | 94 |
+| 18 layers, group 64 | 145 / 600 | **24.17%** | [20.91%, 27.75%] | **-12.00 pp** | 164 | 92 |
+| 18 layers, group 128 | 149 / 600 | **24.83%** | [21.54%, 28.44%] | **-11.33 pp** | 158 | 90 |
+| constant answer C | 178 / 600 | 29.67% | — | — | — | — |
+
+Three things follow, and one of them retires an earlier claim outright.
+
+**The cost is real and it is large.** Going from 36.17% to roughly 25% is not noise: net
+losses are 66, 72 and 68 questions across the three conditions, with twice as many
+right-to-wrong flips as wrong-to-right ones. Quantisation is systematically turning correct
+judgements into incorrect ones.
+
+**Granularity does not matter in this range.** The three intervals overlap pairwise — g32
+with g64, g32 with g128, g64 with g128. Changing the group size from 32 to 128 moves the
+accuracy by less than one point. Whatever the group size is buying, it is not accuracy at
+this depth. That retires the "group 64 is a special point" claim, which was an artefact of
+the letter-argmax readout: with a readout that has no signal, "collapsed" and "did not
+collapse" were just one threshold drawn across noise.
+
+**Two of the three land below random guessing.** A four-way question answered blindly
+scores 25%. g64 (24.17%) and g128 (24.83%) sit below that line; g32 (25.17%) sits just
+above it. All three are within one point of each other and of 25%, so this is a boundary
+case rather than a ranking — but it does say the quantised model is not failing by refusing
+to answer. A model that gave up would fall back to a constant, and a constant gets 29.67%.
+It keeps producing confident, specific, wrong answers.
+
+### What this does not explain yet
+
+The standing hypothesis was that ternary weights hurt mostly through the per-group scale
+being pulled around by high-norm dimensions, so a finer group should recover accuracy. At
+full depth it recovers nothing: g32 and g128 differ by 0.34 points with overlapping
+intervals.
+
+Two readings are still open. Either the damage comes from having only three weight values
+at all, in which case no scale partition can help; or eighteen layers is past the point
+where the damage saturates, and a per-layer sweep would show granularity mattering before
+that point. The per-layer sweep decides between them, and it is the next run.
+
+
 ## Evidence
 
 The run's own files are not redistributed in this repository, but their digests are recorded in the bundle, and `python -m quantscope.cli reproduce` recomputes the published numbers from the per-question outcomes stored next to them:

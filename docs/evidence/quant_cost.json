@@ -1,0 +1,100 @@
+{
+  "baseline": {
+    "accuracy": 0.361667,
+    "correct": 217,
+    "wilson95": [
+      0.324213,
+      0.40088
+    ]
+  },
+  "claims": {
+    "baseline_clears_constant": true,
+    "every_granularity_below_constant": true,
+    "granularities_below_random_guess": [
+      64,
+      128
+    ],
+    "granularities_indistinguishable": true,
+    "note_on_random_guess": "g64 (24.17%) and g128 (24.83%) fall below the 25% random-guess line; g32 (25.17%) does not. The three are within 1 point of each other, so this is a boundary case, not a separation between granularities."
+  },
+  "conditions": [
+    {
+      "accuracy": 0.251667,
+      "correct": 151,
+      "count": 600,
+      "delta_pp": -11.0,
+      "group_size": 32,
+      "letter_bias_spread": 0.566667,
+      "net_loss": 66,
+      "right_to_wrong": 160,
+      "wilson95": [
+        0.218597,
+        0.287896
+      ],
+      "wrong_to_right": 94
+    },
+    {
+      "accuracy": 0.241667,
+      "correct": 145,
+      "count": 600,
+      "delta_pp": -12.0,
+      "group_size": 64,
+      "letter_bias_spread": 1.0,
+      "net_loss": 72,
+      "right_to_wrong": 164,
+      "wilson95": [
+        0.209126,
+        0.277494
+      ],
+      "wrong_to_right": 92
+    },
+    {
+      "accuracy": 0.248333,
+      "correct": 149,
+      "count": 600,
+      "delta_pp": -11.3333,
+      "group_size": 128,
+      "letter_bias_spread": 0.733333,
+      "net_loss": 68,
+      "right_to_wrong": 158,
+      "wilson95": [
+        0.215437,
+        0.284432
+      ],
+      "wrong_to_right": 90
+    }
+  ],
+  "constant_answer": {
+    "count": 178,
+    "letter": "C",
+    "share": 0.296667
+  },
+  "generated_utc": "2026-11-26T12:08:52Z",
+  "limits": [
+    "One checkpoint, one 600-item C-Eval validation slice, one run per granularity.",
+    "The quantiser is per-group absmean simulated in float32: accuracy only, no speed or memory claim.",
+    "g32 came from a run that was cut short by a wall-clock limit before the other granularities; its integers are recorded from that run's log rather than recomputed by this script.",
+    "Three granularities overlapping does not prove granularity is irrelevant above 32 - only that it is not distinguishable in this range at this depth."
+  ],
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "protocol": {
+    "granularities": [
+      32,
+      64,
+      128
+    ],
+    "layers_quantised": 18,
+    "questions": 600,
+    "readout": "mean log P(option tokens | question + options), divided by token count",
+    "truncation": "none",
+    "why": "the published cost table used a letter-argmax readout that scores below a constant-answer baseline on this checkpoint; this re-measures the cost with the readout that clears it"
+  },
+  "random_guess_share": 0.25,
+  "schema": "quantscope-quant-cost-v1",
+  "sources": {
+    "cost_g128.json": "0c89615d433f80307a5e05a37cd752917114449c20641d07804e11fb6302d018",
+    "cost_g64.json": "019d462ca0c79c3de4b4049a6eea0000b47b629d2a94320b158611e08b9b55b7"
+  }
+}
