@@ -59,6 +59,7 @@ REQUIRED = [
     "docs/evidence/ff_evidence.json",
     "docs/evidence/real_model_qwen3_0.6b.json",
     "docs/evidence/fair_remeasure.json",
+    "docs/evidence/scoring_comparison.json",
     "docs/evidence/qwen35_forward.json",
     "docs/evidence/cifar_compare.json",
     "docs/real-model-qwen3.5-0.8b.md",

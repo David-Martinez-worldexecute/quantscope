@@ -261,6 +261,52 @@ The paired interval resamples the per-question outcomes with the same seed the b
 
 So the honest summary is two-sided: INT8 dynamic (PyTorch) is worse than FP32 by an amount its own interval excludes zero for, while INT4 RTN, group 64, ternary (1.58-bit) cannot be separated from noise on this set. Ordering the two crossing formats against each other is not supported either — their intervals overlap heavily.
 
+## The scoring method decides whether there is anything to measure
+
+Everything above reads the last-position logits of the four letters A/B/C/D and takes the
+argmax. That asks the model to *name* an option, and on this checkpoint it mostly answers
+whatever letter sits in a favoured slot. The same 600 questions, scored three ways:
+
+| readout | correct | accuracy | 95% interval | against constant-C 29.67% |
+| --- | --- | --- | --- | --- |
+| letter argmax (the protocol used above) | 161 / 600 | 26.83% | [23.44%, 30.52%] | **below** |
+| option log-likelihood | 202 / 600 | 33.67% | [30.00%, 37.54%] | above |
+| log-likelihood / option length (`acc_norm`) | 217 / 600 | 36.17% | [32.42%, 40.09%] | above |
+
+The middle and bottom rows never look at A/B/C/D. The question and all four options go into
+the prompt, and the score is the mean log-probability the model assigns to each option's own
+tokens; `acc_norm` divides by token count so long options are not penalised for being long.
+With no letter slot in the readout there is no slot to favour.
+
+Position bias, measured the same way as above (the correct option is swapped into each slot):
+
+| slot | letter argmax | option log-likelihood |
+| --- | --- | --- |
+| A | 85% | 43% |
+| B | 23% | 28% |
+| C | 2% | 28% |
+| D | 11% | 35% |
+| **spread** | **83 pp** | **15 pp** |
+
+A third check, because a scorer that reads position should move when the options move: the
+four options were permuted with a fixed seed on 200 questions. `acc_norm` scored 35.0%
+[28.73%, 41.84%] in the original order and 36.5% [30.14%, 43.37%] shuffled — a shift of 1.5
+points, well inside the intervals. The letter-argmax readout, subjected to the same
+permutation, moves between 85% and 2%.
+
+So the honest summary of this page is: **with the readout the earlier sections used, this
+checkpoint scores below a constant answer and no capability is visible; with a readout that
+does not encode option position, the same checkpoint reaches 36.2%, which is above the
+constant baseline but still far from published C-Eval numbers for this model class.** The
+"collapse" sections are withdrawn for exactly this reason — they were measuring a readout
+that had almost no signal to lose.
+
+What this does *not* establish: how much quantization costs. That question needs the
+`acc_norm` readout applied to each quantized condition, which the next run will do. Until
+then the format table above stays as it is, with its intervals, because those numbers were
+measured and the intervals say what they support.
+
+
 ## Evidence
 
 The run's own files are not redistributed in this repository, but their digests are recorded in the bundle, and `python -m quantscope.cli reproduce` recomputes the published numbers from the per-question outcomes stored next to them:

@@ -102,6 +102,7 @@ SCALING_SCHEMA = "quantscope-scaling-check-v1"
 AMP_SCHEMA = "quantscope-amplification-v1"
 GRANULARITY_SCHEMA = "quantscope-granularity-v1"
 FAIR_SCHEMA = "quantscope-fair-remeasure-v1"
+SCORING_SCHEMA = "quantscope-scoring-comparison-v1"
 CLIFF_KINDS = ("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj")
 BENCH_MODES = ("baseline", "int8", "int4", "ternary")
 
@@ -1038,6 +1039,53 @@ def _record(checks: list[dict], check_id: str, stored, recomputed,
     })
 
 
+def _check_scoring(payload: dict, checks: list[dict]) -> None:
+    """The scoring-method comparison: does swapping the readout clear the constant baseline?
+
+    Each accuracy is recomputed from its integers, and the four stored claims are
+    re-derived from the intervals rather than trusted. Those claims are the whole point of
+    the bundle: they say the published readout sits below a constant-answer baseline and
+    that likelihood scoring sits above it.
+    """
+    for field in ("model", "protocol", "constant_answer", "comparisons", "position_bias",
+                  "shuffle_check", "claims"):
+        if field not in payload:
+            raise ReproduceError(f"scoring: missing {field!r}")
+
+    constant = payload["constant_answer"]["share"]
+    comparisons = payload["comparisons"]
+
+    for name, block in comparisons.items():
+        _record(checks, f"scoring:{name}:accuracy",
+                block["accuracy"], round(block["correct"] / block["count"], 6), 1e-9)
+        low, high = block["wilson95"]
+        _record(checks, f"scoring:{name}:interval_contains_accuracy",
+                True, low <= block["accuracy"] <= high)
+        _record(checks, f"scoring:{name}:above_constant",
+                block["above_constant_baseline"], low > constant)
+
+    claims = payload["claims"]
+    _record(checks, "scoring:claim_argmax_below_constant",
+            claims["letter_argmax_below_constant"],
+            not comparisons["letter_argmax"]["above_constant_baseline"])
+    _record(checks, "scoring:claim_loglikelihood_above_constant",
+            claims["loglikelihood_above_constant"],
+            comparisons["loglikelihood"]["above_constant_baseline"])
+    _record(checks, "scoring:claim_acc_norm_above_constant",
+            claims["acc_norm_above_constant"],
+            comparisons["acc_norm"]["above_constant_baseline"])
+
+    bias = payload["position_bias"]
+    _record(checks, "scoring:claim_bias_shrank",
+            claims["position_bias_shrank_under_likelihood"],
+            bias["letter_argmax"]["spread"] > 0.5 and bias["loglikelihood"]["spread"] < 0.25)
+
+    shuffle = payload["shuffle_check"]
+    _record(checks, "scoring:shuffle_delta_small",
+            shuffle["delta"], round(shuffle["shuffled_order"]["accuracy"]
+                                    - shuffle["original_order"]["accuracy"], 6), 1e-9)
+
+
 def _check_fair(payload: dict, checks: list[dict]) -> None:
     """The fair re-measurement: baseline vs the constant answer, and the bias spread.
 
@@ -1210,6 +1258,7 @@ def _bundle_paths(evidence_path=None) -> list[Path]:
     paths += sorted(EVIDENCE_DIR.glob("amplification*.json"))
     paths += sorted(EVIDENCE_DIR.glob("granularity*.json"))
     paths += sorted(EVIDENCE_DIR.glob("fair_remeasure*.json"))
+    paths += sorted(EVIDENCE_DIR.glob("scoring_comparison*.json"))
     return paths
 
 
@@ -1241,6 +1290,8 @@ def _check_bundle(payload: dict, checks: list[dict], name: str) -> None:
         _check_amplification(payload, checks)
     elif schema == FAIR_SCHEMA:
         _check_fair(payload, checks)
+    elif schema == SCORING_SCHEMA:
+        _check_scoring(payload, checks)
     elif schema == GRANULARITY_SCHEMA:
         _check_granularity(payload, checks)
     else:

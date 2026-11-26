@@ -1,0 +1,112 @@
+{
+  "claims": {
+    "acc_norm_above_constant": true,
+    "letter_argmax_below_constant": true,
+    "loglikelihood_above_constant": true,
+    "position_bias_shrank_under_likelihood": true
+  },
+  "comparisons": {
+    "acc_norm": {
+      "above_constant_baseline": true,
+      "accuracy": 0.361667,
+      "correct": 217,
+      "count": 600,
+      "wilson95": [
+        0.324213,
+        0.40088
+      ]
+    },
+    "letter_argmax": {
+      "above_constant_baseline": false,
+      "accuracy": 0.268333,
+      "correct": 161,
+      "count": 600,
+      "wilson95": [
+        0.234435,
+        0.305179
+      ]
+    },
+    "loglikelihood": {
+      "above_constant_baseline": true,
+      "accuracy": 0.336667,
+      "correct": 202,
+      "count": 600,
+      "wilson95": [
+        0.299999,
+        0.375412
+      ]
+    }
+  },
+  "constant_answer": {
+    "count": 178,
+    "letter": "C",
+    "share": 0.296667
+  },
+  "generated_utc": "2026-11-26T11:30:29Z",
+  "limits": [
+    "One checkpoint, one 600-item C-Eval validation slice, one run per protocol.",
+    "36.2% is well below published C-Eval scores for this model class; model size is the first suspect but this run does not test it.",
+    "The shuffle check ran on 200 of the 600 questions, so its interval is wider than the headline one.",
+    "Likelihood scoring removes the letter slot, not every ordering effect: a 15% residual spread remains and is not explained here."
+  ],
+  "model": {
+    "name": "Qwen3-0.6B-c1899de289a0"
+  },
+  "position_bias": {
+    "letter_argmax": {
+      "rates": {
+        "A": 0.85,
+        "B": 0.23,
+        "C": 0.02,
+        "D": 0.11
+      },
+      "spread": 0.83
+    },
+    "loglikelihood": {
+      "rates": {
+        "A": 0.43,
+        "B": 0.28,
+        "C": 0.28,
+        "D": 0.35
+      },
+      "spread": 0.15
+    }
+  },
+  "protocol": {
+    "bias_questions": 100,
+    "questions": 600,
+    "scorings": {
+      "acc_norm": "the same sum divided by the option's token count",
+      "letter_argmax": "last-position A/B/C/D logits (the published protocol)",
+      "loglikelihood": "sum log P(option tokens | question + all options + 答案：)"
+    },
+    "truncation": "none",
+    "why": "the published protocol reads four letter logits and takes the argmax; on this checkpoint that reads the option's slot rather than its content, so the same model scores below a constant-answer baseline. Scoring each option's own likelihood clears it."
+  },
+  "schema": "quantscope-scoring-comparison-v1",
+  "shuffle_check": {
+    "delta": 0.015,
+    "note": "the same questions with the four options permuted by a fixed seed; a scorer that reads the option slot would move far more than 1.5 points",
+    "original_order": {
+      "accuracy": 0.35,
+      "correct": 70,
+      "wilson95": [
+        0.287288,
+        0.418365
+      ]
+    },
+    "questions": 200,
+    "shuffled_order": {
+      "accuracy": 0.365,
+      "correct": 73,
+      "wilson95": [
+        0.301405,
+        0.433683
+      ]
+    }
+  },
+  "source": {
+    "file": "ll_qwen3_06b.json",
+    "sha256": "c3aa7d84f49c9be06dc723cff82e2530cf81b64d338644202d3b38196dc13b6d"
+  }
+}
